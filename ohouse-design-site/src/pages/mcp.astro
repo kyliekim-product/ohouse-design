@@ -1,0 +1,111 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { existsSync } from 'fs';
+import { join } from 'path';
+import { readdirSync } from 'fs';
+
+const ROOT = new URL('../../../../product-design/', import.meta.url).pathname;
+const servers = existsSync(join(ROOT, 'mcp-servers'))
+  ? readdirSync(join(ROOT, 'mcp-servers')).filter((n) => !n.startsWith('.'))
+  : [];
+---
+
+<Layout title="MCP">
+  <header class="mhead">
+    <div class="wrap">
+      <p class="mhead__eyebrow">MCP · Model Context Protocol</p>
+      <h1>Ohouse Design MCP 서버</h1>
+      <p class="mhead__lead">Claude / ChatGPT 등 LLM 에 오늘의집 디자인 컨텍스트를 제공하는 서버 모음.</p>
+    </div>
+  </header>
+
+  <section class="mbody">
+    <div class="wrap">
+      <h2 class="mbody__title">사용 가능한 서버 ({servers.length})</h2>
+      <div class="mgrid">
+        {servers.map((slug) => (
+          <div class="mcard">
+            <div class="mcard__head">
+              <span class="mcard__title">{slug}</span>
+              <span class="badge badge--accent">npm</span>
+            </div>
+            <p class="mcard__path">mcp-servers/{slug}/</p>
+            <a class="mcard__link" href={`https://github.com/bucketplace/product-design/tree/main/mcp-servers/${slug}`} target="_blank" rel="noopener">
+              README 보기 ↗
+            </a>
+          </div>
+        ))}
+      </div>
+
+      <div class="install">
+        <h3>설치 예시 (Claude Code)</h3>
+        <pre class="install__code">{`# 1. claude.json (또는 ~/.claude/settings.json) 에 추가
+{
+  "mcpServers": {
+    "ods-hermes": {
+      "command": "npx",
+      "args": ["-y", "@bucketplace/ods-hermes"]
+    }
+  }
+}
+
+# 2. Claude Code 재시작
+# 3. /mcp 명령으로 연결 확인`}</pre>
+        <button type="button" class="btn-primary" data-copy-prompt={`{
+  "mcpServers": {
+    "ods-hermes": {
+      "command": "npx",
+      "args": ["-y", "@bucketplace/ods-hermes"]
+    }
+  }
+}`}>
+          ⟳ Copy config
+        </button>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .mhead { padding: 64px 0 32px; background: #fff; border-bottom: 1px solid var(--c-border); }
+  .mhead__eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 0.08em; color: var(--c-text-soft); text-transform: uppercase; margin-bottom: 12px; }
+  .mhead h1 { font-size: 36px; font-weight: 800; letter-spacing: -0.02em; }
+  .mhead__lead { margin-top: 12px; color: var(--c-text-muted); font-size: 16px; max-width: 580px; }
+
+  .mbody { padding: 40px 0 96px; }
+  .mbody__title { font-size: 14px; font-weight: 600; color: var(--c-text-muted); text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 16px; }
+  .mgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .mcard {
+    background: var(--c-bg-elev);
+    border-radius: var(--r-card);
+    padding: 20px;
+    display: flex; flex-direction: column; gap: 6px;
+    transition: background .15s ease;
+  }
+  .mcard:hover { background: var(--c-bg-elev-2); }
+  .mcard__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .mcard__title { font-weight: 600; font-size: 15px; }
+  .mcard__path { font-size: 12px; font-family: var(--f-mono); color: var(--c-text-soft); margin-bottom: 8px; }
+  .mcard__link { color: var(--c-text); font-size: 13px; font-weight: 600; align-self: flex-start; }
+
+  .install { margin-top: 56px; }
+  .install h3 { font-size: 14px; font-weight: 600; color: var(--c-text-muted); text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 12px; }
+  .install__code {
+    background: var(--c-text); color: #fafaf9;
+    padding: 20px;
+    border-radius: var(--r-card);
+    font-size: 13px; line-height: 1.65;
+    overflow-x: auto;
+    margin-bottom: 12px;
+    font-family: var(--f-mono);
+  }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--c-text); color: #fff;
+    padding: 10px 18px; border-radius: 999px;
+    font-size: 14px; font-weight: 600;
+    transition: opacity .15s ease, transform .1s ease;
+  }
+  .btn-primary:hover { opacity: 0.85; color: #fff; }
+  .btn-primary:active { transform: scale(0.98); }
+</style>

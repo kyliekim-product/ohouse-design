@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Ohouse Design — Home Preview</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+/* ────────────── tokens (global.css) ────────────── */
+:root{
+  --c-bg:#ffffff; --c-bg-soft:#fafafa;
+  --c-bg-elev:#f5f5f7; --c-bg-elev-2:#ececef;
+  --c-border:#ebebed; --c-border-soft:#f0f0f2;
+  --c-text:#0a0a0a; --c-text-muted:#6b6b75; --c-text-soft:#a0a0a8;
+  --r-sm:8px; --r-md:12px; --r-card:24px; --r-pill:999px;
+  --sh-sm:0 1px 2px rgba(0,0,0,.03);
+  --sh-md:0 2px 8px rgba(0,0,0,.04);
+  --sh-lg:0 8px 24px rgba(0,0,0,.06);
+  --f-sans:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Inter',system-ui,sans-serif;
+  --f-mono:ui-monospace,SF Mono,Menlo,Consolas,'Liberation Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--f-sans); color:var(--c-text); background:var(--c-bg);
+  line-height:1.5; letter-spacing:-0.005em; -webkit-font-smoothing:antialiased;
+  font-feature-settings:'tnum';
+}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit;padding:0}
+.tabular{font-variant-numeric:tabular-nums}
+.wrap{max-width:1440px;margin:0 auto;padding:0 32px}
+
+/* ────────────── Nav ────────────── */
+.nav-root{
+  position:sticky; top:0; z-index:50;
+  background:rgba(255,255,255,.92);
+  backdrop-filter:saturate(180%) blur(12px);
+  -webkit-backdrop-filter:saturate(180%) blur(12px);
+}
+.nav-inner{
+  display:grid; grid-template-columns:auto 1fr auto;
+  align-items:center; gap:24px;
+  height:64px; max-width:1440px; margin:0 auto; padding:0 32px;
+}
+.nav-left{display:flex;align-items:center;gap:20px}
+.brand{display:inline-flex;align-items:center;gap:0;font-weight:700;font-size:15px;letter-spacing:-0.015em}
+.brand__logo{
+  width:32px;height:32px;
+  object-fit:contain;
+  display:block;
+}
+/* 탭: 배경 박스 없이 텍스트 색상만으로 active 구분 (Mobbin 식) */
+.nav-tabs{display:flex;align-items:center;gap:24px}
+.nav-tab{
+  padding:6px 0;
+  font-size:15px; font-weight:600;
+  color:var(--c-text-soft);
+  letter-spacing:-0.01em;
+  transition:color .15s;
+}
+.nav-tab:hover{color:var(--c-text)}
+.nav-tab.is-active{color:var(--c-text)}
+.nav-search{
+  display:flex;align-items:center;gap:10px;
+  background:var(--c-bg-elev); height:40px; padding:0 16px;
+  border-radius:999px; max-width:560px; width:100%;
+  justify-self:center; color:var(--c-text-soft);
+}
+.nav-search input{flex:1;border:0;background:transparent;outline:none;font-family:inherit;font-size:14px;color:var(--c-text)}
+.nav-search input::placeholder{color:var(--c-text-soft)}
+.nav-search__kbd{font-size:11px;font-weight:500;color:var(--c-text-soft);padding:2px 6px;background:#fff;border:1px solid var(--c-border);border-radius:6px}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-icon{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;color:var(--c-text-muted)}
+.nav-icon:hover{background:var(--c-bg-elev);color:var(--c-text)}
+.nav-github{padding:8px 14px;font-size:13px;font-weight:600;color:#fff;background:var(--c-text);border-radius:999px}
+.nav-avatar{
+  width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#ffd9a8 0%,#ffaf68 100%);
+  color:#6b3a0a;font-weight:700;font-size:13px;border-radius:999px;
+}
+@media (max-width:960px){
+  .nav-search{display:none}
+  .nav-inner{grid-template-columns:auto auto;justify-content:space-between}
+}
+
+/* ────────────── Home wrap ────────────── */
+/* NOTE: .wrap 의 수평 패딩(32px)을 .home 의 padding shorthand 가 덮어쓰지 않도록
+   세로 패딩만 분리해서 지정 — 그래야 nav 의 브랜드 로고와 4열 메뉴 / 카드 그리드의
+   좌측 정렬이 일치한다. */
+.home{padding-top:48px;padding-bottom:120px}
+
+/* 5열 메뉴 — 조직 기준 그룹핑 (Mobbin 톤: 큰 폰트 + 타이트 행간) */
+.menu5{display:grid;grid-template-columns:repeat(5,1fr);gap:40px;margin-bottom:64px}
+.mcol__title{font-size:13px;font-weight:500;color:var(--c-text-soft);margin-bottom:28px;text-transform:uppercase;letter-spacing:.04em}
+.mcol__list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.mcol__item{
+  font-size:28px; font-weight:700;
+  letter-spacing:-0.02em; color:var(--c-text);
+  line-height:1.0;            /* Mobbin 처럼 빡빡한 행간 */
+  display:inline-block;
+  transition:opacity .15s;
+}
+.mcol__item:hover{opacity:.55}
+.mcol__empty{
+  font-size:13px;color:var(--c-text-soft);font-weight:500;
+  padding:8px 10px; border:1px dashed var(--c-border);
+  border-radius:8px; display:inline-block;
+}
+@media (max-width:1280px){
+  .menu5{grid-template-columns:repeat(3,1fr);gap:32px}
+  .mcol__item{font-size:26px}
+}
+@media (max-width:780px){
+  .menu5{grid-template-columns:repeat(2,1fr);gap:28px}
+  .mcol__item{font-size:24px}
+}
+@media (max-width:480px){
+  .menu5{grid-template-columns:1fr;gap:24px;margin-bottom:36px}
+  .mcol__item{font-size:22px}
+  .mcol__title{margin-bottom:16px}
+}
+
+/* FilterBar */
+.fbar{display:flex;align-items:center;padding:16px 0;border-bottom:1px solid var(--c-border);gap:24px}
+.fbar__platform{display:inline-flex;align-items:center;background:var(--c-bg-elev);padding:3px;border-radius:999px}
+.fbar__pf{padding:5px 14px;font-size:13px;font-weight:500;color:var(--c-text-muted);border-radius:999px;transition:color .15s,background .15s}
+.fbar__pf:hover{color:var(--c-text)}
+.fbar__pf.is-active{background:#fff;color:var(--c-text);font-weight:600;box-shadow:var(--sh-sm)}
+.fbar__sort{display:flex;align-items:center;gap:24px;flex:1}
+.fbar__sort-item{position:relative;padding:6px 0;font-size:14px;font-weight:500;color:var(--c-text-soft);transition:color .15s}
+.fbar__sort-item:hover{color:var(--c-text)}
+.fbar__sort-item.is-active{color:var(--c-text);font-weight:600}
+.fbar__sort-item.is-active::after{content:'';position:absolute;left:0;right:0;bottom:-17px;height:2px;background:var(--c-text)}
+.fbar__filter{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;font-size:13px;font-weight:500;color:var(--c-text);background:transparent;border:1px solid var(--c-border);border-radius:999px}
+.fbar__filter:hover{background:var(--c-bg-elev)}
+
+/* Banner (a 태그로도 사용 가능) */
+.banner{
+  display:flex;align-items:center;gap:12px;
+  margin:16px 0 28px; padding:14px 18px;
+  background:var(--c-bg-elev); border-radius:14px;
+  font-size:13px; color:var(--c-text-muted); flex-wrap:wrap;
+  text-decoration:none;
+  transition:background .15s;
+}
+.banner--guide:hover{background:var(--c-bg-elev-2)}
+.banner__pill{display:inline-flex;align-items:center;padding:3px 10px;font-size:11px;font-weight:700;background:var(--c-text);color:#fff;border-radius:999px;letter-spacing:.04em}
+.banner strong{color:var(--c-text);font-weight:700}
+.banner code{background:#fff;padding:1px 6px;border-radius:4px;font-size:12px;color:var(--c-text);font-family:var(--f-mono)}
+.banner__link{margin-left:auto;font-weight:600;color:var(--c-text);white-space:nowrap}
+
+/* Grid — 3컬럼 기본, 화면이 좁아질수록 단계적으로 축소 */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:32px;align-items:start}
+@media (max-width:1100px){.grid{grid-template-columns:repeat(2,1fr);gap:24px}}
+@media (max-width:600px){.grid{grid-template-columns:1fr;gap:20px}}
+
+/* type 필터 — grid[data-filter] 와 카드[data-type] 매칭 안 되면 hide */
+.grid[data-filter="html"]  .dcard[data-type="figma"]{display:none}
+.grid[data-filter="figma"] .dcard[data-type="html"]{display:none}
+
+/* ────────────── ScreenCard ────────────── */
+.dcard{display:flex;flex-direction:column;gap:8px;transition:transform .2s ease;cursor:pointer}
+.dcard:hover{transform:translateY(-2px)}
+.dcard__canvas{
+  position:relative; aspect-ratio:4/5;
+  background:var(--c-bg-elev); border-radius:var(--r-card);
+  overflow:hidden; display:flex;align-items:center;justify-content:center;
+  transition:background .2s ease;
+}
+.dcard:hover .dcard__canvas{background:var(--c-bg-elev-2)}
+/* type pill — html=흰 배경/검정, figma=검정 배경/흰 */
+.dcard__pill{
+  position:absolute; top:16px; left:16px;
+  display:inline-flex; align-items:center;
+  padding:4px 10px;
+  font-size:11px; font-weight:600;
+  border-radius:999px; z-index:2;
+  letter-spacing:.02em;
+}
+.dcard__pill.is-html{
+  background:#fff; color:var(--c-text);
+  box-shadow:0 1px 2px rgba(0,0,0,.06);
+}
+.dcard__pill.is-figma{
+  background:var(--c-text); color:#fff;
+}
+
+/* Mobbin-style 호버 액션 — 캔버스 하단 가운데 floating (secondary | primary 순서) */
+.dcard__actions{
+  position:absolute; left:50%; bottom:20px;
+  transform:translateX(-50%) translateY(8px);
+  display:inline-flex; align-items:center; gap:8px;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .18s ease, transform .18s ease;
+  z-index:3;
+}
+.dcard:hover .dcard__actions{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+  pointer-events:auto;
+}
+
+.dcard__action{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 18px;
+  font-size:13px; font-weight:700;
+  border:0; border-radius:999px;
+  cursor:pointer; white-space:nowrap;
+  letter-spacing:-0.01em;
+  font-family:inherit;
+  transition:background .15s, color .15s;
+}
+.dcard__action svg{display:block}
+
+/* Copy Prompt — PRIMARY (다크 솔리드) — base 사이즈와 동일(높이/폰트) */
+.dcard__action--copy{
+  background:var(--c-text);
+  color:#fff;
+  /* padding · font-size 모두 base(.dcard__action) 그대로 상속 — Figma Move 와 짝궁 */
+  box-shadow:0 8px 24px rgba(0,0,0,.22), 0 1px 3px rgba(0,0,0,.10);
+}
+.dcard__action--copy:hover{background:#000}
+.dcard__action--copy svg{color:#fff}
+
+/* HTML 카드 단독 등장일 때만 — 가로 padding 만 더 넓게 */
+.dcard__action--copy.is-solo{
+  padding-left:32px;
+  padding-right:32px;
+}
+
+/* 유형별 액션 — SECONDARY (frosted glass, base 크기 = Figma Move) */
+.dcard__action--type{
+  background:rgba(255,255,255,0.78);
+  backdrop-filter:blur(16px) saturate(180%);
+  -webkit-backdrop-filter:blur(16px) saturate(180%);
+  color:var(--c-text);
+  box-shadow:0 4px 14px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.05);
+}
+.dcard__action--type:hover{background:rgba(255,255,255,0.95)}
+
+/* Toast (복사 완료 알림) */
+.toast{
+  position:fixed; bottom:24px; left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:#0a0a0a; color:#fafafa;
+  padding:12px 20px; border-radius:999px;
+  font-size:14px; font-weight:500;
+  box-shadow:0 8px 24px rgba(0,0,0,.18);
+  opacity:0; pointer-events:none;
+  transition:opacity .2s ease, transform .2s ease;
+  z-index:200;
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+.dcard__phone{position:relative;width:62%;aspect-ratio:9/16;margin-top:14%;background:#fff;border-radius:28px;box-shadow:var(--sh-md);overflow:hidden}
+.dcard__placeholder{width:100%;height:100%;background:linear-gradient(135deg,#fafafa 0%,#f0f0f2 100%);display:flex;align-items:center;justify-content:center}
+.dcard__placeholder-mark{font-size:56px;font-weight:800;color:var(--c-text-soft);letter-spacing:-0.04em}
+
+/* ── ScreenCard 메타 — 도메인 칩이 우측 상단 (title 옆) ── */
+.dcard__meta{padding:0 4px;display:flex;flex-direction:column;gap:6px}
+
+/* head row: 왼쪽=title (label+pageid), 오른쪽=도메인 칩 (위쪽 정렬, 크게) */
+.dcard__head{display:flex;align-items:flex-start;gap:12px}
+.dcard__title{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1 1 auto}
+.dcard__label{
+  font-size:16px;font-weight:600;letter-spacing:-0.01em;color:var(--c-text);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  line-height:1.2;
+}
+.dcard__pageid{
+  font-size:12px;color:var(--c-text-soft);font-family:var(--f-mono);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  line-height:1.3;
+}
+
+/* 도메인 칩 — 우측 위, 라벨 라인에 맞춰 align */
+.dcard__dchip{
+  flex:0 0 auto;
+  align-self:flex-start;
+  display:inline-flex; align-items:center; gap:8px;
+  padding:7px 14px;
+  background:var(--c-bg-elev);
+  border-radius:999px;
+  font-size:13px; font-weight:600; color:var(--c-text);
+  letter-spacing:-0.01em;
+  transition:background .15s;
+  text-decoration:none;
+  white-space:nowrap;
+}
+.dcard__dchip:hover{background:var(--c-bg-elev-2)}
+.dcard__dchip-arrow{
+  display:inline-flex; align-items:center; justify-content:center;
+  color:var(--c-text-soft); font-weight:700;
+  font-size:14px;
+}
+
+/* foot: [owner-dot] [updated]  (도메인 칩은 위로 올라갔으므로 footer 가벼움) */
+.dcard__foot{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--c-text-muted)}
+.dcard__owner{display:inline-flex;align-items:center;min-width:0}
+.dcard__owner-dot{
+  width:18px;height:18px;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--c-text);color:#fff;border-radius:999px;
+  font-size:10px;font-weight:700;flex:0 0 18px;
+}
+.dcard__owner.is-tbd .dcard__owner-dot{background:transparent;color:var(--c-text-soft);border:1px dashed var(--c-text-soft)}
+.dcard__upd{font-size:12px;color:var(--c-text-soft);white-space:nowrap}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<header class="nav-root">
+  <div class="nav-inner">
+    <div class="nav-left">
+      <a href="#" class="brand" aria-label="오늘의집">
+        <img src="public/ohouse-3d.png" alt="" class="brand__logo" width="32" height="32" />
+      </a>
+      <nav class="nav-tabs">
+        <a class="nav-tab is-active" href="#">Ohouse Design</a>
+        <a class="nav-tab" href="#">Design system</a>
+      </nav>
+    </div>
+    <div class="nav-search">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" placeholder="Search Ohouse Design..." />
+      <span class="nav-search__kbd">⌘K</span>
+    </div>
+    <div class="nav-right">
+      <button class="nav-icon" aria-label="북마크">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        </svg>
+      </button>
+      <a class="nav-github" href="#">GitHub</a>
+      <div class="nav-avatar" title="요한">요</div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap home">
+
+  <!-- 5열 메뉴 — 조직 기준 그룹핑 -->
+  <section class="menu5">
+    <div class="mcol">
+      <div class="mcol__title">Discovery</div>
+      <ul class="mcol__list">
+        <li><a class="mcol__item" href="preview-domain.html">홈</a></li>
+        <li><a class="mcol__item is-coming" href="#">집구경</a></li>
+        <li><a class="mcol__item is-coming" href="#">쇼핑홈</a></li>
+        <li><a class="mcol__item is-coming" href="#">카테고리</a></li>
+      </ul>
+    </div>
+    <div class="mcol">
+      <div class="mcol__title">Shopping</div>
+      <ul class="mcol__list">
+        <li><a class="mcol__item is-coming" href="#">쇼핑</a></li>
+        <li><a class="mcol__item is-coming" href="#">상품 상세</a></li>
+        <li><a class="mcol__item is-coming" href="#">장바구니</a></li>
+        <li><a class="mcol__item is-coming" href="#">기획전</a></li>
+        <li><a class="mcol__item is-coming" href="#">바이너리 홈</a></li>
+      </ul>
+    </div>
+    <div class="mcol">
+      <div class="mcol__title">Life event</div>
+      <ul class="mcol__list">
+        <li><a class="mcol__item is-coming" href="#">인테리어·생활</a></li>
+        <li><a class="mcol__item is-coming" href="#">패키지</a></li>
+        <li><a class="mcol__item is-coming" href="#">멤버십</a></li>
+        <li><a class="mcol__item is-coming" href="#">인터넷&렌탈</a></li>
+        <li><a class="mcol__item is-coming" href="#">이사</a></li>
+      </ul>
+    </div>
+    <div class="mcol">
+      <div class="mcol__title">Core</div>
+      <ul class="mcol__list">
+        <li><a class="mcol__item is-coming" href="#">검색</a></li>
+        <li><a class="mcol__item is-coming" href="#">콘텐츠 상세</a></li>
+        <li><a class="mcol__item is-coming" href="#">마이페이지</a></li>
+        <li><a class="mcol__item is-coming" href="#">북마크</a></li>
+        <li><a class="mcol__item is-coming" href="#">전체페이지</a></li>
+        <li><a class="mcol__item is-coming" href="#">3D 방꾸미기</a></li>
+      </ul>
+    </div>
+    <div class="mcol">
+      <div class="mcol__title">Global</div>
+      <ul class="mcol__list">
+        <li><a class="mcol__item is-coming" href="#">검색-jp</a></li>
+        <li><a class="mcol__item is-coming" href="#">홈-jp</a></li>
+        <li><a class="mcol__item is-coming" href="#">쇼핑-jp</a></li>
+        <li><a class="mcol__item is-coming" href="#">콘텐츠-jp</a></li>
+        <li><a class="mcol__item is-coming" href="#">Core-jp</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 필터바 -->
+  <div class="fbar">
+    <div class="fbar__platform" id="typeToggle">
+      <button class="fbar__pf is-active" data-type="all">All</button>
+      <button class="fbar__pf" data-type="html">HTML</button>
+      <button class="fbar__pf" data-type="figma">Figma</button>
+    </div>
+    <div class="fbar__sort">
+      <button class="fbar__sort-item is-active">Latest</button>
+      <button class="fbar__sort-item">Recently updated</button>
+      <button class="fbar__sort-item">Most viewed</button>
+      <button class="fbar__sort-item">All</button>
+    </div>
+    <button class="fbar__filter">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/>
+      </svg>
+      <span>Filter</span>
+    </button>
+  </div>
+
+  <!-- MCP 연결 가이드 배너 — 클릭 시 노션 사용법 페이지로 -->
+  <a class="banner banner--guide" href="https://www.notion.so/ohouse-design-mcp" target="_blank" rel="noopener">
+    <span class="banner__pill">MCP</span>
+    <span class="banner__text">
+      <strong>Ohouse Design MCP</strong> 를 Claude / Cursor 에 연결해서 모든 도메인 · screen · policy 를 한 번에 검색하세요
+    </span>
+    <span class="banner__link">설치 가이드 보기 →</span>
+  </a>
+
+  <!-- 카드 그리드 (data-filter 로 type 필터링: all/html/figma) -->
+  <section class="grid" id="grid" data-filter="all"></section>
+</div>
+
+<!-- 복사 알림 토스트 (wrap 밖, fixed positioning) -->
+<div id="toast" class="toast" role="status" aria-live="polite">Copied</div>
+
+<script>
+// 카드 = screen 단위. pageId 가 그대로 보이고, 도메인 칩 클릭 시 도메인 페이지로.
+// type: 'html' | 'figma' — 토글로 필터됨
+const screens = [
+  { pageId:'home-default',           type:'html',  label:'홈',                  domain:{slug:'home',          label:'홈'} },
+  { pageId:'house-tour-feed',        type:'figma', label:'집구경 피드',         domain:{slug:'house-tour',    label:'집구경'} },
+  { pageId:'shopping-list',          type:'html',  label:'쇼핑 리스트',         domain:{slug:'shopping',      label:'쇼핑'} },
+  { pageId:'product-detail-default', type:'figma', label:'상품 상세 기본',      domain:{slug:'product-detail',label:'상품 상세'} },
+  { pageId:'cart-default',           type:'html',  label:'장바구니',            domain:{slug:'cart',          label:'장바구니'} },
+  { pageId:'search-input',           type:'figma', label:'검색 입력',           domain:{slug:'search',        label:'검색'} },
+  { pageId:'search-results',         type:'html',  label:'검색 결과',           domain:{slug:'search',        label:'검색'} },
+  { pageId:'content-detail-article', type:'figma', label:'콘텐츠 상세 글',      domain:{slug:'content-detail',label:'콘텐츠 상세'} },
+  { pageId:'mypage-default',         type:'html',  label:'마이페이지',          domain:{slug:'mypage',        label:'마이페이지'} },
+  { pageId:'bookmark-list',          type:'figma', label:'북마크 리스트',       domain:{slug:'bookmark',      label:'북마크'} },
+  { pageId:'membership-landing',     type:'html',  label:'멤버십 랜딩',         domain:{slug:'membership',    label:'멤버십'} },
+  { pageId:'package-detail',         type:'figma', label:'패키지 상세',         domain:{slug:'package',       label:'패키지'} },
+  { pageId:'interior-life-feed',     type:'html',  label:'인테리어/생활 피드',  domain:{slug:'interior-life', label:'인테리어/생활'} },
+  { pageId:'room-3d-editor',         type:'figma', label:'3D 방꾸미기 에디터',  domain:{slug:'room-3d',       label:'3D 방꾸미기'} },
+  { pageId:'category-default',       type:'html',  label:'카테고리',            domain:{slug:'category',      label:'카테고리'} },
+  { pageId:'home-jp-default',        type:'figma', label:'홈 JP',               domain:{slug:'home-jp',       label:'홈-jp'} },
+  { pageId:'search-jp-input',        type:'html',  label:'검색 JP 입력',        domain:{slug:'search-jp',     label:'검색-jp'} },
+  { pageId:'shopping-jp-list',       type:'figma', label:'쇼핑 JP 리스트',      domain:{slug:'shopping-jp',   label:'쇼핑-jp'} },
+];
+
+// 카드 컨테이너는 <div>. <a> 안에 또 다른 <a>(dchip) 을 넣을 수 없어 그리드가 깨져서
+// outer 를 <div> 로 바꾸고 클릭은 JS 로 처리. 키보드 접근성을 위해 role/tabindex 부여.
+const typeLabel = t => t === 'figma' ? 'Figma' : 'HTML';
+const card = s => `
+  <div class="dcard" role="link" tabindex="0" data-href="#${s.pageId}" data-type="${s.type}">
+    <div class="dcard__canvas">
+      <span class="dcard__pill is-${s.type}">${typeLabel(s.type)}</span>
+      <div class="dcard__phone">
+        <div class="dcard__placeholder"><div class="dcard__placeholder-mark">${s.label.slice(0,1)}</div></div>
+      </div>
+      <div class="dcard__actions">
+        ${s.type === 'figma' ? `
+        <button type="button" class="dcard__action dcard__action--type" data-action="figma-move"
+                data-page="${s.pageId}">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M7 7h10v4H7zM7 11h5v4H7zM7 15h5v4H7zM12 11h5v4h-5zM12 7h5v4h-5z"/>
+          </svg>
+          Figma Move
+        </button>` : ''}
+        <button type="button" class="dcard__action dcard__action--copy${s.type === 'html' ? ' is-solo' : ''}" data-action="copy-prompt"
+                data-page="${s.pageId}" data-domain="${s.domain.slug}" data-label="${s.label}">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="9" y="9" width="13" height="13" rx="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          Copy Prompt
+        </button>
+      </div>
+    </div>
+    <div class="dcard__meta">
+      <div class="dcard__head">
+        <div class="dcard__title">
+          <span class="dcard__label">${s.label}</span>
+          <span class="dcard__pageid">${s.pageId}</span>
+        </div>
+        <a class="dcard__dchip" href="#d-${s.domain.slug}"
+           onclick="event.stopPropagation()" title="${s.domain.label} 도메인으로">
+          ${s.domain.label}
+          <span class="dcard__dchip-arrow">→</span>
+        </a>
+      </div>
+    </div>
+  </div>`;
+
+const grid = document.getElementById('grid');
+grid.innerHTML = screens.map(card).join('');
+
+// 카드 클릭/엔터로 해당 screen 으로 이동 (dchip 클릭은 stopPropagation 으로 제외됨)
+grid.querySelectorAll('.dcard').forEach(el => {
+  const href = el.getAttribute('data-href');
+  if (!href) return;
+  el.addEventListener('click', e => {
+    if (e.target.closest('a')) return; // 칩 등 내부 링크는 그대로
+    window.location.hash = href.replace(/^#/, '');
+  });
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      window.location.hash = href.replace(/^#/, '');
+    }
+  });
+});
+
+// HTML / Figma 토글 — 클릭하면 grid 의 data-filter 변경되어 CSS 로 카드 필터링
+const typeToggle = document.getElementById('typeToggle');
+typeToggle.addEventListener('click', e => {
+  const btn = e.target.closest('.fbar__pf');
+  if (!btn) return;
+  typeToggle.querySelectorAll('.fbar__pf').forEach(b => b.classList.remove('is-active'));
+  btn.classList.add('is-active');
+  grid.setAttribute('data-filter', btn.dataset.type);
+});
+
+// Copy Prompt 버튼 — 카드 호버 시 등장, 클릭 시 prompt 클립보드 복사 + toast
+const toast = document.getElementById('toast');
+let toastTimer = null;
+const showToast = (msg) => {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+};
+
+const buildPrompt = (pageId, domain, label) => {
+  return [
+    `[Ohouse Design] ${label} (${pageId}) 화면 분석 요청`,
+    ``,
+    `- Domain: ${domain}`,
+    `- Page ID: ${pageId}`,
+    ``,
+    `이 화면의 의도, 주요 컴포넌트, 진입/이탈 경로, 정책을 정리해주세요.`,
+    `필요 시 ODS 컴포넌트 매핑과 유사 화면도 함께 제시.`,
+  ].join('\n');
+};
+
+grid.addEventListener('click', async e => {
+  const btn = e.target.closest('.dcard__action');
+  if (!btn) return;
+  e.preventDefault();
+  e.stopPropagation();  // 카드 자체 클릭(스크린 이동) 막기
+
+  const action = btn.dataset.action;
+  const page = btn.dataset.page;
+
+  if (action === 'copy-prompt') {
+    const prompt = buildPrompt(page, btn.dataset.domain, btn.dataset.label);
+    try {
+      await navigator.clipboard.writeText(prompt);
+      showToast('Prompt copied · Claude / Cursor 에 붙여넣으세요');
+    } catch {
+      showToast('복사 실패 — 브라우저 권한 확인');
+    }
+  } else if (action === 'figma-move') {
+    // 실제 사이트에서는 README.md frontmatter 의 figma URL 로 이동
+    showToast(`Figma 로 이동 · ${page} (실 사이트에서 Figma URL 열림)`);
+  }
+});
+</script>
+</body>
+</html>

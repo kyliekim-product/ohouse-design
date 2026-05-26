@@ -1,0 +1,11 @@
+id: domain.package.option-modal
+title: Option Modal
+type: pattern
+status: draft
+domain: package
+owner: Deeer
+aliases:
+  - 옵션 선택 모달
+  - 패키지담기 옵션 모달
+description: PDP에서 패키지담기 시 옵션을 선택해 패키지에 담는 하단 시트 모달입니다.
+spec: ./spec.md

@@ -1,0 +1,229 @@
+{
+  "schema_version": "0.4.0",
+  "knowledge_version": "0.4.0",
+  "description": "knowledge 폴더 버전 승급 시 통과해야 하는 시나리오. writing-bot evals.json 패턴 호환. expectations는 binary pass/fail.",
+  "scenarios": [
+    {
+      "id": "empty-cart",
+      "name": "빈 장바구니 화면",
+      "prompt": "OHOUSE-DESIGN.md + knowledge 기준으로 빈 장바구니 화면을 설계할 때 카피·CTA 위치·정보 위계를 어떻게 결정하나?",
+      "knowledge_inputs": [
+        "principles.md #2 (결정 피로), #5 (빈 상태)",
+        "ux-design.md 한 화면 = 한 결정 / Primary CTA 하단 sticky / 상태 표현 5종",
+        "ux-writing.md Empty / 메시지 유형 (Info)",
+        "design-insight.md #9 화면의 1순위, #11 카피 사실+행동 제안"
+      ],
+      "expected_output_type": "html_mockup_or_design_spec",
+      "expectations": [
+        "헤딩 카피가 단정·부정형이 아니다 (예: '~없습니다', '비어있어요' 단독 금지)",
+        "본문에 다음 행동 제안이 있다 (예: '마음에 드는 상품을 찾아보세요')",
+        "Primary CTA가 화면 하단 sticky 위치에 있다",
+        "CTA 라벨이 다음 행동을 제안한다 (예: '쇼핑 계속하기')",
+        "추천 모듈은 CTA보다 시각 무게가 작다 (1~2개 정보만 강조)",
+        "오늘의집 용어집 준수 (호칭 '당신' 금지, '오늘의집' 직접 언급 금지)",
+        "해요체 톤이다",
+        "ODS 컴포넌트만 사용했다 (BoxButton·Empty 등)"
+      ]
+    },
+    {
+      "id": "payment-error",
+      "name": "결제 실패 화면",
+      "prompt": "결제 실패 시 안내 화면의 헤딩·본문·CTA·보조 액션 라벨을 어떻게 작성하나?",
+      "knowledge_inputs": [
+        "ux-writing.md 메시지 유형 (Error)",
+        "design-insight.md #11 카피 사실+행동 제안, 부정 표현 지양",
+        "ux-design.md Primary CTA 하단 sticky"
+      ],
+      "expected_output_type": "copy_set",
+      "expectations": [
+        "헤딩이 '결제할 수 없습니다' 같은 단정·부정형이 아니다",
+        "본문이 객관적 현 상태 + 다음 행동 제안 구조다",
+        "본문에 '~일 수 있어요' 같은 불확실형이 없다",
+        "Primary CTA가 sticky bottom에 있다",
+        "보조 액션이 'dead-end 취소'가 아닌 다음 행동 라벨이다 (예: '결제 정보 변경')",
+        "critical 토큰은 컨테이너에만 적용, 본문 텍스트는 정상 foreground 색을 쓴다",
+        "기존 클레임·주문 안내 문구의 서술 방식과 톤이 통일된다"
+      ]
+    },
+    {
+      "id": "product-card-density",
+      "name": "홈 피드 ProductCard 정보 밀도",
+      "prompt": "홈 피드 ProductCard 안에 할인율·가격·리뷰·뱃지·배송·쿠폰 중 무엇을 어디까지 노출하나?",
+      "knowledge_inputs": [
+        "design-insight.md #1 색 의도, #2 뱃지 늘리지 않음, #3 1~2개만 강조, #9 화면의 1순위",
+        "visual-design.md 크리틱 누적 — 색·뱃지·구분선",
+        "principles.md #1 콘텐츠 우선, #4 위계는 색이 아닌 크기·위치"
+      ],
+      "expected_output_type": "design_spec_or_mockup",
+      "expectations": [
+        "한 카드에 강조 요소가 2개 이하다 (할인율+가격 또는 가격+별점)",
+        "섬네일 위 컬러 뱃지가 동시 3개 이상 노출되지 않는다",
+        "무료배송·오늘출발·쿠폰 같은 정보가 색 뱃지 덩어리가 아닌 텍스트 라인으로 처리된다",
+        "카드 둘레에 보더·그림자가 없거나 최소화돼 사진이 figure로 살아난다",
+        "ProductCard 내 모든 정보 색은 design-tokens 시멘틱 토큰을 사용한다 (하드코드 hex X)"
+      ]
+    },
+    {
+      "id": "sticky-cta-placement",
+      "name": "Primary CTA 위치 결정",
+      "prompt": "단발 화면(빈 상태·에러·결제·온보딩 종료)에서 Primary CTA를 어디에 배치하나?",
+      "knowledge_inputs": [
+        "ux-design.md Primary CTA 하단 sticky",
+        "principles.md #2 결정 피로, #7 터치 타깃",
+        "ux-design.md Fitts's Law (학계 근거)"
+      ],
+      "expected_output_type": "design_decision",
+      "expectations": [
+        "Primary CTA가 화면 하단 sticky bar에 위치한다",
+        "CTA가 본문 안에만 있어서 스크롤 후 사라지는 케이스가 없다",
+        "키보드가 올라올 때 CTA가 키보드 위로 따라 올라가는 정책이 명시된다",
+        "보조 액션(TextButton)이 CTA 바로 안쪽 또는 아래에 위치한다",
+        "CTA 위에 추가 정보 박스(추천·약관)가 결정 흐름을 방해하지 않는다"
+      ]
+    },
+    {
+      "id": "push-notification",
+      "name": "앱푸시 카피",
+      "prompt": "앱푸시 써줘. 봄맞이 패브릭 할인, 타깃 2030 여성.",
+      "knowledge_inputs": [
+        "ux-writing.md 앱푸시"
+      ],
+      "expected_output_type": "copy_set",
+      "expectations": [
+        "최소 3개 이상의 문구 제안이 제시된다",
+        "각 제안에 제목과 본문이 분리되어 있다",
+        "본문이 (광고)로 시작한다",
+        "제목이 21자 이내다",
+        "본문이 32자 이내다",
+        "이모지가 제목 또는 본문 중 한 곳에만 사용된다",
+        "'당신' 호칭이 사용되지 않는다",
+        "'오늘의집' 브랜드명이 직접 언급되지 않는다",
+        "역대급·헉·실화·대박 같은 자극적 표현이 없다"
+      ]
+    },
+    {
+      "id": "iif-banner",
+      "name": "쇼핑홈 IIF 배너 카피",
+      "prompt": "배너 카피 써줘. 구좌 쇼핑홈 IIF, 브랜드 한샘.",
+      "knowledge_inputs": [
+        "ux-writing.md 배너 카피 / 쇼핑홈 IIF"
+      ],
+      "expected_output_type": "copy_table",
+      "expectations": [
+        "추천 1개 + 대안 7개 = 총 8개 카피가 표로 제시된다",
+        "추천 카피에 [추천] 표시가 있다",
+        "각 카피가 1줄이고 공백 포함 15자 이내다",
+        "브랜드명 '한샘'이 직접 언급되지 않는다",
+        "혜택이 직접 언급되지 않는다 (브랜드 포지셔닝·상품 특성 중심)",
+        "마침표가 사용되지 않는다",
+        "'당신'·'유저' 고객 지칭이 없다",
+        "각 카피별 작성 의도 설명이 포함된다"
+      ]
+    },
+    {
+      "id": "module-title-content-match",
+      "name": "추천 모듈 타이틀과 콘텐츠 매칭",
+      "prompt": "홈 피드에 새 추천 모듈을 추가할 때 타이틀과 노출 콘텐츠의 매칭을 어떻게 검증하나?",
+      "knowledge_inputs": [
+        "design-insight.md #12 표기·톤 통일",
+        "ux-design.md 마이크로카피"
+      ],
+      "expected_output_type": "design_decision",
+      "expectations": [
+        "타이틀과 모듈에 노출되는 콘텐츠 성격이 매칭된다 (예: '추천 크리에이터' 타이틀이면 크리에이터 노출이 콘텐츠 수보다 많다)",
+        "기존 모듈 타이틀 인벤토리를 확인해 중복·유사 표현이 없다",
+        "'전체보기'/'더보기' 같은 액션 라벨이 기준에 맞게 일관 적용된다",
+        "스크랩수·인기순 같은 데이터 신호가 모듈 의미와 일치한다 (예: '주간 스크랩 많은 글' = 스크랩 수 기반)"
+      ]
+    },
+    {
+      "id": "design-from-brief",
+      "name": "미지 영역 디자인 결정 (브리프 → Decision Spec)",
+      "prompt": "다음 브리프로 새 화면을 설계해야 한다. precedent 없음. 어떻게 결정하나? 브리프: 'AI가 생성한 인테리어 이미지를 보고 사용자가 마음에 드는 상품을 빠르게 찾을 수 있는 화면. 신규 기능.'",
+      "knowledge_inputs": [
+        "decision-framework.md 4-Phase 워크플로우 + Decision Spec 템플릿 + Worked example",
+        "principles.md 원칙 10개 + 우선순위",
+        "design-insight.md §1·§2 (특히 #8 디폴트·#9 1순위[조건부]·E7 이식)",
+        "feedback-format.md by-screen 매트릭스 (PDP·Viewer 인접 참조)"
+      ],
+      "expected_output_type": "design_spec",
+      "expectations": [
+        "출력이 Decision Spec 7섹션을 따른다 (문제·디폴트·1순위[조건부]·선례·결정·가드레일·카피)",
+        "Phase 1 (문제·디폴트)이 각 1줄로 명시된다",
+        "Phase 2에서 인접 surface가 인용된다 (PDP / Viewer 등)",
+        "Phase 2에서 §2 E7 이식 가능 패턴이 인용된다",
+        "Phase 3에서 Primary CTA 위치·정보 강조 1~2개·색 의도가 결정된다",
+        "상태 표현 5종(default/empty/loading/error/offline) 모두 설계된다",
+        "competing priorities가 있는 화면이면 1순위가 명시되고, 자명한 화면이면 skip된다",
+        "Q5 일관성 — 다른 화면과의 표기 사전 확인이 명시된다",
+        "안티 패턴 6개 중 어느 것도 위반하지 않는다",
+        "출력이 Decision Spec 1쪽 분량 (40~80줄)이며 발산하지 않는다"
+      ]
+    },
+    {
+      "id": "critique-quality-empty-cart",
+      "name": "빈 장바구니 크리틱 출력 품질",
+      "prompt": "다음 빈 장바구니 디자인에 대해 크리틱을 줘. (헤딩 '장바구니가 비어있어요' / 본문 '담은 상품이 없습니다.' / Primary CTA '쇼핑 계속하기' (본문 내, 추천 모듈 아래) / ProductCard 2개 (할인율·가격·별점·리뷰수 강조))",
+      "knowledge_inputs": [
+        "feedback-format.md 전체 (출력 구조·severity·톤·by-screen)",
+        "design-insight.md #3·#9·#11",
+        "ux-writing.md Empty / 메시지 유형 (Info)",
+        "ux-design.md Primary CTA 하단 sticky"
+      ],
+      "expected_output_type": "critique_text",
+      "expectations": [
+        "출력이 4블록 구조([요약][우려][제안][질문])를 따른다",
+        "총 40줄 미만이다",
+        "우려 사항이 4개 이하다",
+        "각 우려에 🔴/🟡/🟢 severity 라벨이 달려 있다",
+        "각 우려에 인사이트 인용·출처가 포함된다 (예: 'design-insight #11', 'ux-writing.md Empty')",
+        "톤이 hedged이다 (단정·심판조 X, '~로 보이는데' / '~어떨까요' 사용)",
+        "적어도 1개 질문이 포함된다 (yes/no로 답 가능한 형식)",
+        "헤딩 카피 문제(부정·단정형)가 우려 사항에 포함된다",
+        "CTA 위치 문제(본문 내, 추천 아래)가 우려 사항에 포함된다",
+        "ProductCard 정보 밀도 문제(강조 4개)가 우려 사항에 포함된다"
+      ]
+    },
+    {
+      "id": "critique-quality-payment-error",
+      "name": "결제 실패 크리틱 출력 품질",
+      "prompt": "다음 결제 실패 화면에 대해 크리틱을 줘. (헤딩 '결제할 수 없습니다' / 본문 '결제 도중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' / Primary CTA '다시 결제하기' / 보조 '취소')",
+      "knowledge_inputs": [
+        "feedback-format.md 전체",
+        "design-insight.md #11 (카피 사실+행동, 부정 지양)",
+        "ux-writing.md 메시지 유형 (Error)",
+        "ux-design.md Primary CTA 하단 sticky"
+      ],
+      "expected_output_type": "critique_text",
+      "expectations": [
+        "출력이 4블록 구조를 따른다",
+        "총 40줄 미만이다",
+        "헤딩 '결제할 수 없습니다'에 🔴 라벨이 붙는다 (사용자 피해·카피 단정·부정형)",
+        "본문 '오류가 발생했습니다'에 대한 우려가 포함된다 (사유·행동 제안 부재)",
+        "보조 버튼 '취소'가 dead-end 라벨이라는 우려가 포함된다",
+        "각 우려에 인사이트 인용·출처가 포함된다",
+        "톤이 hedged이다",
+        "Luna·Yohan·Ray 원문 인용 중 적어도 1개가 인용된다 (예: '구구절절 다 필요없고, 객관적 현 상태 + 행동 제안만')",
+        "구체적 카피 제안이 포함된다 (예: '결제가 진행되지 않았어요' → '카드 정보를 다시 확인해 주세요')"
+      ]
+    },
+    {
+      "id": "experiment-design-readiness",
+      "name": "ABT 실험 설계 준비도",
+      "prompt": "어떤 화면의 디자인 변경을 ABT로 검증하려 한다. 실험을 시작해도 되나?",
+      "knowledge_inputs": [
+        "design-insight.md #6 변수 통제, #7 문제-솔루션, §2 E2 인지 lift는 다단계, §2 E3 카니발리제이션, §2 E6 segment-level KPI",
+        "principles.md #10 증거로 말한다, 크리틱 메타 기준"
+      ],
+      "expected_output_type": "checklist",
+      "expectations": [
+        "문제 → 솔루션 적합성을 1줄로 명시했다 ('어디서 오! 모먼트' / '어디서 깨지는가')",
+        "변수가 하나만 남았는지 확인했다 (그렇지 않으면 통제 또는 별도 실험 분리)",
+        "Success metric이 mid-funnel뿐 아니라 output(Buyer/GMV)·segment-level까지 포함된다",
+        "카니발리제이션 가능한 인접 surface·인벤토리가 식별돼 있고 가드레일에 포함된다",
+        "단발로 output 달성이 불가능하면 multi-step iteration plan이 함께 제시된다",
+        "기존 클레임 안내·문구·표기와 통일됐는지 확인했다 (해당될 때)"
+      ]
+    }
+  ]
+}

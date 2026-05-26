@@ -1,0 +1,14 @@
+id: ods.component.number-field
+title: NumberField
+category: components
+status: published
+aliases:
+  - 숫자 입력
+  - 넘버 필드
+  - 수량 입력
+  - 수량 조절
+  - 카운트 컨트롤
+  - count control
+  - stepper
+  - 스테퍼
+description: 숫자 값을 입력, 증가, 감소시킬 때 사용하는 입력 컴포넌트입니다.

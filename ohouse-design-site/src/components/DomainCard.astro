@@ -1,0 +1,60 @@
+---
+// 홈 카드 = 도메인별 대표 SCREEN 카드 (디자인 소스: preview-home.html 의 .dcard).
+// pageId = `${slug}-default`, type 은 index 로 deterministic 하게 html/figma 교차.
+// 카드 클릭 → /d/${slug}, 도메인 칩 클릭 → /d/${slug} (stopPropagation).
+// 액션: Copy Prompt(클립보드+토스트) / Figma Move(토스트) — Layout 의 JS 가 처리.
+import { buildPrompt } from '../lib/repo.js';
+
+const base = import.meta.env.BASE_URL;
+const { domain, index = 0 } = Astro.props;
+const type = index % 2 === 0 ? 'html' : 'figma';
+const typeLabel = type === 'figma' ? 'Figma' : 'HTML';
+const pageId = `${domain.slug}-default`;
+const prompt = buildPrompt({ kind: 'screen', domain: domain.slug, screen: pageId, markers: [] });
+---
+
+<div class="dcard" role="link" tabindex="0" data-href={`${base}d/${domain.slug}`} data-type={type}>
+  <div class="dcard__canvas">
+    <span class={`dcard__pill is-${type}`}>{typeLabel}</span>
+    <div class="dcard__phone">
+      <div class="dcard__placeholder">
+        <div class="dcard__placeholder-mark" aria-hidden="true">{domain.label.slice(0, 1)}</div>
+      </div>
+    </div>
+    <div class="dcard__actions">
+      {type === 'figma' && (
+        <button type="button" class="dcard__action dcard__action--type" data-action="figma-move" data-page={pageId}>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M7 7h10v4H7zM7 11h5v4H7zM7 15h5v4H7zM12 11h5v4h-5zM12 7h5v4h-5z"/>
+          </svg>
+          Figma Move
+        </button>
+      )}
+      <button
+        type="button"
+        class={`dcard__action dcard__action--copy${type === 'html' ? ' is-solo' : ''}`}
+        data-action="copy-prompt"
+        data-copy-prompt={prompt}
+      >
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="9" y="9" width="13" height="13" rx="2"/>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+        Copy Prompt
+      </button>
+    </div>
+  </div>
+
+  <div class="dcard__meta">
+    <div class="dcard__head">
+      <div class="dcard__title">
+        <span class="dcard__label">{domain.label}</span>
+        <span class="dcard__pageid">{pageId}</span>
+      </div>
+      <a class="dcard__dchip" href={`${base}d/${domain.slug}`} data-stop title={`${domain.label} 도메인으로`}>
+        {domain.label}
+        <span class="dcard__dchip-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+</div>

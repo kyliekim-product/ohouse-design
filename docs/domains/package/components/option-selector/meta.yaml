@@ -1,0 +1,11 @@
+id: domain.package.option-selector
+title: Option Selector
+type: pattern
+status: draft
+domain: package
+owner: Deeer
+aliases:
+  - 옵션 셀렉터
+  - 옵션 편집 바텀시트
+description: 패키지 메인 상품 카드의 옵션 영역 클릭 시 열리는 글린다 전용 옵션 편집 바텀시트입니다.
+spec: ./spec.md

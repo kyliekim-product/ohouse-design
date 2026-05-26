@@ -1,0 +1,8 @@
+id: ods.component.dialog
+title: Dialog
+category: components
+status: published
+aliases:
+  - 다이얼로그
+  - 모달
+description: 사용자의 현재 흐름 위에 별도 맥락의 콘텐츠와 액션을 표시하는 overlay 컴포넌트입니다.

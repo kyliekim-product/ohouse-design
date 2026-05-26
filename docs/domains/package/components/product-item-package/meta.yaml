@@ -1,0 +1,10 @@
+id: domain.package.product-item-package
+title: Product Item Package
+type: component
+status: verified
+domain: package
+owner: Deeer
+aliases:
+  - 패키지 상품 카드
+description: 글린다 패키지할인 메인 화면에서 사용하는 상품 카드 컴포넌트입니다.
+spec: ./spec.md

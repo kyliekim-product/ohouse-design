@@ -1,0 +1,12 @@
+id: ods.component.product-card-sold-out-banner
+title: Product Card Sold Out Banner
+category: components
+status: published
+aliases:
+  - 상품 카드 품절 배너
+  - 품절 배너
+description: Product Card에서 품절 상태를 이미지 영역 위에 표시하는 하위 컴포넌트입니다.
+relations:
+  parent_area: component:product-card
+  related_pattern_areas:
+    - pattern:product-card

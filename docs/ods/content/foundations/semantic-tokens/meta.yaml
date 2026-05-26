@@ -1,0 +1,10 @@
+id: ods.foundation.semantic-tokens
+title: Semantic Tokens
+category: foundations
+status: published
+aliases:
+  - 토큰
+  - 시맨틱 토큰
+  - 컬러 토큰
+  - semantic token
+description: ODS에서 의미 기반 컬러 토큰을 선택하는 기준과 public token spec입니다.

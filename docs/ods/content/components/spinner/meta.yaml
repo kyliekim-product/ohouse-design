@@ -1,0 +1,8 @@
+id: ods.component.spinner
+title: Spinner
+category: components
+status: published
+aliases:
+  - 스피너
+  - 로딩
+description: 작업이 진행 중이거나 콘텐츠가 로딩 중임을 나타내는 feedback 컴포넌트입니다.

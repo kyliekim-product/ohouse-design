@@ -1,0 +1,8 @@
+id: ods.component.alert-dialog
+title: Alert Dialog
+category: components
+status: published
+aliases:
+  - 알럿 다이얼로그
+  - 확인 다이얼로그
+description: 중요한 확인, 경고, 선택을 사용자에게 요청하는 dialog 컴포넌트입니다.

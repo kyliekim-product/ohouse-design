@@ -1,0 +1,36 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getKnowledgeList, getKnowledge, relTime } from '../../lib/repo.js';
+
+export async function getStaticPaths() {
+  return getKnowledgeList().map((k) => ({ params: { slug: k.slug } }));
+}
+
+const base = import.meta.env.BASE_URL;
+const { slug } = Astro.params;
+const item = getKnowledge(slug);
+if (!item) return Astro.redirect(`${base}knowledge`);
+---
+
+<Layout title={item.label}>
+  <article class="kpage">
+    <div class="wrap-narrow">
+      <nav class="crumb">
+        <a href={`${base}knowledge`}>Knowledge</a> <span>›</span>
+        <span>{item.label}</span>
+      </nav>
+      <h1 class="kpage__title">{item.label}</h1>
+      {item.updated && <p class="kpage__time">Last updated · {relTime(item.updated)}</p>}
+      <div class="prose" set:html={item.html} />
+    </div>
+  </article>
+</Layout>
+
+<style>
+  .kpage { padding: 56px 0 96px; }
+  .crumb { font-size: 13px; color: var(--c-text-soft); display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  .crumb a { color: var(--c-text-muted); }
+  .crumb a:hover { color: var(--c-text); }
+  .kpage__title { font-size: 36px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .kpage__time { font-size: 13px; color: var(--c-text-soft); margin-bottom: 32px; }
+</style>

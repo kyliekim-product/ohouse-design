@@ -1,0 +1,11 @@
+id: ods.component.card
+title: Card
+category: components
+status: published
+aliases:
+  - 카드
+  - 컨테이너
+description: 관련 콘텐츠와 액션을 하나의 시각적 그룹으로 묶는 surface 컴포넌트입니다.
+relations:
+  related_pattern_areas:
+    - pattern:product-card

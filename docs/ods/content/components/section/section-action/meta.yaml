@@ -1,0 +1,10 @@
+id: ods.component.section-action
+title: Section Action
+category: components
+status: published
+aliases:
+  - 섹션 액션
+  - 더보기 액션
+description: Section header 영역에서 보조 액션을 표시하는 하위 컴포넌트입니다.
+relations:
+  parent_area: component:section-header

@@ -1,0 +1,14 @@
+id: ods.component.section
+title: Section
+category: components
+status: published
+aliases:
+  - 섹션
+  - 콘텐츠 섹션
+description: 화면의 콘텐츠 블록을 header와 body 구조로 구성하는 layout 컴포넌트입니다.
+relations:
+  child_areas:
+    - component:section-header
+    - component:section-title
+    - component:section-action
+    - component:section-arrow-button

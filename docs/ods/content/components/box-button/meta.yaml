@@ -1,0 +1,9 @@
+id: ods.component.box-button
+title: Box Button
+category: components
+status: published
+aliases:
+  - 버튼
+  - 박스 버튼
+  - CTA
+description: 사용자가 명확한 행동을 실행할 때 사용하는 button 컴포넌트입니다.

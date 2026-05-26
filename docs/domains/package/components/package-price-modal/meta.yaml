@@ -1,0 +1,11 @@
+id: domain.package.package-price-modal
+title: Package Price Modal
+type: pattern
+status: draft
+domain: package
+owner: Deeer
+aliases:
+  - 패키지 할인가 보기 모달
+  - 할인가 모달
+description: 패키지 구매 시 적용되는 할인가와 할인 상세 내역을 보여주는 모달입니다.
+spec: ./spec.md

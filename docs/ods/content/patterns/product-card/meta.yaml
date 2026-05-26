@@ -1,0 +1,19 @@
+id: ods.pattern.product-card
+title: Product Card
+category: patterns
+status: published
+aliases:
+  - 상품 카드 패턴
+  - 프로덕트 카드 패턴
+description: ODS Card와 Product Card 하위 컴포넌트를 조합해 상품 카드 UI를 구현하는 패턴입니다.
+relations:
+  child_areas:
+    - component:card
+    - component:product-card-benefit
+    - component:product-card-delivery-info
+    - component:product-card-delivery-option
+    - component:product-card-price
+    - component:product-card-product-title
+    - component:product-card-review
+    - component:product-card-scrap
+    - component:product-card-sold-out-banner

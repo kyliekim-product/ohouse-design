@@ -1,0 +1,289 @@
+{
+  "description": "Representative ODS public-index retrieval checks. expected_areas are the stable contract; expected source_path/heading_path entries are current evidence.",
+  "cases": [
+    {
+      "id": "switch-when-to-use",
+      "question": "Switch는 언제 써?",
+      "topK": 5,
+      "expected_areas": ["component:switch"],
+      "expected": [
+        {
+          "source_path": "content/components/switch/guide.md",
+          "heading_path": ["Switch"]
+        },
+        {
+          "source_path": "content/components/switch/guide.md",
+          "heading_path": ["Switch", "Usage Guidelines", "Switch vs Checkbox"]
+        }
+      ]
+    },
+    {
+      "id": "toggle-alias",
+      "question": "토글 언제 써?",
+      "topK": 5,
+      "expected_areas": ["component:switch"],
+      "expected": [
+        {
+          "source_path": "content/components/switch/guide.md",
+          "heading_path": ["Switch"]
+        }
+      ]
+    },
+    {
+      "id": "dialog-vs-alert-dialog",
+      "question": "Dialog랑 Alert Dialog 차이 뭐야?",
+      "topK": 5,
+      "expected_areas": ["component:alert-dialog"],
+      "expected": [
+        {
+          "source_path": "content/components/alert-dialog/guide.md",
+          "heading_path": ["Alert Dialog", "Dialog와의 차이"]
+        }
+      ]
+    },
+    {
+      "id": "confirm-dialog-alias",
+      "question": "확인 다이얼로그 언제 써?",
+      "topK": 5,
+      "expected_areas": ["component:alert-dialog"],
+      "expected": [
+        {
+          "source_path": "content/components/alert-dialog/guide.md",
+          "heading_path": ["Alert Dialog"]
+        }
+      ]
+    },
+    {
+      "id": "input-field-state-props",
+      "question": "Input Field state props",
+      "topK": 5,
+      "expected_areas": ["component:input-field"],
+      "expected": [
+        {
+          "source_path": "content/components/input-field/spec.md",
+          "heading_path": ["InputField — Spec", "4. Props", "4.3. State Props", "Disabled"]
+        },
+        {
+          "source_path": "content/components/input-field/spec.md",
+          "heading_path": ["InputField — Spec", "4. Props", "4.3. State Props", "Error"]
+        },
+        {
+          "source_path": "content/components/input-field/spec.md",
+          "heading_path": ["InputField — Spec", "4. Props", "4.3. State Props", "Readonly"]
+        }
+      ]
+    },
+    {
+      "id": "password-vs-input-field",
+      "question": "PasswordField랑 InputField 차이",
+      "topK": 5,
+      "expected_areas": ["component:password-field"],
+      "expected": [
+        {
+          "source_path": "content/components/password-field/guide.md",
+          "heading_path": ["PasswordField", "Usage Guidelines", "PasswordField vs InputField"]
+        }
+      ]
+    },
+    {
+      "id": "checkbox-indeterminate",
+      "question": "전체 선택 indeterminate는 언제 써?",
+      "topK": 5,
+      "expected_areas": ["component:checkbox"],
+      "expected": [
+        {
+          "source_path": "content/components/checkbox/guide.md",
+          "heading_path": ["Checkbox", "Usage Guidelines", "Indeterminate 사용 규칙"]
+        }
+      ]
+    },
+    {
+      "id": "section-header-description",
+      "question": "Section Header bottom description",
+      "topK": 5,
+      "expected_areas": ["component:section-header"],
+      "expected": [
+        {
+          "source_path": "content/components/section/section-header/spec.md",
+          "heading_path": ["1. Section Header", "1.3. Props", "1.3.4. Slot Props", "Description"]
+        },
+        {
+          "source_path": "content/components/section/section-header/spec.md",
+          "heading_path": ["1. Section Header", "1.3. Props", "1.3.2. Variant Props", "Stack Order"]
+        }
+      ]
+    },
+    {
+      "id": "semantic-token-foreground-weak",
+      "question": "보조 텍스트에는 어떤 색상 토큰 써?",
+      "topK": 5,
+      "expected_areas": ["foundation:semantic-tokens"],
+      "expected": [
+        {
+          "source_path": "content/foundations/semantic-tokens/guide.md",
+          "heading_path": ["Semantic Tokens", "선택 기준", "표현하려는 대상부터 고릅니다"]
+        }
+      ]
+    },
+    {
+      "id": "slack-spinner-component",
+      "question": "spinner 컴포넌트 등록되어 있어?",
+      "topK": 5,
+      "expected_areas": ["component:spinner"],
+      "source": {
+        "channel_id": "C051U1LS1QF",
+        "ts": "1776329631.700119"
+      },
+      "expected": [
+        {
+          "source_path": "content/components/spinner/guide.md",
+          "heading_path": ["Spinner"]
+        }
+      ]
+    },
+    {
+      "id": "slack-dialog-web-size",
+      "question": "web 모달 너비 좌우 마진 가이드 있어?",
+      "topK": 5,
+      "expected_areas": ["component:dialog"],
+      "source": {
+        "channel_id": "C051U1LS1QF",
+        "ts": "1767665325.192619"
+      },
+      "expected": [
+        {
+          "source_path": "content/components/dialog/guide.md",
+          "heading_path": ["Dialog", "Specs", "Size"]
+        }
+      ]
+    },
+    {
+      "id": "dialog-direct-name-position",
+      "question": "Dialog 위치 정렬 기준은 어디서 확인해?",
+      "topK": 5,
+      "expected_areas": ["component:dialog"],
+      "expected": [
+        {
+          "source_path": "content/components/dialog/guide.md",
+          "heading_path": ["Dialog", "구조"]
+        }
+      ]
+    },
+    {
+      "id": "slack-dialog-sub-text",
+      "question": "Dialog 서브텍스트는 언제 써?",
+      "topK": 5,
+      "expected_areas": ["component:dialog"],
+      "source": {
+        "channel_id": "C051U1LS1QF",
+        "ts": "1777265948.684839"
+      },
+      "expected": [
+        {
+          "source_path": "content/components/dialog/guide.md",
+          "heading_path": ["Dialog", "Usage Guidelines", "Sub Text"]
+        }
+      ]
+    },
+    {
+      "id": "number-field-count-control-alias",
+      "question": "장바구니 수량 조절 버튼 같은 count control을 입력폼에서 쓸 수 있어?",
+      "topK": 5,
+      "expected_areas": ["component:number-field"],
+      "expected": [
+        {
+          "source_path": "content/components/number-field/guide.md",
+          "heading_path": ["NumberField", "Usage Guidelines", "StepButton"]
+        }
+      ]
+    },
+    {
+      "id": "card-extension-slot",
+      "question": "Card 안에 booster badge 같은 요소를 추가해서 확장할 수 있어?",
+      "topK": 5,
+      "expected_areas": ["component:card"],
+      "expected": [
+        {
+          "source_path": "content/components/card/guide.md",
+          "heading_path": ["Card", "Usage Guidelines", "Slot 구성"]
+        }
+      ]
+    },
+    {
+      "id": "chip-selection-usage",
+      "question": "Chip의 싱글 선택과 다중 선택 용처는 어디서 확인해?",
+      "topK": 5,
+      "expected_areas": ["component:chip"],
+      "expected": [
+        {
+          "source_path": "content/components/chip/spec.md",
+          "heading_path": ["0. Overview"]
+        }
+      ]
+    },
+    {
+      "id": "slack-box-button-loading-spinner",
+      "question": "Box Button Loading 중 spinner는 어떻게 쓰여?",
+      "topK": 5,
+      "expected_areas": ["component:box-button"],
+      "expected": [
+        {
+          "source_path": "content/components/box-button/guide.md",
+          "heading_path": ["Box Button", "Usage Guidelines", "Loading 상태"]
+        }
+      ]
+    },
+    {
+      "id": "slack-box-button-vs-chip",
+      "question": "Box Button과 Chip 차이 뭐야?",
+      "topK": 5,
+      "expected_areas": ["component:box-button"],
+      "source": {
+        "channel_id": "C051U1LS1QF",
+        "ts": "1775548567.082489"
+      },
+      "expected": [
+        {
+          "source_path": "content/components/box-button/guide.md",
+          "heading_path": ["Box Button", "Usage Guidelines", "Box Button vs Chip"]
+        }
+      ]
+    },
+    {
+      "id": "slack-product-card-review-color",
+      "question": "상품카드 리뷰 텍스트 컬러는 어디서 확인해?",
+      "topK": 8,
+      "expected_areas": ["component:product-card-review"],
+      "source": {
+        "channel_id": "C051U1LS1QF",
+        "ts": "1776747861.664929"
+      },
+      "expected": [
+        {
+          "source_path": "content/components/product-card/product-card-review/spec.md",
+          "heading_path": ["Product Card Review — Spec", "3. Constant", "General"]
+        }
+      ]
+    },
+    {
+      "id": "slack-background-weak-vs-dim",
+      "question": "background 컬러 weak 대신 dim 사용해도 돼?",
+      "topK": 5,
+      "expected_areas": ["foundation:semantic-tokens"],
+      "source": {
+        "channel_id": "C051U1LS1QF",
+        "ts": "1763452756.736019"
+      },
+      "expected": [
+        {
+          "source_path": "content/foundations/semantic-tokens/guide.md",
+          "heading_path": ["Semantic Tokens", "선택 기준", "표현하려는 대상부터 고릅니다"]
+        },
+        {
+          "source_path": "content/foundations/semantic-tokens/guide.md",
+          "heading_path": ["Semantic Tokens", "선택 기준", "강도를 고릅니다"]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+id: domain.content-detail.contents-plain-tab
+title: Contents Plain Tab
+type: component
+status: draft
+domain: content-detail
+owner: Deeer
+aliases:
+  - 콘텐츠 Plain 탭
+description: 콘텐츠 트랙 화면 상단 추천/커뮤니티/쇼츠 등에 쓰는 Plain 스타일 탭 컴포넌트입니다.
+spec: ./spec.md

@@ -1,0 +1,12 @@
+id: domain.package.package-progress-bar
+title: Package Progress Bar
+type: component
+status: draft
+domain: package
+owner: Deeer
+aliases:
+  - 패키지 진행바
+  - progress-bar
+  - 하단 진행바
+description: 글린다 패키지할인 메인 화면 하단에서 구매 조건 충족 진행 상황을 보여주는 진행바입니다.
+spec: ./spec.md

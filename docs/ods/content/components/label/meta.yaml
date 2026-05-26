@@ -1,0 +1,8 @@
+id: ods.component.label
+title: Label
+category: components
+status: published
+aliases:
+  - 라벨
+  - 입력 라벨
+description: 입력 또는 선택 컨트롤의 의미와 목적을 설명하는 텍스트 컴포넌트입니다.

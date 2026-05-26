@@ -1,0 +1,202 @@
+---
+import Layout from '../../../../layouts/Layout.astro';
+import {
+  getAllDomains,
+  getDomain,
+  getDomainScreens,
+  getScreen,
+  buildPrompt,
+  relTime,
+} from '../../../../lib/repo.js';
+
+export async function getStaticPaths() {
+  const all = getAllDomains();
+  const paths = [];
+  for (const d of all) {
+    const screens = getDomainScreens(d.slug);
+    for (const s of screens) {
+      paths.push({ params: { domain: d.slug, screen: s.slug } });
+    }
+  }
+  return paths;
+}
+
+const base = import.meta.env.BASE_URL;
+const { domain: dSlug, screen: sSlug } = Astro.params;
+const domain = getDomain(dSlug);
+const screen = getScreen(dSlug, sSlug);
+if (!domain || !screen) return Astro.redirect(`${base}d/${dSlug}`);
+
+const prompt = buildPrompt({ kind: 'screen', domain: dSlug, screen: sSlug, markers: screen.markers });
+---
+
+<Layout title={`${screen.label} · ${domain.label}`}>
+  <section class="shead">
+    <div class="wrap">
+      <nav class="crumb">
+        <a href={base}>Domains</a> <span>›</span>
+        <a href={`${base}d/${dSlug}`}>{domain.label}</a> <span>›</span>
+        <span>{screen.label}</span>
+      </nav>
+
+      <div class="shead__main">
+        <div class="shead__thumb">
+          {screen.thumb ? (
+            <button
+              type="button"
+              class="shead__thumb-trigger"
+              data-lightbox-src={screen.thumb}
+              data-lightbox-caption={`${domain.label} · ${screen.label}`}
+              aria-label={`${screen.label} 이미지 확대 보기`}
+            >
+              <img src={screen.thumb} alt={screen.label} />
+              <span class="shead__zoom" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+                </svg>
+                확대
+              </span>
+            </button>
+          ) : (
+            <div class="shead__placeholder">
+              <span>{screen.label}</span>
+              <span class="shead__placeholder-hint">prototype.html / thumbnail 미준비</span>
+            </div>
+          )}
+        </div>
+
+        <div class="shead__info">
+          <h1>{screen.label}</h1>
+          {screen.updated && (
+            <p class="shead__time">Last updated · {relTime(screen.updated)}</p>
+          )}
+
+          <div class="shead__actions">
+            <button type="button" class="btn-primary" data-copy-prompt={prompt}>
+              ⟳ Copy prompt
+            </button>
+            {screen.prototype && (
+              <a class="btn-secondary" href={`https://github.com/bucketplace/product-design/blob/main/${screen.prototype}`} target="_blank" rel="noopener">
+                Prototype source ↗
+              </a>
+            )}
+          </div>
+
+          {screen.markers.length > 0 && (
+            <div class="shead__markers">
+              <div class="shead__markers-label">사용 컴포넌트 · 마커</div>
+              <div class="shead__markers-list">
+                {screen.markers.map((m) => (
+                  <span class={`badge${m.kind === 'missing-ods' ? ' badge--warn' : m.kind === 'ods-component' ? ' badge--accent' : ''}`}>
+                    @{m.kind}:{m.value}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="prompt-preview">
+    <div class="wrap-narrow">
+      <h3>Copy prompt 미리보기</h3>
+      <pre class="prompt-box">{prompt}</pre>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .shead { padding: 48px 0 32px; }
+  .crumb { font-size: 13px; color: var(--c-text-soft); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .crumb a { color: var(--c-text-muted); }
+  .crumb a:hover { color: var(--c-text); }
+
+  .shead__main {
+    margin-top: 28px;
+    display: grid; grid-template-columns: 360px 1fr; gap: 48px;
+    align-items: start;
+  }
+  @media (max-width: 720px) {
+    .shead__main { grid-template-columns: 1fr; gap: 24px; }
+  }
+
+  .shead__thumb {
+    aspect-ratio: 9 / 16;
+    background: var(--c-bg-elev);
+    border-radius: var(--r-card);
+    overflow: hidden;
+  }
+  .shead__thumb-trigger {
+    position: relative;
+    display: block;
+    width: 100%; height: 100%;
+    padding: 0; border: 0;
+    background: transparent;
+    border-radius: var(--r-card);
+    overflow: hidden;
+    cursor: zoom-in;
+  }
+  .shead__thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .25s ease; }
+  .shead__thumb-trigger:hover img { transform: scale(1.03); }
+  .shead__zoom {
+    position: absolute; bottom: 12px; right: 12px;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 6px 10px;
+    background: rgba(10,10,10,.78);
+    color: #fff;
+    border-radius: 999px;
+    font-size: 11px; font-weight: 600;
+    opacity: 0;
+    transition: opacity .15s;
+  }
+  .shead__thumb-trigger:hover .shead__zoom,
+  .shead__thumb-trigger:focus-visible .shead__zoom { opacity: 1; }
+  .shead__placeholder {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px; padding: 24px; text-align: center;
+    color: var(--c-text-soft);
+    background: var(--c-bg-elev);
+  }
+  .shead__placeholder span:first-child { font-size: 18px; font-weight: 600; color: var(--c-text-muted); }
+  .shead__placeholder-hint { font-size: 11px; }
+
+  .shead__info h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; }
+  .shead__time { margin-top: 6px; font-size: 13px; color: var(--c-text-soft); }
+
+  .shead__actions { margin-top: 24px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--c-text); color: #fff;
+    padding: 10px 18px; border-radius: 999px;
+    font-size: 14px; font-weight: 600;
+    transition: opacity .15s ease, transform .1s ease;
+  }
+  .btn-primary:hover { opacity: 0.85; color: #fff; }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-secondary {
+    padding: 10px 18px; border-radius: 999px;
+    border: 1px solid var(--c-border);
+    font-size: 14px; font-weight: 500; color: var(--c-text);
+    transition: background .15s;
+  }
+  .btn-secondary:hover { background: var(--c-bg-elev); }
+
+  .shead__markers { margin-top: 32px; }
+  .shead__markers-label { font-size: 12px; font-weight: 500; color: var(--c-text-soft); margin-bottom: 10px; }
+  .shead__markers-list { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .prompt-preview { padding: 32px 0 96px; }
+  .prompt-preview h3 { font-size: 12px; font-weight: 500; color: var(--c-text-soft); margin-bottom: 12px; }
+  .prompt-box {
+    background: var(--c-bg-elev);
+    border-radius: var(--r-card);
+    padding: 24px;
+    font-size: 13px; line-height: 1.7;
+    white-space: pre-wrap; word-break: break-word;
+    color: var(--c-text);
+    font-family: var(--f-mono);
+  }
+</style>

@@ -1,0 +1,45 @@
+---
+import Layout from '../layouts/Layout.astro';
+import EmptyState from '../components/EmptyState.astro';
+---
+
+<Layout title="ODS">
+  <header class="ohead">
+    <div class="wrap">
+      <p class="ohead__eyebrow">ODS · Ohouse Design System</p>
+      <h1>오늘의집 디자인 시스템</h1>
+      <p class="ohead__lead">Foundations · Components · Patterns. 원본은 <code>ods-docs/content/</code>, Hermes MCP 로 LLM 에 노출.</p>
+    </div>
+  </header>
+
+  <section class="obody">
+    <div class="wrap">
+      <div class="osec">
+        <h2>Components</h2>
+        <p class="osec__hint">Phase 2 에서 컴포넌트별 상세 페이지·Figma 이미지 연동 예정.</p>
+        <EmptyState title="컴포넌트 카탈로그는 곧 추가됩니다" hint="ods-docs/content/components/ 의 meta.yaml 을 자동 스캔해 카드로 표시할 계획." />
+      </div>
+      <div class="osec">
+        <h2>Foundations</h2>
+        <p class="osec__hint">Semantic tokens · Palette · Typography · Spacing.</p>
+      </div>
+      <div class="osec">
+        <h2>Patterns</h2>
+        <p class="osec__hint">Product card · Toast · Sheet 등 ODS 표준 패턴.</p>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .ohead { padding: 64px 0 32px; background: #fff; border-bottom: 1px solid var(--c-border); }
+  .ohead__eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 0.08em; color: var(--c-text-soft); text-transform: uppercase; margin-bottom: 12px; }
+  .ohead h1 { font-size: 36px; font-weight: 800; letter-spacing: -0.02em; }
+  .ohead__lead { margin-top: 12px; color: var(--c-text-muted); font-size: 16px; max-width: 580px; }
+  .ohead code { background: var(--c-bg-elev); padding: 2px 6px; border-radius: var(--r-sm); }
+
+  .obody { padding: 40px 0 96px; }
+  .osec { margin-bottom: 48px; }
+  .osec h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
+  .osec__hint { font-size: 14px; color: var(--c-text-muted); margin-bottom: 16px; }
+</style>

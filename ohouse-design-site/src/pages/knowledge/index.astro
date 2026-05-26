@@ -1,0 +1,65 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import { getKnowledgeList, relTime } from '../../lib/repo.js';
+
+const base = import.meta.env.BASE_URL;
+const items = getKnowledgeList();
+---
+
+<Layout title="Knowledge">
+  <header class="khead">
+    <div class="wrap">
+      <p class="khead__eyebrow">Knowledge</p>
+      <h1>오늘의집 디자인 지식 축</h1>
+      <p class="khead__lead">전사 원칙·비주얼 시스템·UX 패턴·실험 인사이트를 한 곳에서.</p>
+    </div>
+  </header>
+
+  <section class="kbody">
+    <div class="wrap">
+      {items.length === 0 ? (
+        <EmptyState title="knowledge/ 폴더가 비어있습니다" />
+      ) : (
+        <div class="kgrid">
+          {items.map((k) => (
+            <a class="kcard" href={`${base}knowledge/${k.slug}`}>
+              <div class="kcard__title">{k.label}</div>
+              {k.summary && <p class="kcard__summary">{k.summary}</p>}
+              <div class="kcard__foot">
+                {k.updated && <span class="kcard__time">{relTime(k.updated)}</span>}
+                <span class="kcard__more">읽기 →</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .khead { padding: 64px 0 32px; background: #fff; border-bottom: 1px solid var(--c-border); }
+  .khead__eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 0.08em; color: var(--c-text-soft); text-transform: uppercase; margin-bottom: 12px; }
+  .khead h1 { font-size: 36px; font-weight: 800; letter-spacing: -0.02em; }
+  .khead__lead { margin-top: 12px; color: var(--c-text-muted); font-size: 16px; max-width: 580px; }
+
+  .kbody { padding: 40px 0 96px; }
+  .kgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .kcard {
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 20px;
+    background: var(--c-bg-elev);
+    border-radius: var(--r-card);
+    transition: background .15s ease;
+  }
+  .kcard:hover { background: var(--c-bg-elev-2); color: inherit; }
+  .kcard__title { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+  .kcard__summary { font-size: 13px; color: var(--c-text-muted); line-height: 1.6; flex: 1; }
+  .kcard__foot { margin-top: 8px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--c-text-soft); }
+  .kcard__more { color: var(--c-text); font-weight: 600; }
+</style>

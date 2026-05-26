@@ -1,0 +1,99 @@
+---
+import Layout from '../layouts/Layout.astro';
+import MenuColumn from '../components/MenuColumn.astro';
+import FilterBar from '../components/FilterBar.astro';
+import DomainCard from '../components/DomainCard.astro';
+import { getAllDomains, CATEGORIES } from '../lib/repo.js';
+
+const base = import.meta.env.BASE_URL;
+const domains = getAllDomains();
+
+// 5열 메뉴 — repo.js CATEGORIES(디자인 사이트 분류) 단일 소스에서 파생.
+const labelOf = new Map(domains.map((d) => [d.slug, d.label]));
+const menuColumns = Object.entries(CATEGORIES).map(([title, slugs]) => ({
+  title,
+  items: slugs.map((slug) => ({ label: labelOf.get(slug) || slug, href: `${base}d/${slug}` })),
+}));
+---
+
+<Layout title="Ohouse Design">
+  <div class="wrap home">
+    <!-- 5열 메가 메뉴 — repo.js CATEGORIES 에서 파생 -->
+    <section class="menu5">
+      {menuColumns.map((col) => (
+        <MenuColumn title={col.title} items={col.items} />
+      ))}
+    </section>
+
+    <!-- 필터바 (All / HTML / Figma 토글 + 정렬 + Filter) -->
+    <FilterBar sort="latest" />
+
+    <!-- MCP 연결 가이드 배너 -->
+    <a class="banner banner--guide" href="https://www.notion.so/ohouse-design-mcp" target="_blank" rel="noopener">
+      <span class="banner__pill">MCP</span>
+      <span class="banner__text">
+        <strong>Ohouse Design MCP</strong> 를 Claude / Cursor 에 연결해서 모든 도메인 · screen · policy 를 한 번에 검색하세요
+      </span>
+      <span class="banner__link">설치 가이드 보기 →</span>
+    </a>
+
+    <!-- 카드 그리드 (data-filter 로 type 필터링: all/html/figma) -->
+    <section class="grid" id="grid" data-filter="all">
+      {domains.map((d, i) => (
+        <DomainCard domain={d} index={i} />
+      ))}
+    </section>
+  </div>
+</Layout>
+
+<script>
+  function initHome() {
+    const grid = document.getElementById('grid');
+    if (!grid || (grid as HTMLElement).dataset.bound) return;
+    (grid as HTMLElement).dataset.bound = '1';
+
+    // 카드 클릭/엔터 → 도메인 페이지로 이동 (내부 링크/액션 버튼은 제외)
+    grid.querySelectorAll<HTMLElement>('.dcard').forEach((el) => {
+      const href = el.getAttribute('data-href');
+      if (!href) return;
+      el.addEventListener('click', (e) => {
+        const t = e.target as HTMLElement;
+        if (t.closest('a') || t.closest('.dcard__action')) return;
+        window.location.href = href;
+      });
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          window.location.href = href;
+        }
+      });
+    });
+
+    // HTML / Figma 토글 → grid[data-filter] 변경 → CSS 로 필터링
+    const typeToggle = document.getElementById('typeToggle');
+    typeToggle?.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest('.fbar__pf') as HTMLElement | null;
+      if (!btn) return;
+      typeToggle.querySelectorAll('.fbar__pf').forEach((b) => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      grid.setAttribute('data-filter', btn.dataset.type || 'all');
+    });
+
+    // Figma Move (Copy Prompt 는 Layout 의 [data-copy-prompt] 핸들러가 처리)
+    grid.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest('.dcard__action--type') as HTMLElement | null;
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const page = btn.dataset.page || '';
+      const toast = document.getElementById('toast');
+      if (toast) {
+        toast.textContent = `Figma 로 이동 · ${page} (실 사이트에서 Figma URL 열림)`;
+        toast.classList.add('show');
+        window.setTimeout(() => toast.classList.remove('show'), 1800);
+      }
+    });
+  }
+  initHome();
+  document.addEventListener('astro:page-load', initHome);
+</script>

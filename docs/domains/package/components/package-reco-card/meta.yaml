@@ -1,0 +1,12 @@
+id: domain.package.package-reco-card
+title: Package Reco Card
+type: component
+status: draft
+domain: package
+owner: Deeer
+aliases:
+  - 패키지 완성 가이드 카드
+  - reco-card
+  - 지면3
+description: 글린다 패키지할인 메인 화면에서 구매 조건 완성을 유도하는 카테고리 추천 카드입니다.
+spec: ./spec.md

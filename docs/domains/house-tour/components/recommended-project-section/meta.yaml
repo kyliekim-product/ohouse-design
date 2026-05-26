@@ -1,0 +1,10 @@
+id: domain.house-tour.recommended-project-section
+title: Recommended Project Section
+type: pattern
+status: draft
+domain: house-tour
+owner: Deeer
+aliases:
+  - 추천 집들이 섹션
+description: 집구경 탭 추천 피드 안에서 집들이 콘텐츠를 묶어 노출하는 섹션 패턴입니다.
+spec: ./spec.md

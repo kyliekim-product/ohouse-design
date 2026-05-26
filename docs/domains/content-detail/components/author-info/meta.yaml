@@ -1,0 +1,10 @@
+id: domain.content-detail.author-info
+title: Author Info
+type: component
+status: verified
+domain: content-detail
+owner: Deeer
+aliases:
+  - 작성자 정보
+description: 콘텐츠 상세와 콘텐츠 카드 맥락에서 작성자 정보를 노출하는 4종 variant 규칙입니다.
+spec: ./spec.md

@@ -1,0 +1,10 @@
+id: domain.house-tour.interest-feed
+title: Interest Feed
+type: pattern
+status: draft
+domain: house-tour
+owner: Deeer
+aliases:
+  - 관심사 피드
+description: 집구경 추천 피드 하단의 무한 스크롤 모듈 패턴입니다.
+spec: ./spec.md

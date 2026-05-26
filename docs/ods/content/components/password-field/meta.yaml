@@ -1,0 +1,8 @@
+id: ods.component.password-field
+title: PasswordField
+category: components
+status: published
+aliases:
+  - 비밀번호 입력
+  - 패스워드 필드
+description: 비밀번호나 민감한 문자열을 입력할 때 사용하는 입력 컴포넌트입니다.

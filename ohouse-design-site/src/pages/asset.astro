@@ -1,0 +1,164 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const base = import.meta.env.BASE_URL;
+const groups = [
+  {
+    label: 'Brand',
+    items: [
+      {
+        title: 'Ohouse 3D 로고',
+        desc: '사이트 헤더에서 사용 중. PNG 32x32.',
+        href: `${base}ohouse-3d.png`,
+        meta: 'PNG',
+        stat: '32 × 32',
+      },
+      {
+        title: 'Wordmark — Ohouse Design',
+        desc: '브랜드+서비스 명칭 조합. 헤더에서 로고와 함께 사용.',
+        meta: 'TEXT',
+        stat: 'Pretendard 700',
+      },
+    ],
+  },
+  {
+    label: 'Typography',
+    items: [
+      {
+        title: 'Pretendard Variable',
+        desc: '본문·UI 기본. v1.3.9 CDN.',
+        href: 'https://github.com/orioncactus/pretendard',
+        meta: 'WEBFONT',
+        stat: 'variable',
+      },
+      {
+        title: 'SF Mono / ui-monospace',
+        desc: '코드 · 슬러그 · prompt 미리보기.',
+        meta: 'SYSTEM',
+        stat: 'fallback',
+      },
+    ],
+  },
+  {
+    label: 'Figma',
+    items: [
+      {
+        title: 'ODS Foundation Library',
+        desc: '컬러 · 타이포 · 스페이싱 토큰 원본.',
+        meta: 'FIGMA',
+        stat: '협의 중',
+      },
+      {
+        title: 'ODS Components',
+        desc: 'Button · Card · Tab · Sheet 등 ODS 표준 컴포넌트.',
+        meta: 'FIGMA',
+        stat: '협의 중',
+      },
+      {
+        title: '도메인별 화면 파일',
+        desc: 'domains/<slug>/screens/ 의 원본 Figma 링크. screens/INDEX.md 에서 관리.',
+        meta: 'FIGMA',
+        stat: '도메인별',
+      },
+    ],
+  },
+  {
+    label: 'Icon · Illustration',
+    items: [
+      {
+        title: 'ODS Icon Set',
+        desc: 'sprite 형태. ohouse-design-md/ICONS.md 명세 준수.',
+        meta: 'SVG',
+        stat: '명세 분리',
+      },
+    ],
+  },
+];
+---
+
+<Layout title="Asset">
+  <header class="ahead">
+    <div class="wrap">
+      <p class="ahead__eyebrow">Asset</p>
+      <h1>디자인 자산</h1>
+      <p class="ahead__lead">
+        브랜드 · 타이포그래피 · Figma 라이브러리 · 아이콘 · 일러스트.
+        사이트에서 쓰이고 있거나 PD 가 즉시 가져다 쓸 수 있는 자산 모음.
+      </p>
+    </div>
+  </header>
+
+  <section class="abody">
+    <div class="wrap">
+      {groups.map((g) => (
+        <div class="agroup">
+          <h2 class="agroup__title">{g.label}</h2>
+          <div class="agrid">
+            {g.items.map((it) => {
+              const Tag = it.href ? 'a' : 'div';
+              const props = it.href ? { href: it.href, target: it.href.startsWith('http') ? '_blank' : undefined, rel: 'noopener' } : {};
+              return (
+                <Tag class="acard" {...props}>
+                  <div class="acard__head">
+                    <span class="acard__title">{it.title}</span>
+                    <span class="badge">{it.meta}</span>
+                  </div>
+                  <p class="acard__desc">{it.desc}</p>
+                  <div class="acard__foot">
+                    <span class="acard__stat">{it.stat}</span>
+                    {it.href && <span class="acard__cta">열기 →</span>}
+                  </div>
+                </Tag>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .ahead { padding: 56px 0 28px; }
+  .ahead__eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 0.08em; color: var(--c-text-soft); text-transform: uppercase; margin-bottom: 12px; }
+  .ahead h1 { font-size: 36px; font-weight: 800; letter-spacing: -0.02em; }
+  .ahead__lead { margin-top: 12px; color: var(--c-text-muted); font-size: 16px; max-width: 620px; }
+
+  .abody { padding: 24px 0 96px; }
+  .agroup { margin-top: 40px; }
+  .agroup:first-child { margin-top: 0; }
+  .agroup__title {
+    font-size: 14px; font-weight: 600;
+    color: var(--c-text-muted);
+    letter-spacing: 0.02em;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+  .agrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .acard {
+    display: flex; flex-direction: column;
+    gap: 8px;
+    background: var(--c-bg-elev);
+    border-radius: var(--r-card);
+    padding: 20px;
+    transition: background .15s ease;
+  }
+  a.acard:hover { background: var(--c-bg-elev-2); color: inherit; }
+  .acard__head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+  }
+  .acard__title { font-size: 15px; font-weight: 600; color: var(--c-text); }
+  .acard__desc { font-size: 13px; color: var(--c-text-muted); line-height: 1.6; flex: 1; }
+  .acard__foot {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px;
+    color: var(--c-text-soft);
+    margin-top: 6px;
+  }
+  .acard__cta { font-weight: 600; color: var(--c-text); }
+</style>

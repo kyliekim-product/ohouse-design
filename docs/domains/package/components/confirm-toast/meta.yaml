@@ -1,0 +1,11 @@
+id: domain.package.confirm-toast
+title: Confirm Toast
+type: component
+status: draft
+domain: package
+owner: Deeer
+aliases:
+  - 확인 모달
+  - 담기 확인 토스트
+description: 상품을 패키지에 담은 직후 노출되는 확인 하단 시트입니다.
+spec: ./spec.md

@@ -1,0 +1,10 @@
+id: domain.content-detail.portrait-card-overlay
+title: Portrait Card Overlay
+type: component
+status: verified
+domain: content-detail
+owner: Deeer
+aliases:
+  - Portrait Card Media Overlay
+description: Contents Portrait Card의 Media 슬롯 overlay 영역에 대한 작성자 정보와 액세서리 규칙입니다.
+spec: ./spec.md

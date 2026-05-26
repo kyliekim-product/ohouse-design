@@ -1,0 +1,1241 @@
+tokens:
+  - name: transparent
+    implementation: core.color.transparent
+    type: color
+    family: transparent
+    scale: null
+    value:
+      hex: "#000000"
+      alpha: 0
+  - name: white
+    implementation: core.color.white
+    type: color
+    family: white
+    scale: null
+    value:
+      hex: "#ffffff"
+      alpha: 1
+  - name: black
+    implementation: core.color.black
+    type: color
+    family: black
+    scale: null
+    value:
+      hex: "#000000"
+      alpha: 1
+  - name: genuineBlue.50
+    implementation: core.color.genuineBlue.50
+    type: color
+    family: genuineBlue
+    scale: 50
+    value:
+      hex: "#f0f8fc"
+      alpha: 1
+  - name: genuineBlue.100
+    implementation: core.color.genuineBlue.100
+    type: color
+    family: genuineBlue
+    scale: 100
+    value:
+      hex: "#ddf3ff"
+      alpha: 1
+  - name: genuineBlue.150
+    implementation: core.color.genuineBlue.150
+    type: color
+    family: genuineBlue
+    scale: 150
+    value:
+      hex: "#c8e6fa"
+      alpha: 1
+  - name: genuineBlue.200
+    implementation: core.color.genuineBlue.200
+    type: color
+    family: genuineBlue
+    scale: 200
+    value:
+      hex: "#a6d6f9"
+      alpha: 1
+  - name: genuineBlue.250
+    implementation: core.color.genuineBlue.250
+    type: color
+    family: genuineBlue
+    scale: 250
+    value:
+      hex: "#87c9fb"
+      alpha: 1
+  - name: genuineBlue.300
+    implementation: core.color.genuineBlue.300
+    type: color
+    family: genuineBlue
+    scale: 300
+    value:
+      hex: "#5cb5ff"
+      alpha: 1
+  - name: genuineBlue.350
+    implementation: core.color.genuineBlue.350
+    type: color
+    family: genuineBlue
+    scale: 350
+    value:
+      hex: "#00a1ff"
+      alpha: 1
+  - name: genuineBlue.400
+    implementation: core.color.genuineBlue.400
+    type: color
+    family: genuineBlue
+    scale: 400
+    value:
+      hex: "#0497ef"
+      alpha: 1
+  - name: genuineBlue.450
+    implementation: core.color.genuineBlue.450
+    type: color
+    family: genuineBlue
+    scale: 450
+    value:
+      hex: "#048bdd"
+      alpha: 1
+  - name: genuineBlue.500
+    implementation: core.color.genuineBlue.500
+    type: color
+    family: genuineBlue
+    scale: 500
+    value:
+      hex: "#007bc5"
+      alpha: 1
+  - name: genuineBlue.550
+    implementation: core.color.genuineBlue.550
+    type: color
+    family: genuineBlue
+    scale: 550
+    value:
+      hex: "#006db0"
+      alpha: 1
+  - name: genuineBlue.600
+    implementation: core.color.genuineBlue.600
+    type: color
+    family: genuineBlue
+    scale: 600
+    value:
+      hex: "#02609b"
+      alpha: 1
+  - name: genuineBlue.650
+    implementation: core.color.genuineBlue.650
+    type: color
+    family: genuineBlue
+    scale: 650
+    value:
+      hex: "#015387"
+      alpha: 1
+  - name: genuineBlue.700
+    implementation: core.color.genuineBlue.700
+    type: color
+    family: genuineBlue
+    scale: 700
+    value:
+      hex: "#014774"
+      alpha: 1
+  - name: genuineBlue.750
+    implementation: core.color.genuineBlue.750
+    type: color
+    family: genuineBlue
+    scale: 750
+    value:
+      hex: "#003c63"
+      alpha: 1
+  - name: genuineBlue.800
+    implementation: core.color.genuineBlue.800
+    type: color
+    family: genuineBlue
+    scale: 800
+    value:
+      hex: "#013051"
+      alpha: 1
+  - name: genuineBlue.850
+    implementation: core.color.genuineBlue.850
+    type: color
+    family: genuineBlue
+    scale: 850
+    value:
+      hex: "#01243f"
+      alpha: 1
+  - name: genuineBlue.900
+    implementation: core.color.genuineBlue.900
+    type: color
+    family: genuineBlue
+    scale: 900
+    value:
+      hex: "#011528"
+      alpha: 1
+  - name: genuineBlue.950
+    implementation: core.color.genuineBlue.950
+    type: color
+    family: genuineBlue
+    scale: 950
+    value:
+      hex: "#010d19"
+      alpha: 1
+  - name: blue.50
+    implementation: core.color.blue.50
+    type: color
+    family: blue
+    scale: 50
+    value:
+      hex: "#eff5fc"
+      alpha: 1
+  - name: blue.100
+    implementation: core.color.blue.100
+    type: color
+    family: blue
+    scale: 100
+    value:
+      hex: "#e4eefb"
+      alpha: 1
+  - name: blue.150
+    implementation: core.color.blue.150
+    type: color
+    family: blue
+    scale: 150
+    value:
+      hex: "#cfe1fb"
+      alpha: 1
+  - name: blue.200
+    implementation: core.color.blue.200
+    type: color
+    family: blue
+    scale: 200
+    value:
+      hex: "#b4d2fb"
+      alpha: 1
+  - name: blue.250
+    implementation: core.color.blue.250
+    type: color
+    family: blue
+    scale: 250
+    value:
+      hex: "#9bc3fc"
+      alpha: 1
+  - name: blue.300
+    implementation: core.color.blue.300
+    type: color
+    family: blue
+    scale: 300
+    value:
+      hex: "#78b0ff"
+      alpha: 1
+  - name: blue.350
+    implementation: core.color.blue.350
+    type: color
+    family: blue
+    scale: 350
+    value:
+      hex: "#569cff"
+      alpha: 1
+  - name: blue.400
+    implementation: core.color.blue.400
+    type: color
+    family: blue
+    scale: 400
+    value:
+      hex: "#3b8fff"
+      alpha: 1
+  - name: blue.450
+    implementation: core.color.blue.450
+    type: color
+    family: blue
+    scale: 450
+    value:
+      hex: "#0079fa"
+      alpha: 1
+  - name: blue.500
+    implementation: core.color.blue.500
+    type: color
+    family: blue
+    scale: 500
+    value:
+      hex: "#0272eb"
+      alpha: 1
+  - name: blue.550
+    implementation: core.color.blue.550
+    type: color
+    family: blue
+    scale: 550
+    value:
+      hex: "#0063d0"
+      alpha: 1
+  - name: blue.600
+    implementation: core.color.blue.600
+    type: color
+    family: blue
+    scale: 600
+    value:
+      hex: "#0057b8"
+      alpha: 1
+  - name: blue.650
+    implementation: core.color.blue.650
+    type: color
+    family: blue
+    scale: 650
+    value:
+      hex: "#014ba0"
+      alpha: 1
+  - name: blue.700
+    implementation: core.color.blue.700
+    type: color
+    family: blue
+    scale: 700
+    value:
+      hex: "#00408a"
+      alpha: 1
+  - name: blue.750
+    implementation: core.color.blue.750
+    type: color
+    family: blue
+    scale: 750
+    value:
+      hex: "#003676"
+      alpha: 1
+  - name: blue.800
+    implementation: core.color.blue.800
+    type: color
+    family: blue
+    scale: 800
+    value:
+      hex: "#012b61"
+      alpha: 1
+  - name: blue.850
+    implementation: core.color.blue.850
+    type: color
+    family: blue
+    scale: 850
+    value:
+      hex: "#00204c"
+      alpha: 1
+  - name: blue.900
+    implementation: core.color.blue.900
+    type: color
+    family: blue
+    scale: 900
+    value:
+      hex: "#011330"
+      alpha: 1
+  - name: blue.950
+    implementation: core.color.blue.950
+    type: color
+    family: blue
+    scale: 950
+    value:
+      hex: "#010b20"
+      alpha: 1
+  - name: red.50
+    implementation: core.color.red.50
+    type: color
+    family: red
+    scale: 50
+    value:
+      hex: "#fcf1f1"
+      alpha: 1
+  - name: red.100
+    implementation: core.color.red.100
+    type: color
+    family: red
+    scale: 100
+    value:
+      hex: "#fce7e6"
+      alpha: 1
+  - name: red.150
+    implementation: core.color.red.150
+    type: color
+    family: red
+    scale: 150
+    value:
+      hex: "#fcd5d2"
+      alpha: 1
+  - name: red.200
+    implementation: core.color.red.200
+    type: color
+    family: red
+    scale: 200
+    value:
+      hex: "#fbbeba"
+      alpha: 1
+  - name: red.250
+    implementation: core.color.red.250
+    type: color
+    family: red
+    scale: 250
+    value:
+      hex: "#fca7a2"
+      alpha: 1
+  - name: red.300
+    implementation: core.color.red.300
+    type: color
+    family: red
+    scale: 300
+    value:
+      hex: "#fa8884"
+      alpha: 1
+  - name: red.350
+    implementation: core.color.red.350
+    type: color
+    family: red
+    scale: 350
+    value:
+      hex: "#ff5e61"
+      alpha: 1
+  - name: red.400
+    implementation: core.color.red.400
+    type: color
+    family: red
+    scale: 400
+    value:
+      hex: "#fd3d4a"
+      alpha: 1
+  - name: red.450
+    implementation: core.color.red.450
+    type: color
+    family: red
+    scale: 450
+    value:
+      hex: "#ef2c3e"
+      alpha: 1
+  - name: red.500
+    implementation: core.color.red.500
+    type: color
+    family: red
+    scale: 500
+    value:
+      hex: "#da1b34"
+      alpha: 1
+  - name: red.550
+    implementation: core.color.red.550
+    type: color
+    family: red
+    scale: 550
+    value:
+      hex: "#c30b2a"
+      alpha: 1
+  - name: red.600
+    implementation: core.color.red.600
+    type: color
+    family: red
+    scale: 600
+    value:
+      hex: "#ad0824"
+      alpha: 1
+  - name: red.650
+    implementation: core.color.red.650
+    type: color
+    family: red
+    scale: 650
+    value:
+      hex: "#96061e"
+      alpha: 1
+  - name: red.700
+    implementation: core.color.red.700
+    type: color
+    family: red
+    scale: 700
+    value:
+      hex: "#820518"
+      alpha: 1
+  - name: red.750
+    implementation: core.color.red.750
+    type: color
+    family: red
+    scale: 750
+    value:
+      hex: "#6f0313"
+      alpha: 1
+  - name: red.800
+    implementation: core.color.red.800
+    type: color
+    family: red
+    scale: 800
+    value:
+      hex: "#5b030e"
+      alpha: 1
+  - name: red.850
+    implementation: core.color.red.850
+    type: color
+    family: red
+    scale: 850
+    value:
+      hex: "#470209"
+      alpha: 1
+  - name: red.900
+    implementation: core.color.red.900
+    type: color
+    family: red
+    scale: 900
+    value:
+      hex: "#2e0004"
+      alpha: 1
+  - name: red.950
+    implementation: core.color.red.950
+    type: color
+    family: red
+    scale: 950
+    value:
+      hex: "#1f0002"
+      alpha: 1
+  - name: yellow.50
+    implementation: core.color.yellow.50
+    type: color
+    family: yellow
+    scale: 50
+    value:
+      hex: "#fcf4dd"
+      alpha: 1
+  - name: yellow.100
+    implementation: core.color.yellow.100
+    type: color
+    family: yellow
+    scale: 100
+    value:
+      hex: "#feebbf"
+      alpha: 1
+  - name: yellow.150
+    implementation: core.color.yellow.150
+    type: color
+    family: yellow
+    scale: 150
+    value:
+      hex: "#fedb8b"
+      alpha: 1
+  - name: yellow.200
+    implementation: core.color.yellow.200
+    type: color
+    family: yellow
+    scale: 200
+    value:
+      hex: "#ffc300"
+      alpha: 1
+  - name: yellow.250
+    implementation: core.color.yellow.250
+    type: color
+    family: yellow
+    scale: 250
+    value:
+      hex: "#f2b601"
+      alpha: 1
+  - name: yellow.300
+    implementation: core.color.yellow.300
+    type: color
+    family: yellow
+    scale: 300
+    value:
+      hex: "#e1a501"
+      alpha: 1
+  - name: yellow.350
+    implementation: core.color.yellow.350
+    type: color
+    family: yellow
+    scale: 350
+    value:
+      hex: "#d19506"
+      alpha: 1
+  - name: yellow.400
+    implementation: core.color.yellow.400
+    type: color
+    family: yellow
+    scale: 400
+    value:
+      hex: "#c38700"
+      alpha: 1
+  - name: yellow.450
+    implementation: core.color.yellow.450
+    type: color
+    family: yellow
+    scale: 450
+    value:
+      hex: "#b27800"
+      alpha: 1
+  - name: yellow.500
+    implementation: core.color.yellow.500
+    type: color
+    family: yellow
+    scale: 500
+    value:
+      hex: "#a26a02"
+      alpha: 1
+  - name: yellow.550
+    implementation: core.color.yellow.550
+    type: color
+    family: yellow
+    scale: 550
+    value:
+      hex: "#905b04"
+      alpha: 1
+  - name: yellow.600
+    implementation: core.color.yellow.600
+    type: color
+    family: yellow
+    scale: 600
+    value:
+      hex: "#824f01"
+      alpha: 1
+  - name: yellow.650
+    implementation: core.color.yellow.650
+    type: color
+    family: yellow
+    scale: 650
+    value:
+      hex: "#724200"
+      alpha: 1
+  - name: yellow.700
+    implementation: core.color.yellow.700
+    type: color
+    family: yellow
+    scale: 700
+    value:
+      hex: "#633701"
+      alpha: 1
+  - name: yellow.750
+    implementation: core.color.yellow.750
+    type: color
+    family: yellow
+    scale: 750
+    value:
+      hex: "#562d00"
+      alpha: 1
+  - name: yellow.800
+    implementation: core.color.yellow.800
+    type: color
+    family: yellow
+    scale: 800
+    value:
+      hex: "#472300"
+      alpha: 1
+  - name: yellow.850
+    implementation: core.color.yellow.850
+    type: color
+    family: yellow
+    scale: 850
+    value:
+      hex: "#381900"
+      alpha: 1
+  - name: yellow.900
+    implementation: core.color.yellow.900
+    type: color
+    family: yellow
+    scale: 900
+    value:
+      hex: "#270e00"
+      alpha: 1
+  - name: yellow.950
+    implementation: core.color.yellow.950
+    type: color
+    family: yellow
+    scale: 950
+    value:
+      hex: "#1c0800"
+      alpha: 1
+  - name: purple.50
+    implementation: core.color.purple.50
+    type: color
+    family: purple
+    scale: 50
+    value:
+      hex: "#f9f1fb"
+      alpha: 1
+  - name: purple.100
+    implementation: core.color.purple.100
+    type: color
+    family: purple
+    scale: 100
+    value:
+      hex: "#f9e6fb"
+      alpha: 1
+  - name: purple.150
+    implementation: core.color.purple.150
+    type: color
+    family: purple
+    scale: 150
+    value:
+      hex: "#f4d2f9"
+      alpha: 1
+  - name: purple.200
+    implementation: core.color.purple.200
+    type: color
+    family: purple
+    scale: 200
+    value:
+      hex: "#ebbcf6"
+      alpha: 1
+  - name: purple.250
+    implementation: core.color.purple.250
+    type: color
+    family: purple
+    scale: 250
+    value:
+      hex: "#e1a8f6"
+      alpha: 1
+  - name: purple.300
+    implementation: core.color.purple.300
+    type: color
+    family: purple
+    scale: 300
+    value:
+      hex: "#cf8ff4"
+      alpha: 1
+  - name: purple.350
+    implementation: core.color.purple.350
+    type: color
+    family: purple
+    scale: 350
+    value:
+      hex: "#c475f5"
+      alpha: 1
+  - name: purple.400
+    implementation: core.color.purple.400
+    type: color
+    family: purple
+    scale: 400
+    value:
+      hex: "#ad65f9"
+      alpha: 1
+  - name: purple.450
+    implementation: core.color.purple.450
+    type: color
+    family: purple
+    scale: 450
+    value:
+      hex: "#9b58f7"
+      alpha: 1
+  - name: purple.500
+    implementation: core.color.purple.500
+    type: color
+    family: purple
+    scale: 500
+    value:
+      hex: "#8647f1"
+      alpha: 1
+  - name: purple.550
+    implementation: core.color.purple.550
+    type: color
+    family: purple
+    scale: 550
+    value:
+      hex: "#6f3dde"
+      alpha: 1
+  - name: purple.600
+    implementation: core.color.purple.600
+    type: color
+    family: purple
+    scale: 600
+    value:
+      hex: "#6230cb"
+      alpha: 1
+  - name: purple.650
+    implementation: core.color.purple.650
+    type: color
+    family: purple
+    scale: 650
+    value:
+      hex: "#5526b4"
+      alpha: 1
+  - name: purple.700
+    implementation: core.color.purple.700
+    type: color
+    family: purple
+    scale: 700
+    value:
+      hex: "#4a19a1"
+      alpha: 1
+  - name: purple.750
+    implementation: core.color.purple.750
+    type: color
+    family: purple
+    scale: 750
+    value:
+      hex: "#3e148a"
+      alpha: 1
+  - name: purple.800
+    implementation: core.color.purple.800
+    type: color
+    family: purple
+    scale: 800
+    value:
+      hex: "#320f72"
+      alpha: 1
+  - name: purple.850
+    implementation: core.color.purple.850
+    type: color
+    family: purple
+    scale: 850
+    value:
+      hex: "#26095a"
+      alpha: 1
+  - name: purple.900
+    implementation: core.color.purple.900
+    type: color
+    family: purple
+    scale: 900
+    value:
+      hex: "#18023c"
+      alpha: 1
+  - name: purple.950
+    implementation: core.color.purple.950
+    type: color
+    family: purple
+    scale: 950
+    value:
+      hex: "#110029"
+      alpha: 1
+  - name: gray.50
+    implementation: core.color.gray.50
+    type: color
+    family: gray
+    scale: 50
+    value:
+      hex: "#f5f5f5"
+      alpha: 1
+  - name: gray.100
+    implementation: core.color.gray.100
+    type: color
+    family: gray
+    scale: 100
+    value:
+      hex: "#ededed"
+      alpha: 1
+  - name: gray.150
+    implementation: core.color.gray.150
+    type: color
+    family: gray
+    scale: 150
+    value:
+      hex: "#e0e0e0"
+      alpha: 1
+  - name: gray.200
+    implementation: core.color.gray.200
+    type: color
+    family: gray
+    scale: 200
+    value:
+      hex: "#cecece"
+      alpha: 1
+  - name: gray.250
+    implementation: core.color.gray.250
+    type: color
+    family: gray
+    scale: 250
+    value:
+      hex: "#c1c1c1"
+      alpha: 1
+  - name: gray.300
+    implementation: core.color.gray.300
+    type: color
+    family: gray
+    scale: 300
+    value:
+      hex: "#acacac"
+      alpha: 1
+  - name: gray.350
+    implementation: core.color.gray.350
+    type: color
+    family: gray
+    scale: 350
+    value:
+      hex: "#9b9b9b"
+      alpha: 1
+  - name: gray.400
+    implementation: core.color.gray.400
+    type: color
+    family: gray
+    scale: 400
+    value:
+      hex: "#8c8c8c"
+      alpha: 1
+  - name: gray.450
+    implementation: core.color.gray.450
+    type: color
+    family: gray
+    scale: 450
+    value:
+      hex: "#7f7f7f"
+      alpha: 1
+  - name: gray.500
+    implementation: core.color.gray.500
+    type: color
+    family: gray
+    scale: 500
+    value:
+      hex: "#737373"
+      alpha: 1
+  - name: gray.550
+    implementation: core.color.gray.550
+    type: color
+    family: gray
+    scale: 550
+    value:
+      hex: "#686868"
+      alpha: 1
+  - name: gray.600
+    implementation: core.color.gray.600
+    type: color
+    family: gray
+    scale: 600
+    value:
+      hex: "#5c5c5c"
+      alpha: 1
+  - name: gray.650
+    implementation: core.color.gray.650
+    type: color
+    family: gray
+    scale: 650
+    value:
+      hex: "#4f4f4f"
+      alpha: 1
+  - name: gray.700
+    implementation: core.color.gray.700
+    type: color
+    family: gray
+    scale: 700
+    value:
+      hex: "#444444"
+      alpha: 1
+  - name: gray.750
+    implementation: core.color.gray.750
+    type: color
+    family: gray
+    scale: 750
+    value:
+      hex: "#393939"
+      alpha: 1
+  - name: gray.800
+    implementation: core.color.gray.800
+    type: color
+    family: gray
+    scale: 800
+    value:
+      hex: "#2e2e2e"
+      alpha: 1
+  - name: gray.850
+    implementation: core.color.gray.850
+    type: color
+    family: gray
+    scale: 850
+    value:
+      hex: "#222222"
+      alpha: 1
+  - name: gray.900
+    implementation: core.color.gray.900
+    type: color
+    family: gray
+    scale: 900
+    value:
+      hex: "#141414"
+      alpha: 1
+  - name: gray.950
+    implementation: core.color.gray.950
+    type: color
+    family: gray
+    scale: 950
+    value:
+      hex: "#0a0a0a"
+      alpha: 1
+  - name: whiteAlpha.50
+    implementation: core.color.whiteAlpha.50
+    type: color
+    family: whiteAlpha
+    scale: 50
+    value:
+      hex: "#ffffff"
+      alpha: 0.05
+  - name: whiteAlpha.100
+    implementation: core.color.whiteAlpha.100
+    type: color
+    family: whiteAlpha
+    scale: 100
+    value:
+      hex: "#ffffff"
+      alpha: 0.1
+  - name: whiteAlpha.150
+    implementation: core.color.whiteAlpha.150
+    type: color
+    family: whiteAlpha
+    scale: 150
+    value:
+      hex: "#ffffff"
+      alpha: 0.15
+  - name: whiteAlpha.200
+    implementation: core.color.whiteAlpha.200
+    type: color
+    family: whiteAlpha
+    scale: 200
+    value:
+      hex: "#ffffff"
+      alpha: 0.2
+  - name: whiteAlpha.250
+    implementation: core.color.whiteAlpha.250
+    type: color
+    family: whiteAlpha
+    scale: 250
+    value:
+      hex: "#ffffff"
+      alpha: 0.25
+  - name: whiteAlpha.300
+    implementation: core.color.whiteAlpha.300
+    type: color
+    family: whiteAlpha
+    scale: 300
+    value:
+      hex: "#ffffff"
+      alpha: 0.3
+  - name: whiteAlpha.350
+    implementation: core.color.whiteAlpha.350
+    type: color
+    family: whiteAlpha
+    scale: 350
+    value:
+      hex: "#ffffff"
+      alpha: 0.35
+  - name: whiteAlpha.400
+    implementation: core.color.whiteAlpha.400
+    type: color
+    family: whiteAlpha
+    scale: 400
+    value:
+      hex: "#ffffff"
+      alpha: 0.4
+  - name: whiteAlpha.450
+    implementation: core.color.whiteAlpha.450
+    type: color
+    family: whiteAlpha
+    scale: 450
+    value:
+      hex: "#ffffff"
+      alpha: 0.45
+  - name: whiteAlpha.500
+    implementation: core.color.whiteAlpha.500
+    type: color
+    family: whiteAlpha
+    scale: 500
+    value:
+      hex: "#ffffff"
+      alpha: 0.5
+  - name: whiteAlpha.550
+    implementation: core.color.whiteAlpha.550
+    type: color
+    family: whiteAlpha
+    scale: 550
+    value:
+      hex: "#ffffff"
+      alpha: 0.55
+  - name: whiteAlpha.600
+    implementation: core.color.whiteAlpha.600
+    type: color
+    family: whiteAlpha
+    scale: 600
+    value:
+      hex: "#7f4c00"
+      alpha: 0.6
+  - name: whiteAlpha.650
+    implementation: core.color.whiteAlpha.650
+    type: color
+    family: whiteAlpha
+    scale: 650
+    value:
+      hex: "#ffffff"
+      alpha: 0.65
+  - name: whiteAlpha.700
+    implementation: core.color.whiteAlpha.700
+    type: color
+    family: whiteAlpha
+    scale: 700
+    value:
+      hex: "#ffffff"
+      alpha: 0.7
+  - name: whiteAlpha.750
+    implementation: core.color.whiteAlpha.750
+    type: color
+    family: whiteAlpha
+    scale: 750
+    value:
+      hex: "#ffffff"
+      alpha: 0.75
+  - name: whiteAlpha.800
+    implementation: core.color.whiteAlpha.800
+    type: color
+    family: whiteAlpha
+    scale: 800
+    value:
+      hex: "#ffffff"
+      alpha: 0.8
+  - name: whiteAlpha.850
+    implementation: core.color.whiteAlpha.850
+    type: color
+    family: whiteAlpha
+    scale: 850
+    value:
+      hex: "#ffffff"
+      alpha: 0.85
+  - name: whiteAlpha.900
+    implementation: core.color.whiteAlpha.900
+    type: color
+    family: whiteAlpha
+    scale: 900
+    value:
+      hex: "#ffffff"
+      alpha: 0.9
+  - name: whiteAlpha.950
+    implementation: core.color.whiteAlpha.950
+    type: color
+    family: whiteAlpha
+    scale: 950
+    value:
+      hex: "#ffffff"
+      alpha: 0.95
+  - name: blackAlpha.50
+    implementation: core.color.blackAlpha.50
+    type: color
+    family: blackAlpha
+    scale: 50
+    value:
+      hex: "#000000"
+      alpha: 0.05
+  - name: blackAlpha.100
+    implementation: core.color.blackAlpha.100
+    type: color
+    family: blackAlpha
+    scale: 100
+    value:
+      hex: "#000000"
+      alpha: 0.1
+  - name: blackAlpha.150
+    implementation: core.color.blackAlpha.150
+    type: color
+    family: blackAlpha
+    scale: 150
+    value:
+      hex: "#000000"
+      alpha: 0.15
+  - name: blackAlpha.200
+    implementation: core.color.blackAlpha.200
+    type: color
+    family: blackAlpha
+    scale: 200
+    value:
+      hex: "#000000"
+      alpha: 0.2
+  - name: blackAlpha.250
+    implementation: core.color.blackAlpha.250
+    type: color
+    family: blackAlpha
+    scale: 250
+    value:
+      hex: "#000000"
+      alpha: 0.25
+  - name: blackAlpha.300
+    implementation: core.color.blackAlpha.300
+    type: color
+    family: blackAlpha
+    scale: 300
+    value:
+      hex: "#000000"
+      alpha: 0.3
+  - name: blackAlpha.350
+    implementation: core.color.blackAlpha.350
+    type: color
+    family: blackAlpha
+    scale: 350
+    value:
+      hex: "#000000"
+      alpha: 0.35
+  - name: blackAlpha.400
+    implementation: core.color.blackAlpha.400
+    type: color
+    family: blackAlpha
+    scale: 400
+    value:
+      hex: "#000000"
+      alpha: 0.4
+  - name: blackAlpha.450
+    implementation: core.color.blackAlpha.450
+    type: color
+    family: blackAlpha
+    scale: 450
+    value:
+      hex: "#000000"
+      alpha: 0.45
+  - name: blackAlpha.500
+    implementation: core.color.blackAlpha.500
+    type: color
+    family: blackAlpha
+    scale: 500
+    value:
+      hex: "#000000"
+      alpha: 0.5
+  - name: blackAlpha.550
+    implementation: core.color.blackAlpha.550
+    type: color
+    family: blackAlpha
+    scale: 550
+    value:
+      hex: "#000000"
+      alpha: 0.55
+  - name: blackAlpha.600
+    implementation: core.color.blackAlpha.600
+    type: color
+    family: blackAlpha
+    scale: 600
+    value:
+      hex: "#000000"
+      alpha: 0.6
+  - name: blackAlpha.650
+    implementation: core.color.blackAlpha.650
+    type: color
+    family: blackAlpha
+    scale: 650
+    value:
+      hex: "#683c01"
+      alpha: 0.65
+  - name: blackAlpha.700
+    implementation: core.color.blackAlpha.700
+    type: color
+    family: blackAlpha
+    scale: 700
+    value:
+      hex: "#000000"
+      alpha: 0.7
+  - name: blackAlpha.750
+    implementation: core.color.blackAlpha.750
+    type: color
+    family: blackAlpha
+    scale: 750
+    value:
+      hex: "#000000"
+      alpha: 0.75
+  - name: blackAlpha.800
+    implementation: core.color.blackAlpha.800
+    type: color
+    family: blackAlpha
+    scale: 800
+    value:
+      hex: "#000000"
+      alpha: 0.8
+  - name: blackAlpha.850
+    implementation: core.color.blackAlpha.850
+    type: color
+    family: blackAlpha
+    scale: 850
+    value:
+      hex: "#000000"
+      alpha: 0.85
+  - name: blackAlpha.900
+    implementation: core.color.blackAlpha.900
+    type: color
+    family: blackAlpha
+    scale: 900
+    value:
+      hex: "#000000"
+      alpha: 0.9
+  - name: blackAlpha.950
+    implementation: core.color.blackAlpha.950
+    type: color
+    family: blackAlpha
+    scale: 950
+    value:
+      hex: "#000000"
+      alpha: 0.95

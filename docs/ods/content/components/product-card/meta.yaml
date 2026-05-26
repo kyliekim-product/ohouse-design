@@ -1,0 +1,20 @@
+id: ods.component.product-card
+title: Product Card
+category: components
+status: published
+aliases:
+  - 상품 카드
+  - 프로덕트 카드
+description: 상품 정보를 카드 형태로 구성하기 위한 Product Card 관련 하위 컴포넌트 그룹입니다.
+relations:
+  child_areas:
+    - component:product-card-benefit
+    - component:product-card-delivery-info
+    - component:product-card-delivery-option
+    - component:product-card-price
+    - component:product-card-product-title
+    - component:product-card-review
+    - component:product-card-scrap
+    - component:product-card-sold-out-banner
+  related_pattern_areas:
+    - pattern:product-card

@@ -1,0 +1,11 @@
+{
+  "family": "section",
+  "notionSpecPageId": "2cba597878a0803aa589d0d8f7a005c7",
+  "order": [
+    ".",
+    "section-header",
+    "section-title",
+    "section-action",
+    "section-arrow-button"
+  ]
+}

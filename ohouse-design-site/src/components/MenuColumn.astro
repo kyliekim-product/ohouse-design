@@ -1,0 +1,18 @@
+---
+// 5열 메가 메뉴 — 한 컬럼. (스타일은 global.css 의 .mcol* 이 소유)
+// props: title (작은 라벨), items [{ label, href }]
+const { title, items } = Astro.props;
+---
+
+<div class="mcol">
+  <div class="mcol__title">{title}</div>
+  <ul class="mcol__list">
+    {items.length === 0 ? (
+      <li><span class="mcol__empty">곧 추가 예정</span></li>
+    ) : items.map((it) => (
+      <li>
+        <a href={it.href} class="mcol__item">{it.label}</a>
+      </li>
+    ))}
+  </ul>
+</div>

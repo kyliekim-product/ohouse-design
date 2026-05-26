@@ -1,0 +1,511 @@
+tokens:
+  - name: accentRed
+    implementation: core.color.accentRed
+    type: color
+    group: accent
+    intent: accent
+    strength: default
+    role: 오류나 위험 상태와 직접 연결되지 않은 빨간색 계열의 독립 강조에 사용합니다.
+    useWhen:
+      - 상태 의미보다 색상 구분 자체가 필요한 그래픽, 배지, 보조 강조를 표현할 때
+    avoidWhen:
+      - 오류, 삭제, 실패처럼 critical 의미를 전달해야 할 때
+    aliases:
+      - red accent
+      - 빨간 강조
+      - accent red
+  - name: accentYellow
+    implementation: core.color.accentYellow
+    type: color
+    group: accent
+    intent: accent
+    strength: default
+    role: 경고 상태와 직접 연결되지 않은 노란색 계열의 독립 강조에 사용합니다.
+    useWhen:
+      - 상태 의미보다 색상 구분 자체가 필요한 그래픽, 배지, 보조 강조를 표현할 때
+    avoidWhen:
+      - 주의, 경고, 확인 필요처럼 attention 의미를 전달해야 할 때
+    aliases:
+      - yellow accent
+      - 노란 강조
+      - accent yellow
+  - name: accentPurple
+    implementation: core.color.accentPurple
+    type: color
+    group: accent
+    intent: accent
+    strength: default
+    role: 보라색 계열의 독립 강조나 시각적 구분에 사용합니다.
+    useWhen:
+      - 정보 상태와 무관한 장식적 강조나 색상 구분이 필요할 때
+    avoidWhen:
+      - 브랜드, 오류, 주의처럼 명확한 의미 토큰이 있는 상태를 표현할 때
+    aliases:
+      - purple accent
+      - 보라 강조
+      - accent purple
+  - name: accentBlue
+    implementation: core.color.accentBlue
+    type: color
+    group: accent
+    intent: accent
+    strength: default
+    role: 브랜드 행동과 직접 연결되지 않은 파란색 계열의 독립 강조에 사용합니다.
+    useWhen:
+      - 상태 의미보다 색상 구분 자체가 필요한 그래픽, 배지, 보조 강조를 표현할 때
+    avoidWhen:
+      - 브랜드 CTA나 선택 상태처럼 brand 또는 emphasis 의미가 필요한 경우
+    aliases:
+      - blue accent
+      - 파란 강조
+      - accent blue
+  - name: background
+    implementation: core.color.background
+    type: color
+    group: background
+    intent: neutral
+    strength: default
+    role: 기본 화면 표면과 일반 컨테이너 배경에 사용합니다.
+    useWhen:
+      - 별도 강조나 상태 의미가 없는 기본 표면을 만들 때
+    avoidWhen:
+      - 보조 표면, 브랜드 영역, 오류나 주의 상태를 표현해야 할 때
+    aliases:
+      - default background
+      - 기본 배경
+      - surface
+  - name: backgroundWeak
+    implementation: core.color.backgroundWeak
+    type: color
+    group: background
+    intent: neutral
+    strength: weak
+    role: 기본 배경보다 낮은 위계의 보조 표면에 사용합니다.
+    useWhen:
+      - 카드 내부 샘플 영역, 구분이 필요한 약한 배경, 보조 컨테이너를 표현할 때
+    avoidWhen:
+      - 주요 화면 배경이나 강한 상태 피드백을 표현할 때
+    aliases:
+      - weak background
+      - 보조 배경
+      - subtle surface
+  - name: backgroundInverse
+    implementation: core.color.backgroundInverse
+    type: color
+    group: background
+    intent: inverse
+    strength: inverse
+    role: 일반 표면과 반전된 배경에 사용합니다.
+    useWhen:
+      - 일반 배경 위에 반전된 톤의 배너, 토스트, 강조 표면을 올릴 때
+    avoidWhen:
+      - 단순히 더 진한 중립 배경이 필요한 경우
+    aliases:
+      - inverse background
+      - 반전 배경
+      - dark surface
+  - name: backgroundBrand
+    implementation: core.color.backgroundBrand
+    type: color
+    group: background
+    intent: brand
+    strength: default
+    role: 브랜드 의미가 있는 주요 배경이나 브랜드 행동 표면에 사용합니다.
+    useWhen:
+      - 오늘의집 브랜드 정체성을 직접 드러내는 배경이나 주요 CTA 표면을 표현할 때
+    avoidWhen:
+      - 단순 강조, 선택 상태, 정보 상태를 브랜드와 무관하게 표현할 때
+    aliases:
+      - brand background
+      - 브랜드 배경
+      - brand surface
+  - name: backgroundBrandWeak
+    implementation: core.color.backgroundBrandWeak
+    type: color
+    group: background
+    intent: brand
+    strength: weak
+    role: 낮은 강도의 브랜드 배경이나 브랜드 보조 표면에 사용합니다.
+    useWhen:
+      - 브랜드 맥락은 유지하되 강한 CTA처럼 보이면 안 되는 배경을 표현할 때
+    avoidWhen:
+      - 주요 브랜드 행동이나 기본 중립 배경을 표현할 때
+    aliases:
+      - weak brand background
+      - 약한 브랜드 배경
+      - subtle brand surface
+  - name: backgroundEmphasis
+    implementation: core.color.backgroundEmphasis
+    type: color
+    group: background
+    intent: emphasis
+    strength: default
+    role: 중요한 행동, 선택 상태, 높은 주목도가 필요한 배경에 사용합니다.
+    useWhen:
+      - 사용자의 주의를 끌어야 하는 주요 상태나 선택된 표면을 표현할 때
+    avoidWhen:
+      - 브랜드 자체를 표현하거나 오류, 주의 상태를 표현할 때
+    aliases:
+      - emphasis background
+      - 강조 배경
+      - selected background
+  - name: backgroundEmphasisWeak
+    implementation: core.color.backgroundEmphasisWeak
+    type: color
+    group: background
+    intent: emphasis
+    strength: weak
+    role: 낮은 강도의 강조 배경이나 선택 보조 표면에 사용합니다.
+    useWhen:
+      - 선택 또는 강조 맥락을 약하게 드러내야 할 때
+    avoidWhen:
+      - 즉시 눈에 띄어야 하는 주요 강조 상태를 표현할 때
+    aliases:
+      - weak emphasis background
+      - 약한 강조 배경
+      - subtle selected background
+  - name: backgroundCritical
+    implementation: core.color.backgroundCritical
+    type: color
+    group: background
+    intent: critical
+    strength: default
+    role: 오류, 삭제, 실패, 위험처럼 즉시 주의가 필요한 배경에 사용합니다.
+    useWhen:
+      - 사용자가 문제를 즉시 인지하고 수정해야 하는 critical 상태를 표현할 때
+    avoidWhen:
+      - 단순 경고나 확인 필요 수준의 attention 상태를 표현할 때
+    aliases:
+      - critical background
+      - error background
+      - 위험 배경
+  - name: backgroundCriticalWeak
+    implementation: core.color.backgroundCriticalWeak
+    type: color
+    group: background
+    intent: critical
+    strength: weak
+    role: 오류나 위험 상태를 낮은 강도로 알리는 보조 배경에 사용합니다.
+    useWhen:
+      - 오류 메시지 영역, 위험 안내, 삭제 전 보조 설명처럼 critical 의미를 약하게 드러낼 때
+    avoidWhen:
+      - 즉시 차단해야 하는 강한 오류 상태를 표현할 때
+    aliases:
+      - weak critical background
+      - subtle error background
+      - 약한 위험 배경
+  - name: backgroundAttention
+    implementation: core.color.backgroundAttention
+    type: color
+    group: background
+    intent: attention
+    strength: default
+    role: 경고, 주의, 확인 필요처럼 사용자의 주의가 필요한 배경에 사용합니다.
+    useWhen:
+      - 오류는 아니지만 사용자가 확인해야 하는 상태를 배경으로 표현할 때
+    avoidWhen:
+      - 실패, 삭제, 위험처럼 critical 의미가 필요한 경우
+    aliases:
+      - attention background
+      - warning background
+      - 주의 배경
+  - name: backgroundAttentionWeak
+    implementation: core.color.backgroundAttentionWeak
+    type: color
+    group: background
+    intent: attention
+    strength: weak
+    role: 낮은 강도의 주의 안내 배경에 사용합니다.
+    useWhen:
+      - 경고보다 부드러운 확인 필요 메시지나 안내 영역을 표현할 때
+    avoidWhen:
+      - 강한 경고나 critical 오류를 표현할 때
+    aliases:
+      - weak attention background
+      - subtle warning background
+      - 약한 주의 배경
+  - name: backgroundDim
+    implementation: core.color.backgroundDim
+    type: color
+    group: background
+    intent: overlay
+    strength: dim
+    role: 모달, 다이얼로그, 오버레이 뒤의 배경 콘텐츠를 눌러주는 dim layer에 사용합니다.
+    useWhen:
+      - 사용자의 초점을 상위 layer로 이동시키고 뒤 콘텐츠를 비활성처럼 보이게 할 때
+    avoidWhen:
+      - 카드나 일반 컨테이너 배경을 표현할 때
+    aliases:
+      - dim background
+      - scrim
+      - 딤
+  - name: backgroundOverlay
+    implementation: core.color.backgroundOverlay
+    type: color
+    group: background
+    intent: overlay
+    strength: overlay
+    role: 콘텐츠 위에 올라가는 overlay 표면에 사용합니다.
+    useWhen:
+      - 이미지나 기존 콘텐츠 위에 별도의 overlay layer를 얹을 때
+    avoidWhen:
+      - 모달 뒤 전체 화면을 눌러주는 dim layer가 필요할 때
+    aliases:
+      - overlay background
+      - 오버레이 배경
+      - overlay layer
+  - name: backgroundDisabled
+    implementation: core.color.backgroundDisabled
+    type: color
+    group: background
+    intent: disabled
+    strength: disabled
+    role: 사용자가 조작할 수 없는 비활성 요소의 배경에 사용합니다.
+    useWhen:
+      - 버튼, 입력, 선택 영역처럼 상호작용할 수 없는 상태의 배경을 표현할 때
+    avoidWhen:
+      - 단순히 위계를 낮추기 위한 보조 배경이 필요한 경우
+    aliases:
+      - disabled background
+      - 비활성 배경
+      - inactive background
+  - name: border
+    implementation: core.color.border
+    type: color
+    group: border
+    intent: neutral
+    strength: default
+    role: 기본 stroke, divider, outline에 사용합니다.
+    useWhen:
+      - 특별한 상태 의미가 없는 기본 경계나 구분선을 표현할 때
+    avoidWhen:
+      - 강한 경계, 브랜드 경계, 오류나 주의 상태를 표현할 때
+    aliases:
+      - default border
+      - 기본 테두리
+      - divider
+  - name: borderStrong
+    implementation: core.color.borderStrong
+    type: color
+    group: border
+    intent: neutral
+    strength: strong
+    role: 기본 border보다 강한 중립 경계에 사용합니다.
+    useWhen:
+      - 요소의 외곽이나 구분을 더 분명히 드러내야 할 때
+    avoidWhen:
+      - 상태 의미가 있는 경계를 표현할 때
+    aliases:
+      - strong border
+      - 강한 테두리
+      - emphasized border
+  - name: borderInverse
+    implementation: core.color.borderInverse
+    type: color
+    group: border
+    intent: inverse
+    strength: inverse
+    role: 반전된 표면 위의 경계에 사용합니다.
+    useWhen:
+      - inverse background 위에서 경계가 필요할 때
+    avoidWhen:
+      - 일반 표면 위의 기본 경계를 표현할 때
+    aliases:
+      - inverse border
+      - 반전 테두리
+      - border on inverse
+  - name: borderThumbnail
+    implementation: core.color.borderThumbnail
+    type: color
+    group: border
+    intent: neutral
+    strength: weak
+    role: 이미지나 썸네일의 외곽을 낮은 강도로 구분할 때 사용합니다.
+    useWhen:
+      - 이미지, 상품 썸네일, 미디어 프레임의 경계를 미세하게 드러낼 때
+    avoidWhen:
+      - 일반 컴포넌트 outline이나 상태 경계를 표현할 때
+    aliases:
+      - thumbnail border
+      - 썸네일 테두리
+      - media border
+  - name: borderBrand
+    implementation: core.color.borderBrand
+    type: color
+    group: border
+    intent: brand
+    strength: default
+    role: 브랜드 의미가 있는 경계에 사용합니다.
+    useWhen:
+      - 브랜드 맥락의 선택, 강조, 안내를 stroke로 표현할 때
+    avoidWhen:
+      - 단순 선택 상태나 오류 상태를 브랜드와 무관하게 표현할 때
+    aliases:
+      - brand border
+      - 브랜드 테두리
+      - brand outline
+  - name: borderEmphasis
+    implementation: core.color.borderEmphasis
+    type: color
+    group: border
+    intent: emphasis
+    strength: default
+    role: 주요 선택 상태나 강조 상태의 경계에 사용합니다.
+    useWhen:
+      - 선택된 항목, 포커스와 별개의 강조 outline, 중요한 상태를 stroke로 표현할 때
+    avoidWhen:
+      - 브랜드 의미나 오류 의미가 더 중요한 경우
+    aliases:
+      - emphasis border
+      - 강조 테두리
+      - selected border
+  - name: borderCritical
+    implementation: core.color.borderCritical
+    type: color
+    group: border
+    intent: critical
+    strength: default
+    role: 오류, 삭제, 실패, 위험 상태의 경계에 사용합니다.
+    useWhen:
+      - 입력 오류, 위험 액션, 실패 상태를 stroke로 표현할 때
+    avoidWhen:
+      - 단순 경고나 확인 필요 수준의 attention 상태를 표현할 때
+    aliases:
+      - critical border
+      - error border
+      - 위험 테두리
+  - name: borderAttention
+    implementation: core.color.borderAttention
+    type: color
+    group: border
+    intent: attention
+    strength: default
+    role: 경고, 주의, 확인 필요 상태의 경계에 사용합니다.
+    useWhen:
+      - 오류는 아니지만 확인이 필요한 상태를 stroke로 표현할 때
+    avoidWhen:
+      - 실패, 삭제, 위험처럼 critical 의미가 필요한 경우
+    aliases:
+      - attention border
+      - warning border
+      - 주의 테두리
+  - name: foreground
+    implementation: core.color.foreground
+    type: color
+    group: foreground
+    intent: neutral
+    strength: default
+    role: 기본 텍스트와 주요 아이콘에 사용합니다.
+    useWhen:
+      - 제목, 본문, 핵심 값처럼 기본 가독성과 위계가 필요한 정보를 표현할 때
+    avoidWhen:
+      - 보조 정보, 비활성 상태, 오류나 주의 상태를 표현할 때
+    aliases:
+      - default foreground
+      - primary text
+      - 기본 텍스트
+  - name: foregroundWeak
+    implementation: core.color.foregroundWeak
+    type: color
+    group: foreground
+    intent: neutral
+    strength: weak
+    role: 보조 텍스트와 낮은 위계의 아이콘에 사용합니다.
+    useWhen:
+      - 본문보다 낮은 위계의 설명, 메타 정보, 보조 액션을 표현할 때
+    avoidWhen:
+      - 주요 제목, 핵심 값, 반드시 읽혀야 하는 정보에 사용할 때
+    aliases:
+      - weak foreground
+      - secondary text
+      - 보조 텍스트
+  - name: foregroundInverse
+    implementation: core.color.foregroundInverse
+    type: color
+    group: foreground
+    intent: inverse
+    strength: inverse
+    role: 반전된 배경 위의 텍스트와 아이콘에 사용합니다.
+    useWhen:
+      - inverse background, 어두운 배너, 토스트 같은 반전 표면 위에서 정보를 표현할 때
+    avoidWhen:
+      - 일반 배경 위의 기본 텍스트를 표현할 때
+    aliases:
+      - inverse foreground
+      - text on inverse
+      - 반전 텍스트
+  - name: foregroundBrand
+    implementation: core.color.foregroundBrand
+    type: color
+    group: foreground
+    intent: brand
+    strength: default
+    role: 브랜드 의미가 있는 텍스트와 아이콘에 사용합니다.
+    useWhen:
+      - 브랜드 링크, 브랜드 강조, 오늘의집 정체성과 연결된 텍스트나 아이콘을 표현할 때
+    avoidWhen:
+      - 단순 강조나 오류, 주의 상태를 표현할 때
+    aliases:
+      - brand foreground
+      - brand text
+      - 브랜드 텍스트
+  - name: foregroundEmphasis
+    implementation: core.color.foregroundEmphasis
+    type: color
+    group: foreground
+    intent: emphasis
+    strength: default
+    role: 주요 행동, 선택 상태, 높은 주목도가 필요한 텍스트와 아이콘에 사용합니다.
+    useWhen:
+      - 선택된 탭, 주요 액션, 강조 정보처럼 눈에 띄어야 하는 요소를 표현할 때
+    avoidWhen:
+      - 브랜드 의미나 오류 의미가 더 중요한 경우
+    aliases:
+      - emphasis foreground
+      - 강조 텍스트
+      - selected text
+  - name: foregroundCritical
+    implementation: core.color.foregroundCritical
+    type: color
+    group: foreground
+    intent: critical
+    strength: default
+    role: 오류, 삭제, 실패, 위험 상태의 텍스트와 아이콘에 사용합니다.
+    useWhen:
+      - 에러 메시지, 삭제 액션, 실패 상태처럼 즉시 주의가 필요한 정보를 표현할 때
+    avoidWhen:
+      - 단순 경고나 확인 필요 수준의 attention 상태를 표현할 때
+    aliases:
+      - critical foreground
+      - error text
+      - 위험 텍스트
+  - name: foregroundAttention
+    implementation: core.color.foregroundAttention
+    type: color
+    group: foreground
+    intent: attention
+    strength: default
+    role: 경고, 주의, 확인 필요 상태의 텍스트와 아이콘에 사용합니다.
+    useWhen:
+      - 오류는 아니지만 확인이 필요한 안내나 경고를 표현할 때
+    avoidWhen:
+      - 실패, 삭제, 위험처럼 critical 의미가 필요한 경우
+    aliases:
+      - attention foreground
+      - warning text
+      - 주의 텍스트
+  - name: foregroundDisabled
+    implementation: core.color.foregroundDisabled
+    type: color
+    group: foreground
+    intent: disabled
+    strength: disabled
+    role: 사용자가 조작할 수 없는 비활성 텍스트와 아이콘에 사용합니다.
+    useWhen:
+      - 비활성 버튼, 비활성 입력값, 선택할 수 없는 옵션의 텍스트나 아이콘을 표현할 때
+    avoidWhen:
+      - 단순히 낮은 위계의 보조 정보를 표현할 때
+    aliases:
+      - disabled foreground
+      - disabled text
+      - 비활성 텍스트

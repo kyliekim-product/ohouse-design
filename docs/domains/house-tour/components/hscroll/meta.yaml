@@ -1,0 +1,10 @@
+id: domain.house-tour.hscroll
+title: HScroll
+type: pattern
+status: draft
+domain: house-tour
+owner: Deeer
+aliases:
+  - 가로 스크롤 카드 컨테이너
+description: 콘텐츠 카드를 가로로 나열하는 집구경 화면 모듈 패턴입니다.
+spec: ./spec.md

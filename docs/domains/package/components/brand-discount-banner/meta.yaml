@@ -1,0 +1,11 @@
+id: domain.package.brand-discount-banner
+title: Brand Discount Banner
+type: component
+status: draft
+domain: package
+owner: Deeer
+aliases:
+  - 브랜드 할인 배너
+  - 브랜드 할인 넛지
+description: 글린다 패키지할인 상품 카드 하단에 노출되는 브랜드 수량별 추가 할인 유도 배너입니다.
+spec: ./spec.md

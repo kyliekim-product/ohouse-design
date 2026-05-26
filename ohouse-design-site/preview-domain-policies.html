@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>홈 · Policies — Ohouse Design</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<link rel="stylesheet" href="preview-shared.css" />
+
+<!--
+  ====================================================================
+  파일명     : preview-domain-policies.html  (= Policies 탭)
+  Owner     : ___  (이 탭의 디자인 책임자를 적어주세요)
+  자유 영역  : <section class="dbody"> ... </section> 내부의
+              <div class="dpanel" data-panel="policies"> 부분만 자유롭게 디자인.
+  ⚠️ nav / dhead / dtabs 마크업은 다른 탭 파일과 동기화 유지 — 임의 수정 금지.
+     공통 스타일은 preview-shared.css 에서만 변경.
+  ====================================================================
+-->
+
+<style>
+  /* 이 탭에서만 쓰는 추가 스타일은 여기에 */
+</style>
+</head>
+<body>
+
+<!-- ============ nav (공유 셸 — 동기화) ============ -->
+<header class="nav-root">
+  <div class="nav-inner">
+    <div class="nav-left">
+      <a href="preview-home.html" class="brand" aria-label="오늘의집">
+        <img src="public/ohouse-3d.png" alt="" class="brand__logo" width="32" height="32" />
+      </a>
+      <nav class="nav-tabs">
+        <a class="nav-tab is-active" href="preview-home.html">Ohouse Design</a>
+        <a class="nav-tab" href="#">Design system</a>
+      </nav>
+    </div>
+    <div class="nav-search">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" placeholder="Search Ohouse Design..." />
+      <span class="nav-search__kbd">⌘K</span>
+    </div>
+    <div class="nav-right">
+      <button class="nav-icon" aria-label="북마크">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        </svg>
+      </button>
+      <a class="nav-github" href="#">GitHub</a>
+      <div class="nav-avatar" title="요한">요</div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ dhead (공유 셸 — 동기화) ============ -->
+<header class="dhead">
+  <div class="wrap">
+    <h1 class="dhead__title">홈</h1>
+    <div class="dhead__meta">
+      <div class="dhead__metacol">
+        <span class="dhead__metalabel">Product Design Owner</span>
+        <span class="dhead__metavalue">요한 <span class="dhead__metavalue-sub">Discovery PD</span></span>
+      </div>
+      <div class="dhead__metacol">
+        <span class="dhead__metalabel">Screens</span>
+        <span class="dhead__metavalue">6 <span class="dhead__metavalue-sub">HTML 3 · Figma 3</span></span>
+      </div>
+      <div class="dhead__metacol">
+        <span class="dhead__metalabel">Last updated</span>
+        <span class="dhead__metavalue">3일 전 <span class="dhead__metavalue-sub">2026-05-18</span></span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ dtabs (공유 셸 — 동기화) ============ -->
+<nav class="dtabs" aria-label="domain tabs">
+  <div class="wrap dtabs__inner">
+    <a class="dtab" href="preview-domain.html">Screens <span class="dtab__count">6</span></a>
+    <a class="dtab" href="preview-domain-components.html">Components <span class="dtab__count">4</span></a>
+    <a class="dtab is-active" href="preview-domain-policies.html">Policies <span class="dtab__count">2</span></a>
+    <a class="dtab" href="preview-domain-experiments.html">Experiments <span class="dtab__count">3</span></a>
+  </div>
+</nav>
+
+<!-- ============ dbody (이 파일의 자유 영역) ============ -->
+<section class="dbody">
+  <div class="wrap">
+    <div class="dpanel" data-panel="policies">
+
+      <div class="sechead">
+        <div class="sechead__title">Policies</div>
+        <div class="sechead__count">2 policies</div>
+      </div>
+
+      <div class="lgrid" id="pgrid"></div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+const policies = [
+  { label:'홈 노출 우선순위',
+    summary:'신규 유저(첫 3회) > 컨텐츠 위주 / 리텐션 > 쇼핑 위주. AB 결과로 매 분기 재조정.',
+    overrides:true },
+  { label:'프로모 배너 노출 룰',
+    summary:'최대 1슬롯 / 24h. 동일 캠페인 중복 노출 금지(Frequency cap = 2).',
+    overrides:false },
+];
+
+const pgrid = document.getElementById('pgrid');
+pgrid.innerHTML = policies.map(p => `
+  <div class="lcard">
+    <div class="lcard__head">
+      <span class="lcard__title">${p.label}</span>
+      ${p.overrides ? `<span class="badge badge--warn">overrides</span>` : ''}
+    </div>
+    <p class="lcard__summary">${p.summary}</p>
+  </div>
+`).join('');
+</script>
+</body>
+</html>

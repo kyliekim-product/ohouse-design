@@ -1,0 +1,12 @@
+id: ods.component.product-card-benefit
+title: Product Card Benefit
+category: components
+status: published
+aliases:
+  - 상품 카드 혜택
+  - 혜택
+description: Product Card에서 혜택 정보를 표시하는 하위 컴포넌트입니다.
+relations:
+  parent_area: component:product-card
+  related_pattern_areas:
+    - pattern:product-card

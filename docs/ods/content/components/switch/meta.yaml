@@ -1,0 +1,8 @@
+id: ods.component.switch
+title: Switch
+category: components
+status: published
+aliases:
+  - 스위치
+  - 토글
+description: On/Off 상태를 즉시 전환할 수 있는 토글 컨트롤입니다.

@@ -1,0 +1,253 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import {
+  getAllDomains,
+  getDomain,
+  getDomainScreens,
+  getDomainComponents,
+  getDomainPolicies,
+  getDomainExperiments,
+  buildPrompt,
+  relTime,
+} from '../../lib/repo.js';
+
+export async function getStaticPaths() {
+  return getAllDomains().map((d) => ({ params: { domain: d.slug } }));
+}
+
+const base = import.meta.env.BASE_URL;
+const { domain: slug } = Astro.params;
+const domain = getDomain(slug);
+if (!domain) return Astro.redirect(base);
+
+const screens = getDomainScreens(slug);
+const components = getDomainComponents(slug);
+const policies = getDomainPolicies(slug);
+const experiments = getDomainExperiments(slug);
+
+// 화면 type 은 index 로 deterministic 하게 html/figma 교차 (home 카드와 동일 규칙)
+const screensTyped = screens.map((s, i) => ({ ...s, type: i % 2 === 0 ? 'html' : 'figma' }));
+const htmlCount = screensTyped.filter((s) => s.type === 'html').length;
+const figmaCount = screensTyped.length - htmlCount;
+
+const tabs = [
+  { id: 'screens', label: 'Screens', count: screens.length },
+  { id: 'components', label: 'Components', count: components.length },
+  { id: 'policies', label: 'Policies', count: policies.length },
+  { id: 'experiments', label: 'Experiments', count: experiments.length },
+];
+const typeLabel = (t) => (t === 'figma' ? 'Figma' : 'HTML');
+---
+
+<Layout title={domain.label}>
+  <!-- ============ dhead ============ -->
+  <header class="dhead">
+    <div class="wrap">
+      <h1 class="dhead__title">{domain.label}</h1>
+      <div class="dhead__meta">
+        <div class="dhead__metacol">
+          <span class="dhead__metalabel">Product Design Owner</span>
+          <span class={`dhead__metavalue${domain.owner === 'TBD' ? '' : ''}`}>{domain.owner}</span>
+        </div>
+        {domain.reviewer && (
+          <div class="dhead__metacol">
+            <span class="dhead__metalabel">Reviewer</span>
+            <span class="dhead__metavalue">{domain.reviewer}</span>
+          </div>
+        )}
+        <div class="dhead__metacol">
+          <span class="dhead__metalabel">Developer</span>
+          <span class="dhead__metavalue">{domain.developer}</span>
+        </div>
+        <div class="dhead__metacol">
+          <span class="dhead__metalabel">Screens</span>
+          <span class="dhead__metavalue">
+            {screens.length}
+            <span class="dhead__metavalue-sub">HTML {htmlCount} · Figma {figmaCount}</span>
+          </span>
+        </div>
+        {domain.updated && (
+          <div class="dhead__metacol">
+            <span class="dhead__metalabel">Last updated</span>
+            <span class="dhead__metavalue">{relTime(domain.updated)}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ dtabs ============ -->
+  <nav class="dtabs" aria-label="domain tabs" id="dtabs">
+    <div class="wrap dtabs__inner">
+      {tabs.map((t) => (
+        <a
+          class={`dtab${t.id === 'screens' ? ' is-active' : ''}`}
+          href={`${base}d/${slug}?tab=${t.id}`}
+          data-tab={t.id}
+        >
+          {t.label} <span class="dtab__count">{t.count}</span>
+        </a>
+      ))}
+    </div>
+  </nav>
+
+  <!-- ============ dbody ============ -->
+  <section class="dbody">
+    <div class="wrap">
+      <!-- Screens -->
+      <div class="dpanel" data-panel="screens">
+        <div class="sechead">
+          <div class="sechead__title">Screens</div>
+          <div class="sechead__count">{screens.length} screens{domain.updated ? ` · ${relTime(domain.updated)} 업데이트` : ''}</div>
+        </div>
+        {screensTyped.length === 0 ? (
+          <div class="empty">
+            <div class="empty__title">아직 화면이 없습니다</div>
+            <div class="empty__hint">이 도메인에 screens/ 산출물을 추가하면 여기 표시됩니다.</div>
+          </div>
+        ) : (
+          <div class="sgrid">
+            {screensTyped.map((s) => (
+              <a class="scard" href={`${base}d/${slug}/s/${s.slug}`} data-type={s.type}>
+                <div class="scard__canvas">
+                  <span class={`scard__pill is-${s.type}`}>{typeLabel(s.type)}</span>
+                  <div class="scard__phone">
+                    {s.thumb ? (
+                      <img src={s.thumb} alt={s.label} class="scard__shot" />
+                    ) : (
+                      <div class="scard__mark">{s.label.slice(0, 1)}</div>
+                    )}
+                  </div>
+                </div>
+                <div class="scard__meta">
+                  <span class="scard__label">{s.label}</span>
+                  <span class="scard__pageid">{s.slug}</span>
+                  {s.markers.length > 0 && (
+                    <div class="scard__markers">
+                      {s.markers.slice(0, 3).map((m) => (
+                        <span class={`badge${m.kind === 'missing-ods' ? ' badge--warn' : ''}`}>@{m.kind}:{m.value}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <!-- Components -->
+      <div class="dpanel" data-panel="components" hidden>
+        <div class="sechead">
+          <div class="sechead__title">Screen-only Components</div>
+          <div class="sechead__count">ODS 미대응 {components.length}건</div>
+        </div>
+        {components.length === 0 ? (
+          <div class="empty">
+            <div class="empty__title">화면 전용 컴포넌트가 아직 없습니다</div>
+            <div class="empty__hint">ODS 미대응 항목을 발견하면 여기에 추가됩니다.</div>
+          </div>
+        ) : (
+          <div class="lgrid">
+            {components.map((c) => (
+              <div class="lcard">
+                <div class="lcard__head">
+                  <span class="lcard__title">{c.label}</span>
+                  <span class="badge badge--accent">{c.type}</span>
+                </div>
+                {c.summary && <p class="lcard__summary">{c.summary}</p>}
+                {c.updated && <div class="lcard__foot"><span>{relTime(c.updated)}</span></div>}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <!-- Policies -->
+      <div class="dpanel" data-panel="policies" hidden>
+        <div class="sechead">
+          <div class="sechead__title">Policies</div>
+          <div class="sechead__count">{policies.length} policies</div>
+        </div>
+        {policies.length === 0 ? (
+          <div class="empty">
+            <div class="empty__title">화면 정책이 아직 없습니다</div>
+            <div class="empty__hint">전사 원칙을 override 하는 화면 정책이 있으면 여기에.</div>
+          </div>
+        ) : (
+          <div class="lgrid">
+            {policies.map((p) => (
+              <div class="lcard">
+                <div class="lcard__head">
+                  <span class="lcard__title">{p.label}</span>
+                  {p.overrides && <span class="badge badge--warn">overrides</span>}
+                </div>
+                {p.summary && <p class="lcard__summary">{p.summary}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <!-- Experiments -->
+      <div class="dpanel" data-panel="experiments" hidden>
+        <div class="sechead">
+          <div class="sechead__title">Experiments</div>
+          <div class="sechead__count">{experiments.length} records</div>
+        </div>
+        {experiments.length === 0 ? (
+          <div class="empty">
+            <div class="empty__title">실험 기록이 아직 없습니다</div>
+            <div class="empty__hint">A/B · 사용성 테스트 결과를 누적하면 자산이 됩니다.</div>
+          </div>
+        ) : (
+          <div class="lgrid">
+            {experiments.map((e) => (
+              <div class="lcard">
+                <div class="lcard__head">
+                  <span class="lcard__title">{e.label}</span>
+                  <span class={`badge ${e.result === 'win' ? 'badge--success' : e.result === 'loss' ? 'badge--fail' : ''}`}>{e.result}</span>
+                </div>
+                {e.summary && <p class="lcard__summary">{e.summary}</p>}
+                {e.updated && <div class="lcard__foot"><span>{relTime(e.updated)}</span></div>}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  // 정적 빌드 호환: 모든 패널을 렌더하고 ?tab= + 클릭으로 client-side 토글.
+  function initTabs() {
+    const tabsNav = document.getElementById('dtabs');
+    if (!tabsNav || (tabsNav as HTMLElement).dataset.bound) return;
+    (tabsNav as HTMLElement).dataset.bound = '1';
+
+    const panels = Array.from(document.querySelectorAll<HTMLElement>('.dpanel'));
+    const links = Array.from(tabsNav.querySelectorAll<HTMLElement>('.dtab'));
+
+    function activate(id: string) {
+      links.forEach((l) => l.classList.toggle('is-active', l.dataset.tab === id));
+      panels.forEach((p) => { p.hidden = p.dataset.panel !== id; });
+    }
+
+    const initial = new URLSearchParams(window.location.search).get('tab') || 'screens';
+    if (initial !== 'screens') activate(initial);
+
+    tabsNav.addEventListener('click', (e) => {
+      const link = (e.target as HTMLElement).closest('.dtab') as HTMLElement | null;
+      if (!link) return;
+      e.preventDefault();
+      const id = link.dataset.tab || 'screens';
+      activate(id);
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', id);
+      window.history.replaceState({}, '', url);
+    });
+  }
+  initTabs();
+  document.addEventListener('astro:page-load', initTabs);
+</script>

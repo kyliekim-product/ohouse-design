@@ -1,0 +1,12 @@
+id: ods.component.product-card-review
+title: Product Card Review
+category: components
+status: published
+aliases:
+  - 상품 카드 리뷰
+  - 리뷰
+description: Product Card에서 평점과 리뷰 수 정보를 표시하는 하위 컴포넌트입니다.
+relations:
+  parent_area: component:product-card
+  related_pattern_areas:
+    - pattern:product-card

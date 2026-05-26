@@ -1,0 +1,10 @@
+id: domain.house-tour.legacy-interest-post
+title: Legacy Interest Post
+type: pattern
+status: draft
+domain: house-tour
+owner: Deeer
+aliases:
+  - 레거시 관심사 포스트
+description: 집구경 추천 피드 내 레거시 관심사 포스트 섹션 패턴입니다.
+spec: ./spec.md

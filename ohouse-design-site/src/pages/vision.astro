@@ -1,0 +1,29 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getVision, relTime } from '../lib/repo.js';
+
+const vision = getVision();
+---
+
+<Layout title="끝 그림">
+  <article class="vpage">
+    <div class="wrap-narrow">
+      <p class="vpage__eyebrow">Vision · 끝 그림</p>
+      <h1 class="vpage__title">우리가 만들고 있는 것</h1>
+      {vision?.updated && <p class="vpage__time">Last updated · {relTime(vision.updated)}</p>}
+      {vision ? (
+        <div class="prose" set:html={vision.html} />
+      ) : (
+        <p class="vpage__missing">_meta/VISION.md 가 아직 없습니다.</p>
+      )}
+    </div>
+  </article>
+</Layout>
+
+<style>
+  .vpage { padding: 56px 0 96px; }
+  .vpage__eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 0.08em; color: var(--c-text-soft); text-transform: uppercase; margin-bottom: 16px; }
+  .vpage__title { font-size: 40px; font-weight: 800; letter-spacing: -0.025em; }
+  .vpage__time { font-size: 13px; color: var(--c-text-soft); margin: 12px 0 32px; }
+  .vpage__missing { color: var(--c-text-muted); }
+</style>

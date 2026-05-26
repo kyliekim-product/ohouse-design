@@ -1,0 +1,14 @@
+id: ods.component.section-header
+title: Section Header
+category: components
+status: published
+aliases:
+  - 섹션 헤더
+  - 헤더
+description: Section의 제목, 설명, 액션을 배치하는 header 하위 컴포넌트입니다.
+relations:
+  parent_area: component:section
+  child_areas:
+    - component:section-title
+    - component:section-action
+    - component:section-arrow-button

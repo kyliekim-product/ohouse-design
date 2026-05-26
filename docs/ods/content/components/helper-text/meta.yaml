@@ -1,0 +1,8 @@
+id: ods.component.helper-text
+title: HelperText
+category: components
+status: published
+aliases:
+  - 헬퍼 텍스트
+  - 보조 문구
+description: 입력, 선택, 상태에 대한 보조 설명이나 오류 메시지를 제공하는 텍스트 컴포넌트입니다.

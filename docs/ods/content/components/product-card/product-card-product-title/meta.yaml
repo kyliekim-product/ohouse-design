@@ -1,0 +1,12 @@
+id: ods.component.product-card-product-title
+title: Product Card Product Title
+category: components
+status: published
+aliases:
+  - 상품 카드 제목
+  - 상품명
+description: Product Card에서 상품명을 표시하는 하위 컴포넌트입니다.
+relations:
+  parent_area: component:product-card
+  related_pattern_areas:
+    - pattern:product-card

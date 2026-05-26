@@ -1,0 +1,8 @@
+id: ods.component.radio
+title: Radio
+category: components
+status: published
+aliases:
+  - 라디오
+  - 단일 선택
+description: 여러 옵션 중 하나만 선택해야 할 때 사용하는 선택 컨트롤입니다.

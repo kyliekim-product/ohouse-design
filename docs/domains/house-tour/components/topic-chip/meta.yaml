@@ -1,0 +1,10 @@
+id: domain.house-tour.topic-chip
+title: Topic Chip
+type: component
+status: draft
+domain: house-tour
+owner: Deeer
+aliases:
+  - 토픽 칩
+description: 콘텐츠 트랙 필터와 토픽 진입점에 쓰는 집구경 화면 컴포넌트입니다.
+spec: ./spec.md

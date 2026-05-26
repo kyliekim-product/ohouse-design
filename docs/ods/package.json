@@ -1,0 +1,22 @@
+{
+  "name": "@bucketplace/ods-docs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "ODS documentation source and Hermes public-index generator.",
+  "scripts": {
+    "ask": "node scripts/ask-ods.mjs",
+    "build:public-index": "node scripts/build-public-index.mjs",
+    "field-test:retrieval": "node scripts/run-retrieval-field-test.mjs",
+    "retrieve": "node scripts/retrieve-ods.mjs",
+    "search": "node scripts/search-ods.mjs",
+    "test": "npm run build:public-index && npm run test:retrieval && npm run test:answer-layer",
+    "test:answer-layer": "node scripts/test-answer-layer.mjs",
+    "test:retrieval": "node scripts/test-retrieval.mjs",
+    "validate": "npm test && npm run validate:token-contracts",
+    "validate:token-contracts": "node scripts/validate-token-contracts.mjs"
+  },
+  "engines": {
+    "node": ">=20.17.0"
+  }
+}
