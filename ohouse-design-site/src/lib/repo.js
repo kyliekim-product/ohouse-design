@@ -11,7 +11,8 @@ import { marked } from 'marked';
 // 폴더 이름이 'product-design' 또는 'product design' (스페이스) 둘 다 허용.
 function resolveRoot() {
   const candidates = [
-    // 현재/미래 레이아웃 공통: 사이트 폴더의 형제 docs/ 가 SSOT.
+    // 현재/미래 레이아웃 공통: 사이트 폴더의 형제 ohouse-design-mcp/ 가 SSOT.
+    resolve(import.meta.dirname, '../../../ohouse-design-mcp'),
     resolve(import.meta.dirname, '../../../docs'),
     resolve(import.meta.dirname, '../../../product-design'),
     resolve(import.meta.dirname, '../../../product design'),
