@@ -8,9 +8,14 @@
 
 ## 배포
 
-`main` 에 푸시되면 GitHub Actions(`.github/workflows/deploy.yml`)가 Astro 사이트를 빌드해 GitHub Pages 로 배포한다.
+GitHub Pages 자동 배포는 사내 Nexus 패키지 접근 제약 때문에 사용하지 않는다.
+사이트는 사내 WiFi/VPN 환경에서 `/deploy` 스킬로 정적 빌드 산출물을 배포한다.
 
-- 공개 주소: https://ohouse-product-design.github.io/ohouse-design/
+- 프로젝트 경로: `ohouse-design-site/`
+- 권장 팀 폴더: `common`
+- 현재 preview: https://static-contents.datapl.datahou.se/v2/common/ohouse-design-preview/
+
+ODS 문서는 Nexus의 `@bucketplace/ods-site-content` 패키지를 exact version으로 받아 렌더한다.
 
 ## 로컬 실행
 
