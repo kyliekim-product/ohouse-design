@@ -6,9 +6,10 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build",
+    "build": "npm run validate:ods-previews && astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "validate:ods-previews": "node scripts/validate-ods-previews.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^4.4.2",
