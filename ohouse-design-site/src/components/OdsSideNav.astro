@@ -1,0 +1,122 @@
+---
+const {
+  base = '/',
+  navigation = { foundations: [], components: [], patterns: [] },
+  currentSlug = null,
+} = Astro.props;
+
+const root = base.endsWith('/') ? base : `${base}/`;
+const odsRoot = `${root}ods`;
+
+const sections = [
+  {
+    key: 'foundation',
+    label: 'Foundations',
+    href: `${odsRoot}#foundation`,
+    items: navigation.foundations.map((item) => ({
+      ...item,
+      href: `${odsRoot}#foundation-${item.slug}`,
+    })),
+  },
+  {
+    key: 'component',
+    label: 'Components',
+    href: `${odsRoot}#component`,
+    items: navigation.components.map((item) => ({
+      ...item,
+      href: `${odsRoot}/components/${item.slug}`,
+    })),
+  },
+  {
+    key: 'pattern',
+    label: 'Patterns',
+    href: `${odsRoot}#pattern`,
+    items: navigation.patterns.map((item) => ({
+      ...item,
+      href: `${odsRoot}#pattern-${item.slug}`,
+    })),
+  },
+];
+---
+
+<aside class="ods-side-nav" aria-label="ODS navigation">
+  <a class="ods-side-nav__home" href={odsRoot}>ODS</a>
+  <nav class="ods-side-nav__sections">
+    {sections.map((section) => (
+      <section class="ods-side-nav__section">
+        <a class="ods-side-nav__section-link" href={section.href}>{section.label}</a>
+        {section.items.length > 0 && (
+          <ol class="ods-side-nav__items">
+            {section.items.map((item) => (
+              <li>
+                <a
+                  class:list={[
+                    'ods-side-nav__item',
+                    item.slug === currentSlug && 'is-active',
+                  ]}
+                  href={item.href}
+                  aria-current={item.slug === currentSlug ? 'page' : undefined}
+                >
+                  {item.title}
+                </a>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+    ))}
+  </nav>
+</aside>
+
+<style>
+  .ods-side-nav {
+    position: sticky;
+    top: 84px;
+    max-height: calc(100vh - 108px);
+    overflow: auto;
+    padding: 4px 18px 24px 0;
+    border-right: 1px solid var(--ods-border);
+  }
+  .ods-side-nav__home {
+    display: block;
+    margin-bottom: 18px;
+    color: var(--ods-foreground);
+    font-size: var(--ods-heading18-font-size);
+    font-weight: var(--ods-font-bold);
+    line-height: var(--ods-heading18-line-height);
+    letter-spacing: var(--ods-heading18-letter-spacing);
+  }
+  .ods-side-nav__sections {
+    display: grid;
+    gap: 18px;
+  }
+  .ods-side-nav__section-link {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--ods-foreground);
+    font-size: var(--ods-body15-l24-font-size);
+    font-weight: var(--ods-font-bold);
+    line-height: var(--ods-body15-l24-line-height);
+    letter-spacing: var(--ods-body15-l24-letter-spacing);
+  }
+  .ods-side-nav__items {
+    display: grid;
+    gap: 2px;
+    list-style: none;
+  }
+  .ods-side-nav__item {
+    display: block;
+    padding: 4px 0;
+    color: var(--ods-foreground-weak);
+    font-size: var(--ods-detail13-l18-font-size);
+    line-height: var(--ods-detail13-l18-line-height);
+    letter-spacing: var(--ods-detail13-l18-letter-spacing);
+  }
+  .ods-side-nav__item:hover,
+  .ods-side-nav__item.is-active {
+    color: var(--ods-foreground);
+  }
+  .ods-side-nav__item.is-active {
+    font-weight: var(--ods-font-semibold);
+  }
+</style>

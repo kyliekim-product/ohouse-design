@@ -1,45 +1,256 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import EmptyState from '../components/EmptyState.astro';
+import OdsComponentCard from '../components/OdsComponentCard.jsx';
+import OdsSideNav from '../components/OdsSideNav.astro';
+import { getOdsComponents, getOdsFoundations, getOdsNavigation } from '../lib/ods-content.js';
+import { odsFontWeight, odsTheme, odsThemeStyle } from '../lib/ods-theme.js';
+
+const base = import.meta.env.BASE_URL;
+const components = getOdsComponents();
+const foundations = getOdsFoundations();
+const navigation = getOdsNavigation();
+
+function placeholderImage(title) {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+      <defs>
+        <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+          <path d="M 28 0 L 0 0 0 28" fill="none" stroke="${odsTheme.colors.border}" stroke-width="1"/>
+        </pattern>
+      </defs>
+      <rect width="640" height="360" rx="28" fill="${odsTheme.colors.backgroundWeak}"/>
+      <rect width="640" height="360" fill="url(#grid)" opacity=".72"/>
+      <rect x="32" y="32" width="576" height="296" rx="22" fill="none" stroke="${odsTheme.colors.foregroundDisabled}" stroke-width="2" stroke-dasharray="10 10"/>
+      <circle cx="96" cy="92" r="18" fill="${odsTheme.colors.border}"/>
+      <rect x="132" y="78" width="180" height="20" rx="10" fill="${odsTheme.colors.border}"/>
+      <rect x="132" y="112" width="276" height="16" rx="8" fill="${odsTheme.colors.backgroundDisabled}"/>
+      <rect x="72" y="246" width="160" height="48" rx="14" fill="${odsTheme.colors.backgroundDisabled}"/>
+      <text x="320" y="194" text-anchor="middle" font-family="Pretendard, Arial, sans-serif" font-size="28" font-weight="${odsFontWeight.bold}" fill="${odsTheme.colors.foregroundWeak}">${title}</text>
+    </svg>
+  `;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
 ---
 
 <Layout title="ODS">
-  <header class="ohead">
-    <div class="wrap">
-      <p class="ohead__eyebrow">ODS · Ohouse Design System</p>
-      <h1>오늘의집 디자인 시스템</h1>
-      <p class="ohead__lead">Foundations · Components · Patterns. 원본은 <code>ods-docs/content/</code>, Hermes MCP 로 LLM 에 노출.</p>
-    </div>
-  </header>
+  <div class="ods-theme" style={odsThemeStyle}>
+    <header class="ohead">
+      <div class="wrap">
+        <p class="ohead__eyebrow">ODS · Ohouse Design System</p>
+        <h1>오늘의집 디자인 시스템</h1>
+        <p class="ohead__lead">Foundations · Components · Patterns. ODS 문서는 published content package를 기준으로 렌더합니다.</p>
+      </div>
+    </header>
 
-  <section class="obody">
-    <div class="wrap">
-      <div class="osec">
-        <h2>Components</h2>
-        <p class="osec__hint">Phase 2 에서 컴포넌트별 상세 페이지·Figma 이미지 연동 예정.</p>
-        <EmptyState title="컴포넌트 카탈로그는 곧 추가됩니다" hint="ods-docs/content/components/ 의 meta.yaml 을 자동 스캔해 카드로 표시할 계획." />
+    <section class="obody">
+      <div class="wrap">
+        <div class="ods-shell">
+          <OdsSideNav base={base} navigation={navigation} />
+          <main class="ods-shell__main">
+            <div class="osec" id="component">
+              <div class="osec__head">
+                <div>
+                  <h2>Components</h2>
+                  <p class="osec__hint">content/components/*/meta.yaml 을 스캔해 실제 ODS 메타데이터로 렌더합니다.</p>
+                </div>
+                <span class="osec__count tabular">{components.length}</span>
+              </div>
+              {components.length === 0 ? (
+                <EmptyState
+                  title="컴포넌트 메타데이터를 찾지 못했습니다"
+                  hint="@bucketplace/ods-site-content 패키지를 설치하거나 의존성 버전을 확인하세요."
+                />
+              ) : (
+                <div class="ogrid">
+                  {components.map((component) => (
+                    <OdsComponentCard
+                      component={component}
+                      href={`${base}ods/components/${component.slug}`}
+                      imageSrc={placeholderImage(component.title)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div class="osec" id="foundation">
+              <div class="osec__head">
+                <div>
+                  <h2>Foundations</h2>
+                  <p class="osec__hint">Semantic tokens · Palette · Typography · Spacing. content/foundations/*/meta.yaml 을 기준으로 렌더합니다.</p>
+                </div>
+                <span class="osec__count tabular">{foundations.length}</span>
+              </div>
+              {foundations.length > 0 && (
+                <div class="ogrid ogrid--compact">
+                  {foundations.map((foundation) => (
+                    <div id={`foundation-${foundation.slug}`}>
+                      <OdsComponentCard
+                        component={foundation}
+                        href={`${base}ods#foundation-${foundation.slug}`}
+                        imageSrc={placeholderImage(foundation.title)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div class="osec" id="pattern">
+              <h2>Patterns</h2>
+              <p class="osec__hint">Product card · Toast · Sheet 등 ODS 표준 패턴. 컴포넌트 상세 렌더링 검증 후 연결합니다.</p>
+            </div>
+          </main>
+        </div>
       </div>
-      <div class="osec">
-        <h2>Foundations</h2>
-        <p class="osec__hint">Semantic tokens · Palette · Typography · Spacing.</p>
-      </div>
-      <div class="osec">
-        <h2>Patterns</h2>
-        <p class="osec__hint">Product card · Toast · Sheet 등 ODS 표준 패턴.</p>
-      </div>
-    </div>
-  </section>
+    </section>
+  </div>
 </Layout>
 
 <style>
-  .ohead { padding: 64px 0 32px; background: #fff; border-bottom: 1px solid var(--c-border); }
-  .ohead__eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 0.08em; color: var(--c-text-soft); text-transform: uppercase; margin-bottom: 12px; }
-  .ohead h1 { font-size: 36px; font-weight: 800; letter-spacing: -0.02em; }
-  .ohead__lead { margin-top: 12px; color: var(--c-text-muted); font-size: 16px; max-width: 580px; }
-  .ohead code { background: var(--c-bg-elev); padding: 2px 6px; border-radius: var(--r-sm); }
+  .ods-theme {
+    color: var(--ods-foreground);
+    background: var(--ods-background);
+  }
+
+  .ohead { padding: 64px 0 32px; background: var(--ods-background); border-bottom: 1px solid var(--ods-border); }
+  .ohead__eyebrow {
+    margin-bottom: 12px;
+    color: var(--ods-foreground-weak);
+    font-size: var(--ods-detail12-l16-font-size);
+    font-weight: var(--ods-font-semibold);
+    line-height: var(--ods-detail12-l16-line-height);
+    letter-spacing: var(--ods-detail12-l16-letter-spacing);
+    text-transform: uppercase;
+  }
+  .ohead h1 {
+    color: var(--ods-foreground);
+    font-size: var(--ods-heading32-font-size);
+    font-weight: var(--ods-font-bold);
+    line-height: var(--ods-heading32-line-height);
+    letter-spacing: var(--ods-heading32-letter-spacing);
+  }
+  .ohead__lead {
+    margin-top: 12px;
+    max-width: 580px;
+    color: var(--ods-foreground-weak);
+    font-size: var(--ods-body16-l24-font-size);
+    line-height: var(--ods-body16-l24-line-height);
+    letter-spacing: var(--ods-body16-l24-letter-spacing);
+  }
+  :global(.ods-theme .ods-card__status) {
+    font-family: var(--f-mono);
+    font-weight: var(--ods-font-semibold);
+  }
 
   .obody { padding: 40px 0 96px; }
+  .ods-shell {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+  }
+  .ods-shell__main {
+    min-width: 0;
+  }
   .osec { margin-bottom: 48px; }
-  .osec h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
-  .osec__hint { font-size: 14px; color: var(--c-text-muted); margin-bottom: 16px; }
+  .osec[id] { scroll-margin-top: 88px; }
+  .osec__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 16px; }
+  .osec h2 {
+    margin-bottom: 6px;
+    color: var(--ods-foreground);
+    font-size: var(--ods-heading24-font-size);
+    font-weight: var(--ods-font-bold);
+    line-height: var(--ods-heading24-line-height);
+    letter-spacing: var(--ods-heading24-letter-spacing);
+  }
+  .osec__hint {
+    color: var(--ods-foreground-weak);
+    font-size: var(--ods-body15-l24-font-size);
+    line-height: var(--ods-body15-l24-line-height);
+    letter-spacing: var(--ods-body15-l24-letter-spacing);
+  }
+  .osec__count {
+    color: var(--ods-foreground-weak);
+    font-size: var(--ods-detail12-l16-font-size);
+    line-height: var(--ods-detail12-l16-line-height);
+    letter-spacing: var(--ods-detail12-l16-letter-spacing);
+    padding-top: 6px;
+  }
+  .ogrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .ogrid--compact {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+  :global(.ods-theme .ods-card) {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 284px;
+    background: var(--ods-background-weak);
+    border-radius: var(--r-card);
+    transition: background .15s ease, transform .15s ease;
+  }
+  :global(.ods-theme .ods-card:hover) { background: var(--ods-background-disabled); color: inherit; transform: translateY(-1px); }
+  :global(.ods-theme .ods-card__media) {
+    overflow: hidden;
+    border-radius: var(--r-lg);
+    background: var(--ods-background);
+  }
+  :global(.ods-theme .ods-card__media img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  :global(.ods-theme .ods-card__content) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 10px;
+  }
+  :global(.ods-theme .ods-card__head) { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  :global(.ods-theme .ods-card__title) {
+    color: var(--ods-foreground);
+    font-size: var(--ods-heading18-font-size);
+    font-weight: var(--ods-font-bold);
+    line-height: var(--ods-heading18-line-height);
+    letter-spacing: var(--ods-heading18-letter-spacing);
+  }
+  :global(.ods-theme .ods-card__desc) {
+    color: var(--ods-foreground-weak);
+    font-size: var(--ods-body15-l24-font-size);
+    line-height: var(--ods-body15-l24-line-height);
+    letter-spacing: var(--ods-body15-l24-letter-spacing);
+    flex: 1;
+  }
+  :global(.ods-theme .ods-card__foot) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--ods-foreground-weak);
+    font-size: var(--ods-detail12-l16-font-size);
+    line-height: var(--ods-detail12-l16-line-height);
+    letter-spacing: var(--ods-detail12-l16-letter-spacing);
+  }
+  :global(.ods-theme .ods-card__foot span:first-child) {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  :global(.ods-theme .ods-card__cta) { flex: 0 0 auto; color: var(--ods-foreground); font-weight: var(--ods-font-semibold); }
+
+  @media (max-width: 760px) {
+    .ods-shell {
+      display: block;
+    }
+    :global(.ods-side-nav) {
+      display: none;
+    }
+  }
 </style>

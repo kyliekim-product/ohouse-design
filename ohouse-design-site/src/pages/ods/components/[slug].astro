@@ -1,0 +1,624 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import OdsComponentMetaBadges from '../../../components/OdsComponentMetaBadges.jsx';
+import OdsDocTabs from '../../../components/OdsDocTabs.jsx';
+import OdsSideNav from '../../../components/OdsSideNav.astro';
+import OdsWebPreview from '../../../components/OdsWebPreview.jsx';
+import { getOdsComponent, getOdsComponents, getOdsNavigation } from '../../../lib/ods-content.js';
+import { odsThemeStyle } from '../../../lib/ods-theme.js';
+
+export async function getStaticPaths() {
+  return getOdsComponents().map((component) => ({ params: { slug: component.slug } }));
+}
+
+const base = import.meta.env.BASE_URL;
+const { slug } = Astro.params;
+const component = getOdsComponent(slug);
+if (!component) return Astro.redirect(`${base}ods`);
+const navigation = getOdsNavigation();
+---
+
+<Layout title={`ODS · ${component.title}`}>
+  <article class="opage ods-theme" style={odsThemeStyle}>
+    <div class="wrap">
+      <div class="ods-shell">
+        <OdsSideNav base={base} navigation={navigation} currentSlug={component.slug} />
+        <main class="ods-shell__main">
+          <nav class="crumb">
+            <a href={`${base}ods`}>ODS</a>
+            <span>›</span>
+            <a href={`${base}ods#component`}>Components</a>
+            <span>›</span>
+            <span>{component.title}</span>
+          </nav>
+
+          <header class="opage__head">
+            <div>
+              <p class="opage__eyebrow">Component</p>
+              <h1>{component.title}</h1>
+              {component.description && <p class="opage__lead">{component.description}</p>}
+            </div>
+            <div class="opage__meta">
+              <OdsComponentMetaBadges status={component.status} id={component.id} />
+            </div>
+          </header>
+
+          <section class="opreview" aria-label={`${component.title} representative example`}>
+            <OdsWebPreview slug={component.slug} preview={component.preview} />
+          </section>
+
+          {component.references.length > 0 && (
+            <section class="olinks" aria-label="References">
+              {component.references.map((reference) => (
+                <a class="olink" href={reference.url} target="_blank" rel="noopener">
+                  <span class="olink__label">{reference.label}</span>
+                  {reference.purpose && <span class="olink__purpose">{reference.purpose}</span>}
+                </a>
+              ))}
+            </section>
+          )}
+
+          <section class="odocs" aria-label="Documentation">
+            <OdsDocTabs guideHtml={component.guideHtml} specHtml={component.specHtml} />
+          </section>
+        </main>
+      </div>
+    </div>
+  </article>
+
+  <script>
+    let mermaidModulePromise: Promise<typeof import('mermaid')> | null = null;
+
+    async function renderOdsMermaid(root: ParentNode = document) {
+      const nodes = Array.from(root.querySelectorAll<HTMLElement>('.ods-mermaid:not([data-rendered])'))
+        .filter((node) => node.offsetParent !== null);
+      if (nodes.length === 0) return;
+
+      mermaidModulePromise ||= import('mermaid');
+      const { default: mermaid } = await mermaidModulePromise;
+      mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'strict',
+        theme: 'base',
+        flowchart: {
+          useMaxWidth: true,
+          nodeSpacing: 1,
+          rankSpacing: 1,
+          padding: 0,
+        },
+        themeVariables: {
+          fontFamily: 'Pretendard, sans-serif',
+          fontSize: '12px',
+          primaryColor: '#FAF6FF',
+          primaryBorderColor: '#9747ff',
+          primaryTextColor: '#141414',
+          lineColor: '#C1C1C1',
+          tertiaryColor: '#F7F7F8',
+        },
+      });
+
+      await Promise.all(
+        nodes.map(async (node) => {
+          const source = node.dataset.mermaidSource;
+          const target = node.querySelector<HTMLElement>('.mermaid');
+          if (!source || !target) return;
+
+          try {
+            target.textContent = source;
+            await mermaid.run({ nodes: [target] });
+            restyleOdsMermaid(target);
+            node.dataset.rendered = 'true';
+          } catch (error) {
+            node.dataset.rendered = 'error';
+            node.dataset.error = error instanceof Error ? error.message : String(error);
+          }
+        }),
+      );
+    }
+
+    function restyleOdsMermaid(target: HTMLElement) {
+      const svg = target.querySelector<SVGSVGElement>('svg');
+      if (!svg) return;
+
+      svg.querySelectorAll<SVGGElement>('.cluster').forEach((cluster) => {
+        const label = cluster.querySelector('.cluster-label')?.textContent?.replace(/\s+/g, ' ').trim();
+        if (/^Z Index \d+$/.test(label || '')) {
+          cluster.classList.add('ods-mermaid__pseudo-section');
+        }
+      });
+
+      compactOdsMermaidPropClusters(svg);
+      compactOdsMermaidVerticalLayout(svg);
+    }
+
+    function getMermaidViewBox(svg: SVGSVGElement) {
+      const viewBox = svg.getAttribute('viewBox')?.split(/\s+/).map(Number);
+      if (!viewBox || viewBox.length !== 4 || viewBox.some((value) => !Number.isFinite(value))) {
+        return null;
+      }
+
+      return viewBox;
+    }
+
+    function appendSvgTranslateY(element: SVGGraphicsElement, dy: number) {
+      if (!Number.isFinite(dy) || Math.abs(dy) < 0.1) return;
+
+      const currentTransform = element.getAttribute('transform') || '';
+      element.setAttribute('transform', `${currentTransform} translate(0 ${dy})`.trim());
+    }
+
+    function getBoundingRange(elements: SVGGraphicsElement[]) {
+      const boxes = elements
+        .map((element) => element.getBoundingClientRect())
+        .filter((box) => box.width > 0 || box.height > 0);
+      if (boxes.length === 0) return null;
+
+      const top = Math.min(...boxes.map((box) => box.top));
+      const bottom = Math.max(...boxes.map((box) => box.bottom));
+      return { top, bottom };
+    }
+
+    function compactOdsMermaidPropClusters(svg: SVGSVGElement) {
+      const propClusters = [
+        { clusterId: 'prop_left', childId: 'prop_left_icon' },
+        { clusterId: 'prop_center', childId: 'prop_center_label' },
+        { clusterId: 'prop_right', childId: 'prop_right_icon' },
+      ];
+
+      propClusters.forEach(({ clusterId, childId }) => {
+        const cluster = Array.from(svg.querySelectorAll<SVGGraphicsElement>('g.cluster'))
+          .find((group) => group.id.includes(clusterId));
+        const rect = cluster?.querySelector<SVGRectElement>(':scope > rect');
+        const originalHeight = Number(rect?.getAttribute('height'));
+        const compactHeight = 88;
+        if (!rect || !Number.isFinite(originalHeight)) return;
+
+        rect.setAttribute('height', String(compactHeight));
+
+        const child = Array.from(svg.querySelectorAll<SVGGraphicsElement>('g.node'))
+          .find((group) => group.id.includes(childId));
+        appendSvgTranslateY(child, -(originalHeight - compactHeight) / 2);
+      });
+    }
+
+    function compactOdsMermaidVerticalLayout(svg: SVGSVGElement) {
+      const viewBox = getMermaidViewBox(svg);
+      if (!viewBox) return;
+
+      const groups = Array.from(svg.querySelectorAll<SVGGraphicsElement>('g.node, g.cluster'));
+      const findGroups = (...idParts: string[]) =>
+        groups.filter((group) => idParts.some((idPart) => group.id.includes(idPart)));
+
+      const zIndexGroups = findGroups('z_index_1', 'z_index_2', 'z_index_3');
+      if (zIndexGroups.length < 3) return;
+
+      const svgBounds = svg.getBoundingClientRect();
+      const scale = svgBounds.width / viewBox[2];
+      if (!Number.isFinite(scale) || scale <= 0) return;
+
+      const firstLayer = findGroups('interaction_layer');
+      const secondLayerVisible = findGroups('prop_left', 'prop_center', 'prop_right');
+      const secondLayer = findGroups('z_index_2', 'prop_left', 'prop_center', 'prop_right');
+      const thirdLayerVisible = findGroups('spinner');
+      const thirdLayer = findGroups('z_index_3', 'spinner');
+
+      const firstRange = getBoundingRange(firstLayer);
+      const secondRange = getBoundingRange(secondLayerVisible);
+      if (!firstRange || !secondRange) return;
+
+      const desiredGap = 20;
+      const secondLayerDyPx = firstRange.bottom + desiredGap - secondRange.top;
+      secondLayer.forEach((group) => appendSvgTranslateY(group, secondLayerDyPx / scale));
+
+      const movedSecondRange = getBoundingRange(secondLayerVisible);
+      const thirdRange = getBoundingRange(thirdLayerVisible);
+      if (!movedSecondRange || !thirdRange) return;
+
+      const thirdLayerDyPx = movedSecondRange.bottom + desiredGap - thirdRange.top;
+      thirdLayer.forEach((group) => appendSvgTranslateY(group, thirdLayerDyPx / scale));
+
+      const contentRange = getBoundingRange([...firstLayer, ...secondLayerVisible, ...thirdLayerVisible]);
+      if (!contentRange) return;
+
+      const bottomInViewBox = (contentRange.bottom - svgBounds.top) / scale;
+      const compactHeight = Math.max(180, Math.ceil(bottomInViewBox + 28));
+      svg.setAttribute('viewBox', `${viewBox[0]} ${viewBox[1]} ${viewBox[2]} ${compactHeight}`);
+
+      const outerBox = groups.find((group) => group.id.includes('box_button'));
+      const container = groups.find((group) => group.id.includes('container'));
+      const outerRect = outerBox?.querySelector<SVGRectElement>(':scope > rect');
+      const containerRect = container?.querySelector<SVGRectElement>(':scope > rect');
+      outerRect?.setAttribute('height', String(Math.max(80, compactHeight - 16)));
+      containerRect?.setAttribute('height', String(Math.max(80, compactHeight - 37)));
+    }
+
+    function makeHeadingId(text: string, index: number) {
+      const normalized = text
+        .trim()
+        .toLowerCase()
+        .replace(/[^\p{Letter}\p{Number}\s-]/gu, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+
+      return normalized || `section-${index + 1}`;
+    }
+
+    function buildOdsDocToc(root: HTMLElement) {
+      const panels = Array.from(root.querySelectorAll<HTMLElement>('[data-doc-tab-panel]'));
+      const tocs = Array.from(root.querySelectorAll<HTMLElement>('[data-doc-tab-toc]'));
+      const usedIds = new Set<string>();
+
+      panels.forEach((panel) => {
+        const value = panel.dataset.docTabPanel;
+        const toc = tocs.find((item) => item.dataset.docTabToc === value);
+        if (!toc) return;
+
+        const pageTitle = document.querySelector<HTMLElement>('.opage__head h1')?.textContent?.trim() || '';
+        const headings = Array.from(panel.querySelectorAll<HTMLElement>('.prose h1, .prose h2, .prose h3'))
+          .filter((heading) => heading.textContent?.trim());
+        const sectionHeadings = headings.filter((heading, index) => {
+          const text = heading.textContent?.trim() || '';
+          if (index !== 0 || heading.tagName !== 'H1') return true;
+          return text !== pageTitle && !text.startsWith(`${pageTitle} —`);
+        });
+
+        toc.replaceChildren();
+        if (sectionHeadings.length === 0) {
+          toc.hidden = true;
+          return;
+        }
+
+        const list = document.createElement('ol');
+        list.className = 'ods-doc-tabs__toc-list';
+        sectionHeadings.forEach((heading, index) => {
+          if (!heading.id) {
+            const baseId = makeHeadingId(heading.textContent || '', index);
+            let nextId = baseId;
+            let suffix = 2;
+            while (usedIds.has(nextId) || document.getElementById(nextId)) {
+              nextId = `${baseId}-${suffix}`;
+              suffix += 1;
+            }
+            heading.id = nextId;
+          }
+          usedIds.add(heading.id);
+          heading.classList.add('ods-doc-heading');
+
+          const item = document.createElement('li');
+          item.className = 'ods-doc-tabs__toc-item';
+          item.dataset.level = heading.tagName === 'H3' ? '3' : '2';
+
+          const link = document.createElement('a');
+          link.className = 'ods-doc-tabs__toc-link';
+          link.href = `#${heading.id}`;
+          link.textContent = heading.textContent?.trim() || '';
+          item.append(link);
+          list.append(item);
+        });
+
+        toc.append(list);
+      });
+    }
+
+    function bindOdsDocTabs() {
+      document.querySelectorAll<HTMLElement>('.ods-doc-tabs').forEach((root) => {
+        const triggers = Array.from(root.querySelectorAll<HTMLElement>('[data-doc-tab-trigger]'));
+        const panels = Array.from(root.querySelectorAll<HTMLElement>('[data-doc-tab-panel]'));
+        const tocs = Array.from(root.querySelectorAll<HTMLElement>('[data-doc-tab-toc]'));
+        if (triggers.length === 0 || panels.length === 0) return;
+        buildOdsDocToc(root);
+
+        const activate = (value: string) => {
+          triggers.forEach((trigger) => {
+            const isActive = trigger.dataset.docTabTrigger === value;
+            trigger.dataset.state = isActive ? 'active' : 'inactive';
+            trigger.setAttribute('aria-selected', String(isActive));
+            trigger.tabIndex = isActive ? 0 : -1;
+          });
+          panels.forEach((panel) => {
+            const isActive = panel.dataset.docTabPanel === value;
+            panel.dataset.state = isActive ? 'active' : 'inactive';
+            panel.hidden = !isActive;
+            if (isActive) renderOdsMermaid(panel);
+          });
+          tocs.forEach((toc) => {
+            const isActive = toc.dataset.docTabToc === value && toc.childElementCount > 0;
+            toc.hidden = !isActive;
+          });
+        };
+
+        triggers.forEach((trigger) => {
+          if (trigger.dataset.odsBound) return;
+          trigger.dataset.odsBound = '1';
+          trigger.addEventListener('click', () => {
+            const value = trigger.dataset.docTabTrigger;
+            if (value) activate(value);
+          });
+        });
+
+        const active = triggers.find((trigger) => trigger.dataset.state === 'active') || triggers[0];
+        const value = active?.dataset.docTabTrigger;
+        if (value) activate(value);
+      });
+    }
+
+    bindOdsDocTabs();
+    renderOdsMermaid();
+    document.addEventListener('astro:page-load', bindOdsDocTabs);
+    document.addEventListener('astro:page-load', () => renderOdsMermaid());
+  </script>
+</Layout>
+
+<style>
+  .opage { padding: 48px 0 96px; }
+  .ods-theme {
+    color: var(--ods-foreground);
+    background: var(--ods-background);
+  }
+  .ods-shell {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+  }
+  .ods-shell__main {
+    min-width: 0;
+  }
+  .crumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    color: var(--ods-foreground-weak);
+    font-size: var(--ods-detail13-l18-font-size);
+    line-height: var(--ods-detail13-l18-line-height);
+    letter-spacing: var(--ods-detail13-l18-letter-spacing);
+  }
+  .crumb a { color: var(--ods-foreground-weak); }
+  .crumb a:hover { color: var(--ods-foreground); }
+  .opage__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 32px;
+    padding-bottom: 32px;
+  }
+  .opage__eyebrow {
+    margin-bottom: 10px;
+    color: var(--ods-foreground-weak);
+    font-size: var(--ods-detail12-l16-font-size);
+    font-weight: var(--ods-font-semibold);
+    line-height: var(--ods-detail12-l16-line-height);
+    letter-spacing: var(--ods-detail12-l16-letter-spacing);
+    text-transform: uppercase;
+  }
+  .opage__head h1 {
+    color: var(--ods-foreground);
+    font-size: var(--ods-heading32-font-size);
+    font-weight: var(--ods-font-bold);
+    line-height: var(--ods-heading32-line-height);
+    letter-spacing: var(--ods-heading32-letter-spacing);
+  }
+  .opage__lead {
+    margin-top: 14px;
+    max-width: 680px;
+    color: var(--ods-foreground-weak);
+    font-size: var(--ods-body17-l22-font-size);
+    line-height: var(--ods-body17-l22-line-height);
+    letter-spacing: var(--ods-body17-l22-letter-spacing);
+  }
+  .opage__meta { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; min-width: 260px; }
+  :global(.ods-theme .ods-component-meta) { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+  :global(.ods-theme .ods-component-meta__badge) { font-family: var(--f-mono); font-weight: var(--ods-font-semibold); }
+  .opreview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 128px;
+    margin: 32px 0;
+    padding: 40px 24px;
+    background: var(--ods-background);
+    border: 1px solid var(--ods-border);
+    border-radius: var(--r-lg);
+  }
+  :global(.ods-web-preview) { width: 100%; }
+  :global(.ods-web-preview__buttons) { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; }
+  :global(.ods-web-preview__center) { display: flex; align-items: center; justify-content: center; min-height: 48px; }
+  :global(.ods-web-preview__options) { display: grid; gap: 12px; justify-content: center; }
+  :global(.ods-web-preview__tabs) { width: min(420px, 100%); margin: 0 auto; }
+  :global(.ods-web-preview__thumbnail) { width: min(240px, 100%); margin: 0 auto; }
+  :global(.ods-web-preview__empty) {
+    color: var(--ods-foreground-weak);
+    font-size: var(--ods-detail13-l18-font-size);
+    line-height: var(--ods-detail13-l18-line-height);
+    letter-spacing: var(--ods-detail13-l18-letter-spacing);
+    text-align: center;
+  }
+  .olinks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 36px;
+  }
+  .olink {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--ods-background-weak);
+    border-radius: var(--r-pill);
+    color: var(--ods-foreground);
+    font-size: var(--ods-detail13-l18-font-size);
+    line-height: var(--ods-detail13-l18-line-height);
+    letter-spacing: var(--ods-detail13-l18-letter-spacing);
+  }
+  .olink:hover { background: var(--ods-background-disabled); color: inherit; }
+  .olink__label { font-weight: var(--ods-font-bold); }
+  .olink__purpose { color: var(--ods-foreground-weak); }
+  .odocs {
+    max-width: none;
+  }
+  :global(.ods-theme .ods-doc-tabs__list) {
+    position: sticky;
+    top: 64px;
+    z-index: 40;
+    margin-bottom: 28px;
+    background: var(--ods-background);
+  }
+  :global(.ods-theme .ods-doc-tabs__body) {
+    display: grid;
+    grid-template-columns: minmax(0, 920px) 180px;
+    gap: 48px;
+    align-items: start;
+  }
+  :global(.ods-theme .ods-doc-tabs__content) {
+    min-width: 0;
+  }
+  :global(.ods-theme .ods-doc-tabs__panel) {
+    outline: none;
+  }
+  :global(.ods-theme .ods-doc-tabs__panel[data-state="inactive"]) {
+    display: none;
+  }
+  :global(.ods-theme .ods-doc-tabs__toc) {
+    position: sticky;
+    top: 132px;
+    max-height: calc(100vh - 156px);
+    overflow: auto;
+    padding-left: 16px;
+    border-left: 1px solid var(--ods-border);
+  }
+  :global(.ods-theme .ods-doc-tabs__toc-nav[hidden]),
+  :global(.ods-theme .ods-doc-tabs__toc:empty) {
+    display: none;
+  }
+  :global(.ods-theme .ods-doc-tabs__toc-list) {
+    display: grid;
+    gap: 4px;
+    list-style: none;
+  }
+  :global(.ods-theme .ods-doc-tabs__toc-item[data-level="3"]) {
+    padding-left: 10px;
+  }
+  :global(.ods-theme .ods-doc-tabs__toc-link) {
+    display: block;
+    padding: 3px 0;
+    color: var(--ods-foreground-weak);
+    font-size: var(--ods-detail13-l18-font-size);
+    line-height: var(--ods-detail13-l18-line-height);
+    letter-spacing: var(--ods-detail13-l18-letter-spacing);
+  }
+  :global(.ods-theme .ods-doc-tabs__toc-link:hover) {
+    color: var(--ods-foreground);
+  }
+  :global(.ods-theme .ods-doc-heading) {
+    scroll-margin-top: 132px;
+  }
+  :global(.ods-theme .prose) {
+    color: var(--ods-foreground);
+    font-size: var(--ods-body14-l20-font-size);
+    line-height: var(--ods-body14-l20-line-height);
+    letter-spacing: var(--ods-body14-l20-letter-spacing);
+  }
+  :global(.ods-theme .prose h1) {
+    color: var(--ods-foreground);
+    font-size: var(--ods-heading24-font-size);
+    font-weight: var(--ods-font-bold);
+    line-height: var(--ods-heading24-line-height);
+    letter-spacing: var(--ods-heading24-letter-spacing);
+  }
+  :global(.ods-theme .prose h2) {
+    color: var(--ods-foreground);
+    font-size: var(--ods-heading20-font-size);
+    font-weight: var(--ods-font-bold);
+    line-height: var(--ods-heading20-line-height);
+    letter-spacing: var(--ods-heading20-letter-spacing);
+  }
+  :global(.ods-theme .prose h2 + .ods-doc-divider) {
+    margin: 10px 0 18px;
+  }
+  :global(.ods-theme .prose h3) {
+    color: var(--ods-foreground);
+    font-size: var(--ods-heading17-font-size);
+    font-weight: var(--ods-font-bold);
+    line-height: var(--ods-heading17-line-height);
+    letter-spacing: var(--ods-heading17-letter-spacing);
+  }
+  :global(.ods-theme .prose p),
+  :global(.ods-theme .prose li) {
+    color: var(--ods-foreground);
+    font-size: var(--ods-body14-l20-font-size);
+    line-height: var(--ods-body14-l20-line-height);
+    letter-spacing: var(--ods-body14-l20-letter-spacing);
+  }
+  :global(.ods-theme .prose blockquote) {
+    border-left-color: var(--ods-foreground);
+    color: var(--ods-foreground-weak);
+  }
+  :global(.ods-theme .prose code) {
+    background: var(--ods-background-weak);
+    color: var(--ods-foreground);
+    font-weight: var(--ods-font-semibold);
+  }
+  :global(.ods-theme .ods-mermaid) {
+    margin: 16px 0;
+    padding: 8px;
+    overflow-x: auto;
+    background: var(--ods-background-weak);
+    border: 1px solid var(--ods-border);
+    border-radius: var(--r-md);
+  }
+  :global(.ods-theme .ods-mermaid svg) {
+    display: block;
+    width: min(100%, 420px) !important;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+  }
+  :global(.ods-theme .ods-mermaid .ods-mermaid__pseudo-section > rect),
+  :global(.ods-theme .ods-mermaid .ods-mermaid__pseudo-section > .cluster-label) {
+    opacity: 0;
+  }
+  :global(.ods-theme .ods-mermaid[data-rendered="error"] pre) {
+    margin: 0;
+    color: var(--ods-foreground);
+  }
+  :global(.ods-theme .prose th),
+  :global(.ods-theme .prose td) {
+    border-bottom-color: var(--ods-border);
+    padding: 5px 8px;
+    font-size: var(--ods-detail13-l18-font-size);
+    line-height: var(--ods-detail13-l18-line-height);
+    letter-spacing: var(--ods-detail13-l18-letter-spacing);
+  }
+  :global(.ods-theme .prose table) {
+    margin: 12px 0 20px;
+  }
+  :global(.ods-theme .prose th) {
+    background: var(--ods-background-weak);
+    color: var(--ods-foreground);
+    font-weight: var(--ods-font-semibold);
+  }
+
+  @media (max-width: 760px) {
+    .ods-shell {
+      display: block;
+    }
+    .opage__head { flex-direction: column; }
+    .opage__meta { justify-content: flex-start; min-width: 0; }
+    .opreview { grid-template-columns: 1fr; }
+    :global(.ods-side-nav) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 1000px) {
+    :global(.ods-theme .ods-doc-tabs__body) {
+      display: block;
+    }
+    :global(.ods-theme .ods-doc-tabs__toc) {
+      display: none;
+    }
+  }
+</style>

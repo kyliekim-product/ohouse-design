@@ -2,7 +2,7 @@
 // node 환경에서 build / dev 시점에 호출됨.
 
 import { readFileSync, readdirSync, existsSync, statSync } from 'fs';
-import { join, resolve, basename, dirname } from 'path';
+import { join, resolve, dirname } from 'path';
 import { execSync } from 'child_process';
 import matter from 'gray-matter';
 import { marked } from 'marked';
@@ -24,9 +24,16 @@ function resolveRoot() {
 }
 const ROOT = resolveRoot();
 
-// base path (GitHub Pages sub-path 대응). astro.config.mjs 의 PAGES_BASE 와 동일.
-// 항상 끝에 '/' 가 오도록 정규화 (예: '/' 또는 '/ohouse-design/').
-const BASE = (process.env.PAGES_BASE || '/').replace(/\/+$/, '') + '/';
+function resolveSiteBase() {
+  const baseFromArg = process.argv.find((arg) => arg.startsWith('--base='));
+  const baseFromSplitArg = process.argv.includes('--base')
+    ? process.argv[process.argv.indexOf('--base') + 1]
+    : null;
+  return process.env.SITE_BASE || process.env.PAGES_BASE || baseFromArg?.slice('--base='.length) || baseFromSplitArg || '/';
+}
+
+// base path (사내 /deploy, preview sub-path 대응). 항상 끝에 '/' 가 오도록 정규화.
+const BASE = resolveSiteBase().replace(/\/+$/, '') + '/';
 
 // base + 경로 결합 (중복 슬래시 방지). path 는 보통 'api/asset?...' 처럼 슬래시 없이 시작.
 function withBase(path) {
@@ -280,7 +287,7 @@ export function getScreen(domainSlug, screenSlug) {
     label: readme.title || screenSlug,
     body: readme.body || '',
     markers,
-    thumb: thumb ? `/api/asset?path=${encodeURIComponent(thumb.replace(ROOT + '/', ''))}` : null,
+    thumb: thumb ? withBase(`api/asset?path=${encodeURIComponent(thumb.replace(ROOT + '/', ''))}`) : null,
     prototype: prototypePath ? prototypePath.replace(ROOT + '/', '') : null,
     updated: lastModified(`domains/${domainSlug}/screens/${screenSlug}`),
   };
