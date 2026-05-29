@@ -4,8 +4,8 @@ import yaml from 'js-yaml';
 import { marked } from 'marked';
 
 const CONTENT_PACKAGE_ROOT = resolve(
-  import.meta.dirname,
-  '../../node_modules/@bucketplace/ods-site-content',
+  process.env.ODS_SITE_CONTENT_ROOT
+    || resolve(import.meta.dirname, '../../node_modules/@bucketplace/ods-site-content'),
 );
 
 const markdownRenderer = new marked.Renderer();
@@ -77,6 +77,19 @@ function normalizeReferences(references) {
     .filter((item) => item.url);
 }
 
+function normalizePreview(preview) {
+  if (!preview || typeof preview !== 'object' || Array.isArray(preview)) return null;
+  if (typeof preview.component !== 'string' || preview.component.length === 0) return null;
+
+  return {
+    component: preview.component,
+    label: typeof preview.label === 'string' ? preview.label : null,
+    props: preview.props && typeof preview.props === 'object' && !Array.isArray(preview.props)
+      ? preview.props
+      : {},
+  };
+}
+
 function componentFromMeta(slug, dir, meta) {
   return {
     slug,
@@ -87,6 +100,7 @@ function componentFromMeta(slug, dir, meta) {
     aliases: Array.isArray(meta.aliases) ? meta.aliases : [],
     description: meta.description || '',
     usageScope: meta.usage_scope || null,
+    preview: normalizePreview(meta.preview),
     references: normalizeReferences(meta.references),
     dir,
   };

@@ -44,7 +44,7 @@ const navigation = getOdsNavigation();
           </header>
 
           <section class="opreview" aria-label={`${component.title} representative example`}>
-            <OdsWebPreview slug={component.slug} />
+            <OdsWebPreview slug={component.slug} preview={component.preview} />
           </section>
 
           {component.references.length > 0 && (

@@ -1,26 +1,50 @@
 import { BoxButton, DesignSystemProvider } from '@bucketplace/design-system';
 
-function BoxButtonPreview() {
+const BOX_BUTTON_PROP_KEYS = new Set(['size', 'variant', 'disabled', 'loading']);
+
+function pickProps(props, allowedKeys) {
+  if (!props || typeof props !== 'object') return {};
+  return Object.fromEntries(
+    Object.entries(props).filter(([key, value]) => allowedKeys.has(key) && value !== undefined && value !== null),
+  );
+}
+
+function BoxButtonPreview({ preview }) {
+  const props = pickProps(preview.props, BOX_BUTTON_PROP_KEYS);
+
   return (
     <div className="ods-web-preview__buttons">
-      <BoxButton size="medium" variant="brand-solid">
+      <BoxButton {...props}>
         <BoxButton.Slot side="center">
-          <BoxButton.Label>확인</BoxButton.Label>
+          <BoxButton.Label>{preview.label || 'Button'}</BoxButton.Label>
         </BoxButton.Slot>
       </BoxButton>
     </div>
   );
 }
 
-export default function OdsWebPreview({ slug }) {
+const previewRenderers = {
+  BoxButton: BoxButtonPreview,
+};
+
+function PreviewContent({ preview }) {
+  if (!preview) {
+    return <div className="ods-web-preview__empty">Preview pending</div>;
+  }
+
+  const Renderer = previewRenderers[preview.component];
+  if (!Renderer) {
+    return <div className="ods-web-preview__empty">Preview unavailable</div>;
+  }
+
+  return <Renderer preview={preview} />;
+}
+
+export default function OdsWebPreview({ slug, preview }) {
   return (
     <DesignSystemProvider>
       <div className="ods-web-preview" data-ods-preview={slug}>
-        {slug === 'box-button' ? (
-          <BoxButtonPreview />
-        ) : (
-          <div className="ods-web-preview__empty">Preview pending</div>
-        )}
+        <PreviewContent preview={preview} />
       </div>
     </DesignSystemProvider>
   );
