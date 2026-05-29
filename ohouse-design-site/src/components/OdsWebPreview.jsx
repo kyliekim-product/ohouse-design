@@ -11,12 +11,13 @@ function pickProps(props, allowedKeys) {
 
 function BoxButtonPreview({ preview }) {
   const props = pickProps(preview.props, BOX_BUTTON_PROP_KEYS);
+  const label = preview.slots?.center?.label || 'Button';
 
   return (
     <div className="ods-web-preview__buttons">
       <BoxButton {...props}>
         <BoxButton.Slot side="center">
-          <BoxButton.Label>{preview.label || 'Button'}</BoxButton.Label>
+          <BoxButton.Label>{label}</BoxButton.Label>
         </BoxButton.Slot>
       </BoxButton>
     </div>
@@ -32,7 +33,7 @@ function PreviewContent({ preview }) {
     return <div className="ods-web-preview__empty">Preview pending</div>;
   }
 
-  const Renderer = previewRenderers[preview.component];
+  const Renderer = previewRenderers[preview.renderer];
   if (!Renderer) {
     return <div className="ods-web-preview__empty">Preview unavailable</div>;
   }

@@ -79,14 +79,19 @@ function normalizeReferences(references) {
 
 function normalizePreview(preview) {
   if (!preview || typeof preview !== 'object' || Array.isArray(preview)) return null;
-  if (typeof preview.component !== 'string' || preview.component.length === 0) return null;
+  if (typeof preview.renderer !== 'string' || preview.renderer.length === 0) return null;
 
   return {
-    component: preview.component,
-    label: typeof preview.label === 'string' ? preview.label : null,
+    renderer: preview.renderer,
     props: preview.props && typeof preview.props === 'object' && !Array.isArray(preview.props)
       ? preview.props
       : {},
+    slots: preview.slots && typeof preview.slots === 'object' && !Array.isArray(preview.slots)
+      ? preview.slots
+      : {},
+    items: Array.isArray(preview.items)
+      ? preview.items.filter((item) => item && typeof item === 'object' && !Array.isArray(item))
+      : [],
   };
 }
 
