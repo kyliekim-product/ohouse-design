@@ -424,6 +424,8 @@ const navigation = getOdsNavigation();
   }
   :global(.ods-web-preview) { width: 100%; }
   :global(.ods-web-preview__buttons) { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; }
+  :global(.ods-web-preview__center) { display: flex; align-items: center; justify-content: center; min-height: 48px; }
+  :global(.ods-web-preview__thumbnail) { width: min(240px, 100%); margin: 0 auto; }
   :global(.ods-web-preview__empty) {
     color: var(--ods-foreground-weak);
     font-size: var(--ods-detail13-l18-font-size);
