@@ -51,10 +51,29 @@ export default function PlaygroundChat({ onHtmlGenerated, apiKey: propApiKey, ha
   // key가 없어도 서버가 OPENAI_API_KEY env var로 처리 가능 — 블로킹하지 않음
   const canSend = !streaming && input.trim().length > 0;
 
+  // 단일 HTML 블록 추출
   const extractHtml = (text) => {
-    // ```html ... ``` 블록 추출
     const match = text.match(/```html\s*([\s\S]*?)```/);
     return match ? match[1].trim() : null;
+  };
+
+  // A/B/C 다중 HTML 블록 추출 — "### A안:" / "### B안:" 헤더 기준
+  const extractAllHtmls = (text) => {
+    const blocks = [];
+    // "### A안:", "### B안:" 등 헤더 뒤에 오는 ```html 블록들
+    const variantRegex = /###\s*[A-Ca-c]안[^#\n]*\n[\s\S]*?```html\s*([\s\S]*?)```/g;
+    let m;
+    while ((m = variantRegex.exec(text)) !== null) {
+      blocks.push(m[1].trim());
+    }
+    // 단순 다중 ```html 블록 (헤더 없는 경우)
+    if (blocks.length === 0) {
+      const simpleRegex = /```html\s*([\s\S]*?)```/g;
+      while ((m = simpleRegex.exec(text)) !== null) {
+        blocks.push(m[1].trim());
+      }
+    }
+    return blocks.length > 1 ? blocks : null; // 2개 이상일 때만 다중으로 처리
   };
 
   const sendMessage = useCallback(async (text) => {
@@ -120,9 +139,9 @@ export default function PlaygroundChat({ onHtmlGenerated, apiKey: propApiKey, ha
                     : m
                 )
               );
-              // HTML 감지 → preview 즉시 업데이트 (코드 블록 완성 전 partial도 전달)
+              // 스트리밍 중 partial HTML 감지 → preview 즉시 업데이트 (단일 블록만)
               const partial = extractHtml(fullText);
-              if (partial) onHtmlGenerated?.(partial);
+              if (partial && !extractAllHtmls(fullText)) onHtmlGenerated?.(partial, null);
             } else if (evt.type === 'done') {
               break;
             } else if (evt.type === 'error') {
@@ -141,9 +160,14 @@ export default function PlaygroundChat({ onHtmlGenerated, apiKey: propApiKey, ha
         )
       );
 
-      // 최종 HTML 다시 파싱
-      const finalHtml = extractHtml(fullText);
-      if (finalHtml) onHtmlGenerated?.(finalHtml);
+      // 최종 HTML 파싱 — A/B 다중이면 배열로, 단일이면 단일로 전달
+      const multiHtmls = extractAllHtmls(fullText);
+      if (multiHtmls) {
+        onHtmlGenerated?.(null, multiHtmls); // A/B 모드
+      } else {
+        const finalHtml = extractHtml(fullText);
+        if (finalHtml) onHtmlGenerated?.(finalHtml, null); // 단일 모드
+      }
 
     } catch (err) {
       setMessages((prev) =>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<!-- @code-connect:category-default -->
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=390px, initial-scale=1.0">
+  <title>카테고리 — 가구 (Default)</title>
+  <style>
+    /* ─── Design Tokens ──────────────────────────────── */
+    :root {
+      --palette-gray-50: #f5f5f5; --palette-gray-100: #ededed;
+      --palette-gray-150: #e0e0e0; --palette-gray-300: #acacac;
+      --palette-gray-500: #737373; --palette-gray-700: #444444;
+      --palette-gray-900: #141414; --palette-gray-950: #0a0a0a;
+      --palette-white: #ffffff; --palette-genuineBlue-400: #0497ef;
+      --palette-red-400: #fd3d4a;
+
+      --color-background: var(--palette-white);
+      --color-background-weak: var(--palette-gray-50);
+      --color-background-emphasis: var(--palette-gray-950);
+      --color-background-brand: var(--palette-genuineBlue-400);
+      --color-background-brand-weak: #ddf3ff;
+      --color-foreground: var(--palette-gray-950);
+      --color-foreground-weak: var(--palette-gray-500);
+      --color-foreground-inverse: var(--palette-white);
+      --color-foreground-brand: var(--palette-genuineBlue-400);
+      --color-foreground-critical: var(--palette-red-400);
+      --color-foreground-disabled: var(--palette-gray-300);
+      --color-border: var(--palette-gray-150);
+      --color-border-strong: var(--palette-gray-300);
+      --color-border-thumbnail: var(--palette-gray-100);
+
+      --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;
+      --space-6:24px;--space-11:44px;--space-14:56px;
+      --radius-md:8px;--radius-full:9999px;
+    }
+
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,"Apple SD Gothic Neo","Pretendard",sans-serif;
+      font-size:14px;line-height:1.5;color:var(--color-foreground);
+      background:var(--color-background);word-break:keep-all;letter-spacing:-0.3px}
+    button{background:none;border:none;cursor:pointer;font:inherit;color:inherit;
+      letter-spacing:inherit;-webkit-tap-highlight-color:transparent}
+
+    .app{width:390px;min-height:100vh;margin:0 auto;display:flex;flex-direction:column}
+
+    /* Top Bar */
+    .top-bar{height:var(--space-14);display:flex;align-items:center;padding:0 var(--space-1);
+      background:var(--color-background);border-bottom:1px solid var(--color-border);
+      position:sticky;top:0;z-index:100}
+    .icon-btn{display:flex;align-items:center;justify-content:center;
+      min-width:var(--space-11);min-height:var(--space-11);border-radius:var(--radius-full)}
+    .icon-btn:focus-visible{outline:2px solid var(--color-foreground);outline-offset:2px}
+    .top-bar__title{flex:1;font-size:16px;font-weight:700;text-align:center}
+    .top-bar__actions{display:flex}
+    .cart-wrap{position:relative}
+    .cart-badge{position:absolute;top:6px;right:6px;min-width:14px;height:14px;
+      border-radius:var(--radius-full);background:var(--color-foreground-critical);
+      color:var(--color-foreground-inverse);font-size:9px;font-weight:700;
+      display:flex;align-items:center;justify-content:center;padding:0 3px;
+      border:1.5px solid var(--color-background)}
+
+    /* Chips */
+    /* @ods-component:Chip size=sm */
+    .chips-area{background:var(--color-background);border-bottom:1px solid var(--color-border);
+      position:sticky;top:var(--space-14);z-index:90;overflow-x:auto;scrollbar-width:none}
+    .chips-area::-webkit-scrollbar{display:none}
+    .chips-track{display:flex;gap:var(--space-2);padding:var(--space-3) var(--space-4);white-space:nowrap}
+    .chip{display:inline-flex;align-items:center;justify-content:center;height:32px;
+      padding:0 var(--space-3);border-radius:var(--radius-full);font-size:14px;font-weight:400;
+      white-space:nowrap;flex-shrink:0;min-width:var(--space-11)}
+    /* @ods-component:Chip variant=solid */
+    .chip--solid{background:var(--color-background-emphasis);color:var(--color-foreground-inverse);
+      border:1.5px solid var(--color-background-emphasis);font-weight:600}
+    /* @ods-component:Chip variant=normal */
+    .chip--normal{background:var(--color-background);color:var(--color-foreground);
+      border:1.5px solid var(--color-border-strong)}
+
+    /* Sort Bar */
+    .sort-bar{display:flex;align-items:center;justify-content:space-between;
+      padding:var(--space-2) var(--space-4);height:44px}
+    .sort-bar__count{font-size:12px;color:var(--color-foreground-weak)}
+    .sort-bar__controls{display:flex;gap:var(--space-2)}
+    .sort-btn{display:inline-flex;align-items:center;gap:4px;height:32px;
+      padding:0 var(--space-3);border-radius:var(--radius-full);
+      border:1.5px solid var(--color-border-strong);font-size:12px}
+    .filter-btn{display:inline-flex;align-items:center;gap:var(--space-1);height:32px;
+      padding:0 var(--space-3);border-radius:var(--radius-full);
+      border:1.5px solid var(--color-border-strong);font-size:12px}
+
+    /* Product Grid */
+    /* @ods-component:product-card */
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);
+      padding:var(--space-3) var(--space-4) 80px}
+    .card{display:flex;flex-direction:column;gap:var(--space-2)}
+    .card__thumb{position:relative;aspect-ratio:1/1;border-radius:var(--radius-md);
+      overflow:hidden;border:1px solid var(--color-border-thumbnail);
+      background:var(--color-background-weak)}
+    .card__img{width:100%;height:100%;object-fit:cover}
+    /* @ods-component:product-card-scrap */
+    .scrap{position:absolute;bottom:var(--space-2);right:var(--space-2);
+      width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+      border-radius:var(--radius-full);background:rgba(255,255,255,.9)}
+    .scrap--active{color:var(--color-foreground-critical)}
+    .card__info{display:flex;flex-direction:column;gap:3px}
+    .card__brand{font-size:12px;color:var(--color-foreground-weak);
+      overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+    /* @ods-component:product-card-product-title */
+    .card__title{font-size:14px;line-height:1.4;
+      display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    /* @ods-component:product-card-price */
+    .card__price-row{display:flex;align-items:baseline;gap:var(--space-1);margin-top:2px}
+    .card__rate{font-size:14px;font-weight:700;color:var(--color-foreground-critical)}
+    .card__price{font-size:14px;font-weight:700}
+    .card__orig{font-size:12px;color:var(--color-foreground-disabled);text-decoration:line-through}
+    /* @ods-component:product-card-review */
+    .card__review{display:flex;align-items:center;gap:2px;margin-top:2px}
+    .card__star{font-size:10px;color:#f5a623}
+    .card__rating{font-size:11px;font-weight:600}
+    .card__cnt{font-size:11px;color:var(--color-foreground-weak)}
+    /* @ods-component:product-card-delivery-info */
+    .card__badges{display:flex;flex-wrap:wrap;gap:3px;margin-top:2px}
+    .badge{display:inline-flex;align-items:center;height:18px;padding:0 5px;
+      border-radius:4px;font-size:10px;font-weight:500}
+    .badge--free{background:var(--color-background-brand-weak);color:var(--color-foreground-brand)}
+    .badge--today{background:var(--color-background-brand);color:var(--color-foreground-inverse)}
+    /* @ods-component:product-card-benefit */
+    .badge--benefit{background:#fce7e6;color:var(--color-foreground-critical)}
+    /* @ods-component:product-card-sold-out-banner */
+    .sold-overlay{position:absolute;bottom:0;left:0;right:0;height:32px;
+      background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;
+      color:#fff;font-size:12px;font-weight:600}
+    .card--sold .card__img{filter:grayscale(1);opacity:.6}
+
+    /* Bottom Nav */
+    /* @missing-ods:bottom-navigation */
+    .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+      width:390px;height:56px;background:var(--color-background);
+      border-top:1px solid var(--color-border);display:flex;
+      align-items:center;justify-content:space-around;z-index:200}
+    .nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;
+      min-width:var(--space-11);min-height:var(--space-11);flex:1;
+      color:var(--color-foreground-disabled);font-size:10px}
+    .nav-item--active{color:var(--color-foreground)}
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <header class="top-bar">
+    <button class="icon-btn" aria-label="뒤로 가기">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <h1 class="top-bar__title">가구</h1>
+    <div class="top-bar__actions">
+      <button class="icon-btn" aria-label="검색">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M20 20L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <div class="cart-wrap">
+        <button class="icon-btn" aria-label="장바구니 (3개)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M3 6h18M16 10a4 4 0 01-8 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <span class="cart-badge" aria-hidden="true">3</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- @ods-component:Chip variant=solid/normal size=sm -->
+  <nav class="chips-area" aria-label="하위 카테고리">
+    <div class="chips-track" role="tablist">
+      <button class="chip chip--solid" role="tab" aria-selected="true">전체</button>
+      <button class="chip chip--normal" role="tab" aria-selected="false">소파</button>
+      <button class="chip chip--normal" role="tab" aria-selected="false">침대</button>
+      <button class="chip chip--normal" role="tab" aria-selected="false">테이블/의자</button>
+      <button class="chip chip--normal" role="tab" aria-selected="false">수납/정리</button>
+      <button class="chip chip--normal" role="tab" aria-selected="false">조명</button>
+      <button class="chip chip--normal" role="tab" aria-selected="false">러그/커튼</button>
+    </div>
+  </nav>
+
+  <div class="sort-bar">
+    <span class="sort-bar__count">총 1,234개</span>
+    <div class="sort-bar__controls">
+      <button class="sort-btn">추천순 <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 4l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="filter-btn"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 2h12M3 7h8M5 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>필터</button>
+    </div>
+  </div>
+
+  <main class="grid">
+
+    <!-- @ods-component:product-card -->
+    <article class="card" tabindex="0" aria-label="까사미아 아르타 3인 소파">
+      <div class="card__thumb" style="background:#e8e4de">
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:36px">🛋️</div>
+        <button class="scrap" aria-label="스크랩"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3h10v11l-5-3-5 3V3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="card__info">
+        <span class="card__brand">까사미아</span>
+        <p class="card__title">아르타 3인 패브릭 소파 그레이</p>
+        <div class="card__price-row"><span class="card__rate">23%</span><span class="card__price">698,000원</span></div>
+        <span class="card__orig">909,000원</span>
+        <div class="card__review"><span class="card__star">★</span><span class="card__rating">4.8</span><span class="card__cnt">(2,341)</span></div>
+        <div class="card__badges"><span class="badge badge--free">무료배송</span></div>
+      </div>
+    </article>
+
+    <!-- @ods-component:product-card -->
+    <article class="card" tabindex="0" aria-label="에이스침대 그랜드 퀸 침대">
+      <div class="card__thumb" style="background:#eae6df">
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:36px">🛏️</div>
+        <button class="scrap scrap--active" aria-label="스크랩 취소"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M3 3h10v11l-5-3-5 3V3z"/></svg></button>
+      </div>
+      <div class="card__info">
+        <span class="card__brand">에이스침대</span>
+        <p class="card__title">그랜드 퀸 침대 프레임 내추럴</p>
+        <div class="card__price-row"><span class="card__price">1,290,000원</span></div>
+        <div class="card__review"><span class="card__star">★</span><span class="card__rating">4.9</span><span class="card__cnt">(892)</span></div>
+        <div class="card__badges"><span class="badge badge--free">무료배송</span><span class="badge badge--today">오늘출발</span></div>
+      </div>
+    </article>
+
+    <!-- @ods-component:product-card -->
+    <article class="card" tabindex="0" aria-label="리바트 마렌 4인 원목 식탁">
+      <div class="card__thumb" style="background:#ede8e0">
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:36px">🪑</div>
+        <button class="scrap" aria-label="스크랩"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3h10v11l-5-3-5 3V3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="card__info">
+        <span class="card__brand">리바트</span>
+        <p class="card__title">마렌 4인 원목 식탁 화이트오크</p>
+        <div class="card__price-row"><span class="card__rate">10%</span><span class="card__price">441,000원</span></div>
+        <span class="card__orig">490,000원</span>
+        <div class="card__review"><span class="card__star">★</span><span class="card__rating">4.7</span><span class="card__cnt">(456)</span></div>
+        <div class="card__badges"><span class="badge badge--benefit">쿠폰적용가</span></div>
+      </div>
+    </article>
+
+    <!-- @ods-component:product-card (sold-out) -->
+    <article class="card card--sold" tabindex="0" aria-label="허만밀러 에어론 체어 (품절)">
+      <div class="card__thumb" style="background:#ebebeb">
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:36px;opacity:.5">🪑</div>
+        <div class="sold-overlay">품절</div>
+        <button class="scrap" aria-label="스크랩"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3h10v11l-5-3-5 3V3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="card__info">
+        <span class="card__brand" style="color:var(--color-foreground-disabled)">허만밀러</span>
+        <p class="card__title" style="color:var(--color-foreground-disabled)">에어론 체어 B사이즈 그라파이트</p>
+        <div class="card__price-row"><span class="card__price" style="color:var(--color-foreground-disabled)">2,290,000원</span></div>
+        <div class="card__review"><span class="card__star" style="color:var(--color-foreground-disabled)">★</span><span class="card__rating" style="color:var(--color-foreground-disabled)">4.9</span><span class="card__cnt">(4,120)</span></div>
+      </div>
+    </article>
+
+  </main>
+
+  <nav class="bottom-nav" aria-label="하단 내비게이션">
+    <button class="nav-item" aria-label="홈"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 21V12h6v9" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>홈</span></button>
+    <button class="nav-item" aria-label="집구경"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="3" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="13" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="13" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.8"/></svg><span>집구경</span></button>
+    <button class="nav-item nav-item--active" aria-current="page" aria-label="쇼핑"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="currentColor" fill-opacity="0.1"/><path d="M3 6h18M16 10a4 4 0 01-8 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>쇼핑</span></button>
+    <button class="nav-item" aria-label="커뮤니티"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>커뮤니티</span></button>
+    <button class="nav-item" aria-label="마이"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>마이</span></button>
+  </nav>
+
+</div>
+</body>
+</html>

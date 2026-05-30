@@ -41,7 +41,7 @@ function Toast({ msg }) {
   );
 }
 
-export default function PlaygroundPreview({ html }) {
+export default function PlaygroundPreview({ html, htmls }) {
   // variants[i] = { html, label }
   const [variants, setVariants] = useState([{ html: null, label: 'A' }]);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -49,16 +49,26 @@ export default function PlaygroundPreview({ html }) {
   const iframeRef = useRef(null);
   const toastTimerRef = useRef(null);
 
-  // 외부에서 html이 들어오면 현재 active variant에 기록
+  // 단일 html — active variant에 적용 (스트리밍 partial 포함)
   useEffect(() => {
     if (!html) return;
     setVariants((prev) => {
       const updated = [...prev];
-      // 현재 active variant에 적용
       updated[activeIdx] = { ...updated[activeIdx], html };
       return updated;
     });
-  }, [html]); // activeIdx는 의도적으로 deps에서 제외 (html이 업데이트될 때의 activeIdx 고정)
+  }, [html]); // activeIdx 의도적 제외
+
+  // A/B/C 다중 htmls — 자동으로 variants 생성하고 0번 탭으로 이동
+  useEffect(() => {
+    if (!htmls?.length) return;
+    const newVariants = htmls.map((h, i) => ({
+      html: h,
+      label: ['A', 'B', 'C'][i] ?? String(i + 1),
+    }));
+    setVariants(newVariants);
+    setActiveIdx(0);
+  }, [htmls]);
 
   const currentHtml = variants[activeIdx]?.html ?? null;
 
