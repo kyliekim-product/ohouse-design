@@ -1,0 +1,21 @@
+---
+// Playground — 자연어 → prototype.html 생성 도구
+import Layout from '../layouts/Layout.astro';
+import PlaygroundRoot from '../components/PlaygroundRoot.jsx';
+import '../styles/playground.css';
+
+// 서버 환경변수에 API key가 있는지 확인 — true면 클라이언트 key 입력 배너 숨김
+const hasServerKey = Boolean(import.meta.env.OPENAI_API_KEY);
+---
+
+<Layout title="Playground — Ohouse Design">
+  <PlaygroundRoot client:load hasServerKey={hasServerKey} />
+</Layout>
+
+<style>
+  /* Layout의 기본 패딩 제거 (playground는 full-height 2패널) */
+  :global(main) {
+    padding: 0 !important;
+    overflow: hidden;
+  }
+</style>

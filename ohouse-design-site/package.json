@@ -12,6 +12,8 @@
     "validate:ods-previews": "node scripts/validate-ods-previews.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@astrojs/node": "^9.0.0",
     "@astrojs/react": "^4.4.2",
     "@bucketplace/design-system": "^13.0.0",
     "@bucketplace/lib": "^3.3.0",
