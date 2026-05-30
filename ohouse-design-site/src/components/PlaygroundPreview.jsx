@@ -1,10 +1,15 @@
-// PlaygroundPreview — iframe 프리뷰 + A/B 탭 + Copy/Download 액션
+// PlaygroundPreview — iframe 프리뷰 + OS 셀렉터 + A/B/C 탭 + Copy/Download
 // @missing-ods:playground-preview
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 const MAX_VARIANTS = 3;
 const VARIANT_LABELS = ['A', 'B', 'C'];
+const OS_OPTIONS = [
+  { id: 'ios',  label: 'iOS'   },
+  { id: 'aos',  label: 'AOS'   },
+  { id: 'web',  label: 'Web뷰' },
+];
 
 function CopyIcon() {
   return (
@@ -26,30 +31,28 @@ function DownloadIcon() {
 
 function Toast({ msg }) {
   return (
-    <div
-      style={{
-        position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
-        background: '#0a0a0a', color: '#fff', padding: '8px 18px',
-        borderRadius: 10, fontSize: 13, fontWeight: 500, zIndex: 9999,
-        boxShadow: '0 4px 20px rgba(0,0,0,0.18)',
-        animation: 'pg-fadein 0.15s ease',
-        pointerEvents: 'none',
-      }}
-    >
+    <div style={{
+      position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
+      background: '#0a0a0a', color: '#fff', padding: '8px 18px',
+      borderRadius: 10, fontSize: 13, fontWeight: 500, zIndex: 9999,
+      boxShadow: '0 4px 20px rgba(0,0,0,0.18)',
+      animation: 'pg-fadein 0.15s ease',
+      pointerEvents: 'none',
+    }}>
       {msg}
     </div>
   );
 }
 
 export default function PlaygroundPreview({ html, htmls }) {
-  // variants[i] = { html, label }
   const [variants, setVariants] = useState([{ html: null, label: 'A' }]);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [os, setOs] = useState('ios');
   const [toast, setToast] = useState(null);
   const iframeRef = useRef(null);
   const toastTimerRef = useRef(null);
 
-  // 단일 html — active variant에 적용 (스트리밍 partial 포함)
+  // 단일 html — active variant에 적용
   useEffect(() => {
     if (!html) return;
     setVariants((prev) => {
@@ -57,22 +60,17 @@ export default function PlaygroundPreview({ html, htmls }) {
       updated[activeIdx] = { ...updated[activeIdx], html };
       return updated;
     });
-  }, [html]); // activeIdx 의도적 제외
+  }, [html]);
 
-  // A/B/C 다중 htmls — 자동으로 variants 생성하고 0번 탭으로 이동
+  // A/B/C 다중 htmls — 자동 variants 생성
   useEffect(() => {
     if (!htmls?.length) return;
-    const newVariants = htmls.map((h, i) => ({
-      html: h,
-      label: ['A', 'B', 'C'][i] ?? String(i + 1),
-    }));
-    setVariants(newVariants);
+    setVariants(htmls.map((h, i) => ({ html: h, label: VARIANT_LABELS[i] ?? String(i + 1) })));
     setActiveIdx(0);
   }, [htmls]);
 
   const currentHtml = variants[activeIdx]?.html ?? null;
 
-  // iframe srcDoc 업데이트
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe || !currentHtml) return;
@@ -110,8 +108,7 @@ export default function PlaygroundPreview({ html, htmls }) {
 
   const addVariant = () => {
     if (variants.length >= MAX_VARIANTS) return;
-    const label = VARIANT_LABELS[variants.length];
-    setVariants((prev) => [...prev, { html: null, label }]);
+    setVariants((prev) => [...prev, { html: null, label: VARIANT_LABELS[prev.length] }]);
     setActiveIdx(variants.length);
   };
 
@@ -120,7 +117,7 @@ export default function PlaygroundPreview({ html, htmls }) {
 
   return (
     <div className="pg__preview">
-      {/* 상단 바: A/B 탭 + 액션 */}
+      {/* 상단 바 */}
       <div className="pg__preview-bar">
         <div className="pg__tabs" role="tablist" aria-label="Prototype 변형">
           {variants.map((v, i) => (
@@ -135,44 +132,42 @@ export default function PlaygroundPreview({ html, htmls }) {
             </button>
           ))}
           {showAddTab && (
-            <button
-              className="pg__tab"
-              onClick={addVariant}
-              title="새 변형 추가"
-              aria-label="변형 추가"
-            >
-              +
-            </button>
+            <button className="pg__tab" onClick={addVariant} aria-label="변형 추가">+</button>
           )}
         </div>
-
         <div className="pg__actions">
-          <button
-            className="pg__action-btn"
-            onClick={handleCopy}
-            disabled={!currentHtml}
-            title="HTML 클립보드 복사"
-          >
-            <CopyIcon />
-            Copy HTML
+          <button className="pg__action-btn" onClick={handleCopy} disabled={!currentHtml} title="HTML 클립보드 복사">
+            <CopyIcon /> Copy HTML
           </button>
-          <button
-            className="pg__action-btn"
-            onClick={handleDownload}
-            disabled={!currentHtml}
-            title="prototype.html 다운로드"
-          >
-            <DownloadIcon />
-            저장
+          <button className="pg__action-btn" onClick={handleDownload} disabled={!currentHtml} title="prototype.html 다운로드">
+            <DownloadIcon /> 저장
           </button>
         </div>
       </div>
 
-      {/* 프리뷰 프레임 */}
+      {/* 프레임 영역 */}
       <div className="pg__frame-area" role="region" aria-label="Prototype 미리보기">
+
+        {/* ③ OS 셀렉터 — 폰 상단 플로팅 */}
+        <div className="pg__os-selector" role="radiogroup" aria-label="OS 유형 선택">
+          {OS_OPTIONS.map((opt) => (
+            <button
+              key={opt.id}
+              className={`pg__os-btn${os === opt.id ? ' pg__os-btn--active' : ''}`}
+              onClick={() => setOs(opt.id)}
+              aria-pressed={os === opt.id}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
         {currentHtml ? (
-          <div className="pg__phone" aria-label="390px 모바일 프레임">
-            <div className="pg__phone-notch" aria-hidden="true" />
+          <div className={`pg__phone pg__phone--${os}`} aria-label={`${os.toUpperCase()} 프레임`}>
+            {/* OS별 상단 요소 */}
+            {os === 'ios' && <div className="pg__phone-notch" aria-hidden="true" />}
+            {os === 'aos' && <div className="pg__phone-statusbar" aria-hidden="true" />}
+            {/* Web뷰는 상단 요소 없음 */}
             <iframe
               ref={iframeRef}
               className="pg__iframe"
@@ -189,21 +184,12 @@ export default function PlaygroundPreview({ html, htmls }) {
               <rect x="16" y="17" width="16" height="2" rx="1" fill="currentColor"/>
               <rect x="16" y="22" width="10" height="2" rx="1" fill="currentColor"/>
             </svg>
-            <p>
-              왼쪽 채팅에서<br />화면을 요청하면<br />여기에 표시됩니다
-            </p>
+            <p>왼쪽 채팅에서<br />화면을 요청하면<br />여기에 표시됩니다</p>
           </div>
         )}
       </div>
 
       {toast && <Toast msg={toast} />}
-
-      <style>{`
-        @keyframes pg-fadein {
-          from { opacity: 0; transform: translateX(-50%) translateY(6px); }
-          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-      `}</style>
     </div>
   );
 }
