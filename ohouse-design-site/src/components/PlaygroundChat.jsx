@@ -12,11 +12,13 @@ const EXAMPLE_PROMPTS = [
 // ─── 메시지 버블 ─────────────────────────────────────────────────
 function Message({ msg }) {
   const isError = msg.role === 'error';
+  const isStatus = msg.role === 'status';
   return (
     <div className={`pg__msg pg__msg--${isError ? 'error' : msg.role}`}>
       <div className="pg__msg-bubble">
+        {isStatus && <span className="pg__status-dot" aria-hidden="true" />}
         {msg.content}
-        {msg.streaming && <span className="pg__cursor" aria-hidden="true" />}
+        {msg.streaming && !isStatus && <span className="pg__cursor" aria-hidden="true" />}
       </div>
     </div>
   );
@@ -188,7 +190,15 @@ function ContextModal({ onClose, onAdd, contextItems, onRemove }) {
 }
 
 // ─── 메인 PlaygroundChat ──────────────────────────────────────────
-export default function PlaygroundChat({ onHtmlGenerated, apiKey: propApiKey, hasServerKey }) {
+export default function PlaygroundChat({
+  onHtmlGenerated,
+  onPreviewStatus,
+  onPreviewError,
+  currentHtml,
+  currentVariantId,
+  apiKey: propApiKey,
+  hasServerKey,
+}) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [streaming, setStreaming] = useState(false);
@@ -231,27 +241,10 @@ export default function PlaygroundChat({ onHtmlGenerated, apiKey: propApiKey, ha
       .join('\n\n---\n\n');
   };
 
-  // HTML 파싱
-  const extractHtml = (text) => {
-    const match = text.match(/```html\s*([\s\S]*?)```/);
-    return match ? match[1].trim() : null;
-  };
-
-  const extractAllHtmls = (text) => {
-    const blocks = [];
-    const variantRegex = /###\s*[A-Ca-c]안[^#\n]*\n[\s\S]*?```html\s*([\s\S]*?)```/g;
-    let m;
-    while ((m = variantRegex.exec(text)) !== null) blocks.push(m[1].trim());
-    if (blocks.length === 0) {
-      const simpleRegex = /```html\s*([\s\S]*?)```/g;
-      while ((m = simpleRegex.exec(text)) !== null) blocks.push(m[1].trim());
-    }
-    return blocks.length > 1 ? blocks : null;
-  };
-
   const sendMessage = useCallback(async (text) => {
     const userText = text.trim();
     if (!userText || streaming) return;
+    const shouldRefine = Boolean(currentHtml) && /수정|바꿔|변경|더|덜|추가|제거|교체|개선|A안|B안|C안|CTA|카피|색|간격|톤|문구/.test(userText);
 
     const newUserMsg = { role: 'user', content: userText };
     const history = [...messages, newUserMsg];
@@ -259,11 +252,13 @@ export default function PlaygroundChat({ onHtmlGenerated, apiKey: propApiKey, ha
     setInput('');
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
     setStreaming(true);
+    onPreviewStatus?.('understanding', '요청을 해석하고 있어요.');
 
     const assistantId = Date.now();
+    const statusId = assistantId + 1;
     setMessages((prev) => [
       ...prev,
-      { role: 'assistant', content: '', streaming: true, id: assistantId },
+      { role: 'status', content: '요청을 해석하고 있어요.', streaming: true, id: statusId },
     ]);
 
     try {
@@ -274,8 +269,13 @@ export default function PlaygroundChat({ onHtmlGenerated, apiKey: propApiKey, ha
         method: 'POST',
         headers,
         body: JSON.stringify({
-          messages: history.map(({ role, content }) => ({ role, content })),
+          messages: history
+            .filter(({ role }) => role === 'user' || role === 'assistant')
+            .map(({ role, content }) => ({ role, content })),
           userContext: buildUserContext(),
+          mode: shouldRefine ? 'refine' : 'generate',
+          targetVariantId: shouldRefine ? currentVariantId : undefined,
+          currentHtml: shouldRefine ? currentHtml : undefined,
         }),
       });
 
@@ -286,58 +286,93 @@ export default function PlaygroundChat({ onHtmlGenerated, apiKey: propApiKey, ha
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      let fullText = '';
+      let buffer = '';
+      const assistantMessageIds = [];
+
+      const updateStatus = (message) => {
+        setMessages((prev) =>
+          prev.map((m) => m.id === statusId ? { ...m, content: message, streaming: true } : m)
+        );
+      };
+
+      const appendAssistantText = (textChunk) => {
+        const id = assistantId + 100 + assistantMessageIds.length;
+        assistantMessageIds.push(id);
+        setMessages((prev) => {
+          return [...prev, { role: 'assistant', content: textChunk, streaming: true, id }];
+        });
+      };
+
+      const handleEvent = (evt) => {
+        if (evt.type === 'status') {
+          updateStatus(evt.message);
+          onPreviewStatus?.(evt.stage, evt.message);
+        } else if (evt.type === 'assistant_text' && evt.text) {
+          appendAssistantText(evt.text);
+        } else if (evt.type === 'prototype_done') {
+          if (evt.variants?.length) {
+            onHtmlGenerated?.(null, null, evt.variants);
+          } else if (evt.html) {
+            onHtmlGenerated?.(evt.html, null);
+          }
+        } else if (evt.type === 'error') {
+          onPreviewError?.(evt.message);
+          throw new Error(evt.message);
+        }
+      };
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        const raw = decoder.decode(value, { stream: true });
-        for (const line of raw.split('\n')) {
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+
+        for (const line of lines) {
           if (!line.startsWith('data: ')) continue;
           const json = line.slice(6).trim();
           if (!json) continue;
+          let evt;
           try {
-            const evt = JSON.parse(json);
-            if (evt.type === 'delta' && evt.text) {
-              fullText += evt.text;
-              setMessages((prev) =>
-                prev.map((m) => m.id === assistantId ? { ...m, content: fullText, streaming: true } : m)
-              );
-              const partial = extractHtml(fullText);
-              if (partial && !extractAllHtmls(fullText)) onHtmlGenerated?.(partial, null);
-            } else if (evt.type === 'done') {
-              break;
-            } else if (evt.type === 'error') {
-              throw new Error(evt.message);
-            }
+            evt = JSON.parse(json);
           } catch { /* JSON 파싱 실패 무시 */ }
+          if (!evt || evt.type === 'done') continue;
+          handleEvent(evt);
         }
       }
 
       setMessages((prev) =>
-        prev.map((m) => m.id === assistantId ? { ...m, streaming: false } : m)
+        prev.map((m) => {
+          if (assistantMessageIds.includes(m.id)) return { ...m, streaming: false };
+          if (m.id === statusId) return { ...m, streaming: false };
+          return m;
+        })
       );
 
-      const multiHtmls = extractAllHtmls(fullText);
-      if (multiHtmls) {
-        onHtmlGenerated?.(null, multiHtmls);
-      } else {
-        const finalHtml = extractHtml(fullText);
-        if (finalHtml) onHtmlGenerated?.(finalHtml, null);
-      }
-
     } catch (err) {
+      const message = err instanceof Error ? err.message : '알 수 없는 오류';
+      onPreviewError?.(message);
       setMessages((prev) =>
-        prev.map((m) =>
-          m.id === assistantId
-            ? { role: 'error', content: `오류: ${err.message}`, id: assistantId }
-            : m
-        )
+        prev
+          .map((m) => m.id === statusId ? { ...m, streaming: false } : m)
+          .filter((m) => !assistantMessageIds.includes(m.id))
+          .concat({ role: 'error', content: `오류: ${message}`, id: assistantId })
       );
     } finally {
       setStreaming(false);
     }
-  }, [messages, streaming, contextItems, effectiveApiKey, hasServerKey, onHtmlGenerated]);
+  }, [
+    messages,
+    streaming,
+    contextItems,
+    currentHtml,
+    currentVariantId,
+    effectiveApiKey,
+    hasServerKey,
+    onHtmlGenerated,
+    onPreviewStatus,
+    onPreviewError,
+  ]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {

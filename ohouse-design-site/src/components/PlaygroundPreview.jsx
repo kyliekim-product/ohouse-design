@@ -9,6 +9,7 @@ const DEFAULT_SCALE  = 0.85;   // 디폴트 최대 스케일
 const MIN_SCALE      = 0.3;
 const MAX_SCALE      = 1.5;
 const ZOOM_STEP      = 0.05;
+const WORKING_STATUSES = new Set(['understanding', 'retrieving', 'generating', 'rendering']);
 
 // ─── OS 별 대표 디바이스 뷰포트 스펙 ──────────────────────────────
 const OS_SPECS = {
@@ -72,9 +73,44 @@ function Toast({ msg }) {
   );
 }
 
+function PreviewStatus({ status, message, error, hasHtml }) {
+  const isWorking = WORKING_STATUSES.has(status);
+  const isError = status === 'error';
+  if (!isWorking && !isError) return null;
+
+  const title = isError
+    ? '생성에 실패했어요'
+    : status === 'rendering'
+      ? 'Preview에 반영 중'
+      : 'Prototype 생성 중';
+  const body = error || message || '잠시만 기다려주세요.';
+
+  return (
+    <div className={`pg__preview-status${hasHtml ? ' pg__preview-status--overlay' : ''}`} role="status" aria-live="polite">
+      <div className="pg__preview-status-graphic" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
+      <div className="pg__preview-status-text">
+        <strong>{title}</strong>
+        <p>{body}</p>
+      </div>
+    </div>
+  );
+}
+
 // ─── 메인 컴포넌트 ────────────────────────────────────────────────
-export default function PlaygroundPreview({ html, htmls }) {
-  const [variants, setVariants]     = useState([{ html: null, label: 'A' }]);
+export default function PlaygroundPreview({
+  html,
+  htmls,
+  variantItems,
+  status = 'idle',
+  statusMessage = '',
+  error = null,
+  onActiveVariantChange,
+}) {
+  const [variants, setVariants]     = useState([{ id: 'A', html: null, label: 'A' }]);
   const [activeIdx, setActiveIdx]   = useState(0);
   const [os, setOs]                 = useState('ios');
   const [scale, setScale]           = useState(DEFAULT_SCALE);
@@ -124,11 +160,31 @@ export default function PlaygroundPreview({ html, htmls }) {
 
   useEffect(() => {
     if (!htmls?.length) return;
-    setVariants(htmls.map((h, i) => ({ html: h, label: VARIANT_LABELS[i] ?? String(i+1) })));
+    setVariants(htmls.map((h, i) => ({
+      id: VARIANT_LABELS[i] ?? String(i+1),
+      html: h,
+      label: VARIANT_LABELS[i] ?? String(i+1),
+    })));
     setActiveIdx(0);
   }, [htmls]);
 
+  useEffect(() => {
+    if (!variantItems?.length) return;
+    setVariants(variantItems.map((variant, i) => ({
+      id: variant.id ?? VARIANT_LABELS[i] ?? String(i+1),
+      html: variant.html,
+      label: variant.id ?? variant.label ?? VARIANT_LABELS[i] ?? String(i+1),
+      summary: variant.summary,
+    })));
+    setActiveIdx(0);
+  }, [variantItems]);
+
   const currentHtml = variants[activeIdx]?.html ?? null;
+  const currentVariant = variants[activeIdx] ?? null;
+
+  useEffect(() => {
+    onActiveVariantChange?.(currentVariant);
+  }, [currentVariant, onActiveVariantChange]);
 
   useEffect(() => {
     const iframe = iframeRef.current;
@@ -166,7 +222,11 @@ export default function PlaygroundPreview({ html, htmls }) {
 
   const addVariant = () => {
     if (variants.length >= MAX_VARIANTS) return;
-    setVariants((prev) => [...prev, { html: null, label: VARIANT_LABELS[prev.length] }]);
+    setVariants((prev) => [...prev, {
+      id: VARIANT_LABELS[prev.length],
+      html: null,
+      label: VARIANT_LABELS[prev.length],
+    }]);
     setActiveIdx(variants.length);
   };
 
@@ -289,6 +349,9 @@ export default function PlaygroundPreview({ html, htmls }) {
             />
           </div>
         ) : (
+          <PreviewStatus status={status} message={statusMessage} error={error} hasHtml={false} />
+        )}
+        {!currentHtml && !WORKING_STATUSES.has(status) && status !== 'error' && (
           <div className="pg__preview-empty" aria-label="프리뷰 없음">
             <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
               <rect x="12" y="6" width="24" height="36" rx="4" stroke="currentColor" strokeWidth="2"/>
@@ -300,6 +363,7 @@ export default function PlaygroundPreview({ html, htmls }) {
             <p>왼쪽 채팅에서<br />화면을 요청하면<br />여기에 표시됩니다</p>
           </div>
         )}
+        {currentHtml && <PreviewStatus status={status} message={statusMessage} error={error} hasHtml />}
       </div>
 
       {toast && <Toast msg={toast} />}
