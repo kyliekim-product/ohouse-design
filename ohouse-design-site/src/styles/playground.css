@@ -401,6 +401,9 @@
   padding: 24px;
   position: relative; /* OS selector 플로팅 기준점 */
 }
+.pg__frame-area--annotating {
+  cursor: none;
+}
 
 /* ③ OS 셀렉터 — 폰 프레임 상단 플로팅 */
 /* ② 좌측 상단으로 이동 */
@@ -725,6 +728,176 @@
 }
 
 .pg__iframe { width: 100%; height: 100%; border: none; display: block; }
+
+/* ─── Preview annotation ───────────────────────────────────────── */
+.pg__annotation-fab {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 35;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 50%;
+  background: #0a0a0a;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  transition: transform var(--pg-transition), background var(--pg-transition), box-shadow var(--pg-transition);
+}
+.pg__annotation-fab:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+}
+.pg__annotation-fab--active {
+  background: #22a7f2;
+  box-shadow: 0 0 0 6px rgba(34, 167, 242, 0.18), 0 10px 28px rgba(0, 0, 0, 0.2);
+}
+.pg__annotation-cursor {
+  position: absolute;
+  z-index: 45;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #22a7f2;
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.pg__annotation-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 32;
+  pointer-events: none;
+}
+.pg__annotation-layer--active {
+  pointer-events: auto;
+}
+.pg__annotation-marker {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #ffffff;
+  border-radius: 50%;
+  background: #22a7f2;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: grab;
+  pointer-events: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+  user-select: none;
+}
+.pg__annotation-marker:hover {
+  background: #168bd4;
+}
+.pg__annotation-marker--dragging {
+  cursor: grabbing;
+  transform: translate(-50%, -50%) scale(1.08);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+.pg__annotation-editor {
+  position: absolute;
+  width: 260px;
+  min-height: 150px;
+  z-index: 25;
+  padding: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #111111;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.22);
+  pointer-events: auto;
+}
+.pg__annotation-editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  color: #7a7d84;
+  font-size: 12px;
+  font-weight: 700;
+}
+.pg__annotation-close {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #222222;
+  cursor: pointer;
+}
+.pg__annotation-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+.pg__annotation-textarea {
+  width: 100%;
+  min-height: 74px;
+  border: none;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: #111111;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.pg__annotation-textarea::placeholder {
+  color: #a5a7ad;
+}
+.pg__annotation-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 10px;
+}
+.pg__annotation-primary,
+.pg__annotation-secondary,
+.pg__annotation-danger {
+  height: 30px;
+  padding: 0 11px;
+  border-radius: 8px;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.pg__annotation-primary {
+  background: #0a0a0a;
+  color: #ffffff;
+}
+.pg__annotation-primary:disabled {
+  opacity: 0.28;
+  cursor: default;
+}
+.pg__annotation-secondary {
+  background: #f1f2f4;
+  color: #4c4f57;
+}
+.pg__annotation-danger {
+  margin-right: auto;
+  background: #feeceb;
+  color: #d23f38;
+}
+.pg__annotation-danger:hover {
+  background: #fdd9d7;
+}
 
 /* ═══════════════════════════════════════════════════════════════════
    ④ 컨텍스트 모달

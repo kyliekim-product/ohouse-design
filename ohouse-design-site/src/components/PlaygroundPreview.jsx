@@ -11,6 +11,10 @@ const MAX_SCALE      = 1.5;
 const ZOOM_STEP      = 0.05;
 const WORKING_STATUSES = new Set(['understanding', 'retrieving', 'generating', 'rendering']);
 
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
 // ─── OS 별 대표 디바이스 뷰포트 스펙 ──────────────────────────────
 const OS_SPECS = {
   ios: {
@@ -59,6 +63,29 @@ function DownloadIcon() {
     </svg>
   );
 }
+function PlusIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+      <path d="M7.5 2v11M2 7.5h11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+    </svg>
+  );
+}
+function NoteIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 17 17" fill="none" aria-hidden="true">
+      <path d="M4 2.5h6.6L13.5 5.4V14a1 1 0 01-1 1H4a1 1 0 01-1-1V3.5a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+      <path d="M10.5 2.8V5a1 1 0 001 1h2" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+      <path d="M5.5 8.2h5.5M5.5 11h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
+function CloseIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/>
+    </svg>
+  );
+}
 function Toast({ msg }) {
   return (
     <div style={{
@@ -69,6 +96,99 @@ function Toast({ msg }) {
       animation:'pg-fadein 0.15s ease', pointerEvents:'none',
     }}>
       {msg}
+    </div>
+  );
+}
+
+function AnnotationEditor({ draft, point, onChange, onSave, onCancel, onDelete }) {
+  if (!draft || !point) return null;
+  const isSaved = Boolean(draft.id);
+
+  return (
+    <div
+      className="pg__annotation-editor"
+      style={{ left: point.x, top: point.y }}
+      onPointerDown={(event) => event.stopPropagation()}
+      onClick={(event) => event.stopPropagation()}
+    >
+      <div className="pg__annotation-editor-head">
+        <span>Annotation</span>
+        <button className="pg__annotation-close" onClick={onCancel} aria-label="annotation 닫기">
+          <CloseIcon />
+        </button>
+      </div>
+      <textarea
+        className="pg__annotation-textarea"
+        value={draft.text}
+        placeholder="Add an annotation"
+        autoFocus
+        rows={3}
+        onChange={(event) => onChange(event.target.value)}
+        onKeyDown={(event) => {
+          if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+            event.preventDefault();
+            onSave();
+          }
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            onCancel();
+          }
+        }}
+      />
+      <div className="pg__annotation-editor-actions">
+        {isSaved && (
+          <button className="pg__annotation-danger" onClick={onDelete}>삭제</button>
+        )}
+        <button className="pg__annotation-secondary" onClick={onCancel}>취소</button>
+        <button className="pg__annotation-primary" onClick={onSave} disabled={!draft.text.trim()}>
+          저장
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function AnnotationLayer({
+  active,
+  annotations,
+  draft,
+  draftPoint,
+  draggingId,
+  onLayerClick,
+  onMarkerPointerDown,
+  onMarkerClick,
+  onDraftChange,
+  onDraftSave,
+  onDraftCancel,
+  onDraftDelete,
+}) {
+  return (
+    <div
+      className={`pg__annotation-layer${active ? ' pg__annotation-layer--active' : ''}`}
+      onClick={onLayerClick}
+      aria-hidden={!active && annotations.length === 0}
+    >
+      {annotations.map((annotation, index) => (
+        <button
+          key={annotation.id}
+          className={`pg__annotation-marker${draggingId === annotation.id ? ' pg__annotation-marker--dragging' : ''}`}
+          style={{ left: annotation.point.x, top: annotation.point.y }}
+          onPointerDown={(event) => onMarkerPointerDown(event, annotation.id)}
+          onClick={(event) => onMarkerClick(event, annotation.source)}
+          aria-label={`annotation ${index + 1}: ${annotation.text || '내용 없음'}`}
+          title={annotation.text}
+        >
+          {index + 1}
+        </button>
+      ))}
+      <AnnotationEditor
+        draft={draft}
+        point={draftPoint}
+        onChange={onDraftChange}
+        onSave={onDraftSave}
+        onCancel={onDraftCancel}
+        onDelete={onDraftDelete}
+      />
     </div>
   );
 }
@@ -116,10 +236,18 @@ export default function PlaygroundPreview({
   const [scale, setScale]           = useState(DEFAULT_SCALE);
   const [userZoomed, setUserZoomed] = useState(false); // 수동 줌 여부
   const [toast, setToast]           = useState(null);
+  const [annotationMode, setAnnotationMode] = useState(false);
+  const [annotations, setAnnotations] = useState([]);
+  const [draftAnnotation, setDraftAnnotation] = useState(null);
+  const [cursorPos, setCursorPos] = useState(null);
+  const [draggingAnnotationId, setDraggingAnnotationId] = useState(null);
+  const [annotationBox, setAnnotationBox] = useState(null);
 
   const frameAreaRef  = useRef(null);
+  const phoneRef      = useRef(null);
   const iframeRef     = useRef(null);
   const toastTimerRef = useRef(null);
+  const dragStateRef  = useRef(null);
 
   // ── 동적 스케일 계산 — 디폴트 0.85, 수동 줌 중엔 건드리지 않음 ──
   useEffect(() => {
@@ -181,6 +309,8 @@ export default function PlaygroundPreview({
 
   const currentHtml = variants[activeIdx]?.html ?? null;
   const currentVariant = variants[activeIdx] ?? null;
+  const currentVariantId = currentVariant?.id ?? currentVariant?.label ?? 'A';
+  const currentAnnotations = annotations.filter((annotation) => annotation.variantId === currentVariantId);
 
   useEffect(() => {
     onActiveVariantChange?.(currentVariant);
@@ -191,6 +321,75 @@ export default function PlaygroundPreview({
     if (!iframe || !currentHtml) return;
     iframe.srcdoc = currentHtml;
   }, [currentHtml]);
+
+  const updateAnnotationBox = useCallback(() => {
+    const frameRect = frameAreaRef.current?.getBoundingClientRect();
+    const phoneRect = phoneRef.current?.getBoundingClientRect();
+    if (!frameRect || !phoneRect) {
+      setAnnotationBox(null);
+      return;
+    }
+    setAnnotationBox({
+      left: phoneRect.left - frameRect.left,
+      top: phoneRect.top - frameRect.top,
+      width: phoneRect.width,
+      height: phoneRect.height,
+      frameWidth: frameRect.width,
+      frameHeight: frameRect.height,
+    });
+  }, []);
+
+  useEffect(() => {
+    updateAnnotationBox();
+    const observer = new ResizeObserver(updateAnnotationBox);
+    if (frameAreaRef.current) observer.observe(frameAreaRef.current);
+    if (phoneRef.current) observer.observe(phoneRef.current);
+    return () => observer.disconnect();
+  }, [currentHtml, os, scale, updateAnnotationBox]);
+
+  useEffect(() => {
+    if (!annotationMode) return;
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setAnnotationMode(false);
+        setDraftAnnotation(null);
+        setCursorPos(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [annotationMode]);
+
+  useEffect(() => {
+    if (!draggingAnnotationId) return;
+
+    const handlePointerMove = (event) => {
+      const coords = getPhonePercent(event);
+      if (!coords) return;
+      dragStateRef.current = { ...(dragStateRef.current ?? {}), moved: true };
+      setAnnotations((prev) =>
+        prev.map((annotation) =>
+          annotation.id === draggingAnnotationId
+            ? { ...annotation, x: coords.x, y: coords.y }
+            : annotation
+        )
+      );
+    };
+
+    const handlePointerUp = () => {
+      setDraggingAnnotationId(null);
+      window.setTimeout(() => {
+        dragStateRef.current = null;
+      }, 0);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [draggingAnnotationId]);
 
   // ── 액션 ─────────────────────────────────────────────────────────
   const showToast = useCallback((msg) => {
@@ -230,9 +429,126 @@ export default function PlaygroundPreview({
     setActiveIdx(variants.length);
   };
 
+  const getPhonePercent = (event, { requireInside = false } = {}) => {
+    const rect = phoneRef.current?.getBoundingClientRect();
+    if (!rect) return null;
+    const isInside =
+      event.clientX >= rect.left &&
+      event.clientX <= rect.right &&
+      event.clientY >= rect.top &&
+      event.clientY <= rect.bottom;
+    if (requireInside && !isInside) return null;
+    return {
+      x: clamp(((event.clientX - rect.left) / rect.width) * 100, 0, 100),
+      y: clamp(((event.clientY - rect.top) / rect.height) * 100, 0, 100),
+    };
+  };
+
+  const handleFrameMouseMove = (event) => {
+    if (!annotationMode || !frameAreaRef.current) return;
+    updateAnnotationBox();
+    const rect = frameAreaRef.current.getBoundingClientRect();
+    setCursorPos({
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    });
+  };
+
+  const handleAnnotationLayerClick = (event) => {
+    if (!annotationMode) return;
+    const coords = getPhonePercent(event, { requireInside: true });
+    if (!coords) return;
+    setDraftAnnotation({
+      id: null,
+      variantId: currentVariantId,
+      x: coords.x,
+      y: coords.y,
+      text: '',
+    });
+    setAnnotationMode(false);
+  };
+
+  const handleAnnotationDraftChange = (text) => {
+    setDraftAnnotation((draft) => draft ? { ...draft, text } : draft);
+  };
+
+  const handleAnnotationSave = () => {
+    const draft = draftAnnotation;
+    if (!draft?.text.trim()) return;
+    if (draft.id) {
+      setAnnotations((prev) =>
+        prev.map((annotation) =>
+          annotation.id === draft.id
+            ? { ...annotation, text: draft.text.trim(), x: draft.x, y: draft.y }
+            : annotation
+        )
+      );
+    } else {
+      setAnnotations((prev) => [
+        ...prev,
+        {
+          id: `annotation-${Date.now()}`,
+          variantId: draft.variantId,
+          x: draft.x,
+          y: draft.y,
+          text: draft.text.trim(),
+          createdAt: Date.now(),
+        },
+      ]);
+    }
+    setDraftAnnotation(null);
+  };
+
+  const handleAnnotationCancel = () => {
+    setDraftAnnotation(null);
+  };
+
+  const handleAnnotationDelete = () => {
+    const id = draftAnnotation?.id;
+    if (!id) return;
+    setAnnotations((prev) => prev.filter((annotation) => annotation.id !== id));
+    setDraftAnnotation(null);
+  };
+
+  const handleMarkerPointerDown = (event, id) => {
+    event.preventDefault();
+    event.stopPropagation();
+    dragStateRef.current = { id, moved: false };
+    setDraggingAnnotationId(id);
+  };
+
+  const handleMarkerClick = (event, annotation) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (dragStateRef.current?.moved) return;
+    setDraftAnnotation({ ...annotation });
+    setAnnotationMode(false);
+  };
+
   const spec     = OS_SPECS[os];
   const hasAny   = variants.some((v) => v.html);
   const showAdd  = variants.length < MAX_VARIANTS && hasAny;
+  const toFramePoint = (annotation) => {
+    if (!annotationBox) return null;
+    return {
+      x: annotationBox.left + (annotationBox.width * annotation.x) / 100,
+      y: annotationBox.top + (annotationBox.height * annotation.y) / 100,
+    };
+  };
+  const toEditorPoint = (annotation) => {
+    const point = toFramePoint(annotation);
+    if (!point || !annotationBox) return null;
+    return {
+      x: clamp(point.x + 12, 16, Math.max(16, annotationBox.frameWidth - 292)),
+      y: clamp(point.y - 20, 16, Math.max(16, annotationBox.frameHeight - 190)),
+    };
+  };
+  const displayAnnotations = currentAnnotations.flatMap((annotation) => {
+    const point = toFramePoint(annotation);
+    if (!point) return [];
+    return [{ ...annotation, point, source: annotation }];
+  });
+  const draftPoint = draftAnnotation ? toEditorPoint(draftAnnotation) : null;
 
   // 폰 프레임 인라인 스타일 (OS별 크기 + 동적 스케일)
   const phoneStyle = {
@@ -275,7 +591,14 @@ export default function PlaygroundPreview({
       </div>
 
       {/* ── 프레임 영역 ── */}
-      <div className="pg__frame-area" ref={frameAreaRef} role="region" aria-label="Prototype 미리보기">
+      <div
+        className={`pg__frame-area${annotationMode ? ' pg__frame-area--annotating' : ''}`}
+        ref={frameAreaRef}
+        role="region"
+        aria-label="Prototype 미리보기"
+        onMouseMove={handleFrameMouseMove}
+        onMouseLeave={() => setCursorPos(null)}
+      >
 
         {/* ③ OS 셀렉터 — 상단 플로팅 pill */}
         <div className="pg__os-selector" role="radiogroup" aria-label="OS 유형 선택">
@@ -317,6 +640,7 @@ export default function PlaygroundPreview({
 
         {currentHtml ? (
           <div
+            ref={phoneRef}
             className={`pg__phone pg__phone--${os}`}
             style={phoneStyle}
             aria-label={`${spec.device} 프레임 (${spec.width}×${spec.height})`}
@@ -360,10 +684,48 @@ export default function PlaygroundPreview({
               <rect x="16" y="17" width="16" height="2" rx="1" fill="currentColor"/>
               <rect x="16" y="22" width="10" height="2" rx="1" fill="currentColor"/>
             </svg>
-            <p>왼쪽 채팅에서<br />화면을 요청하면<br />여기에 표시됩니다</p>
+            <p>왼쪽 채팅에서 화면을 요청하면<br />여기에 표시됩니다</p>
           </div>
         )}
         {currentHtml && <PreviewStatus status={status} message={statusMessage} error={error} hasHtml />}
+        {currentHtml && (
+          <AnnotationLayer
+            active={annotationMode || Boolean(draftAnnotation) || Boolean(draggingAnnotationId)}
+            annotations={displayAnnotations}
+            draft={draftAnnotation}
+            draftPoint={draftPoint}
+            draggingId={draggingAnnotationId}
+            onLayerClick={handleAnnotationLayerClick}
+            onMarkerPointerDown={handleMarkerPointerDown}
+            onMarkerClick={handleMarkerClick}
+            onDraftChange={handleAnnotationDraftChange}
+            onDraftSave={handleAnnotationSave}
+            onDraftCancel={handleAnnotationCancel}
+            onDraftDelete={handleAnnotationDelete}
+          />
+        )}
+        {currentHtml && (
+          <button
+            className={`pg__annotation-fab${annotationMode ? ' pg__annotation-fab--active' : ''}`}
+            onClick={() => {
+              setAnnotationMode((prev) => !prev);
+              setDraftAnnotation(null);
+            }}
+            aria-pressed={annotationMode}
+            aria-label={annotationMode ? 'annotation 추가 취소' : 'annotation 추가'}
+          >
+            {annotationMode ? <PlusIcon /> : <NoteIcon />}
+          </button>
+        )}
+        {annotationMode && cursorPos && (
+          <div
+            className="pg__annotation-cursor"
+            style={{ left: cursorPos.x, top: cursorPos.y }}
+            aria-hidden="true"
+          >
+            <PlusIcon />
+          </div>
+        )}
       </div>
 
       {toast && <Toast msg={toast} />}
