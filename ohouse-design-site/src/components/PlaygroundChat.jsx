@@ -74,27 +74,6 @@ function ContextModal({ onClose, onAdd, contextItems, onRemove }) {
           <button className="pg__modal-close" onClick={onClose} aria-label="닫기">×</button>
         </div>
 
-        {/* 추가된 컨텍스트 목록 (있을 때만) */}
-        {contextItems.length > 0 && (
-          <div className="pg__modal-ctx-list">
-            {contextItems.map((item) => (
-              <div key={item.id} className="pg__modal-ctx-item">
-                <span className="pg__modal-ctx-icon">
-                  {item.type === 'file' ? '📄' : '📝'}
-                </span>
-                <span className="pg__modal-ctx-name" title={item.name}>{item.name}</span>
-                <button
-                  className="pg__modal-ctx-remove"
-                  onClick={() => onRemove(item.id)}
-                  aria-label={`${item.name} 삭제`}
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
         {view === 'main' ? (
           <>
             {/* 드래그 영역 */}
@@ -166,6 +145,27 @@ function ContextModal({ onClose, onAdd, contextItems, onRemove }) {
                 Slack
               </button>
             </div>
+
+            {/* 추가된 컨텍스트 목록 — 소스 버튼 하단 */}
+            {contextItems.length > 0 && (
+              <div className="pg__modal-ctx-list">
+                {contextItems.map((item) => (
+                  <div key={item.id} className="pg__modal-ctx-item">
+                    <span className="pg__modal-ctx-icon">
+                      {item.type === 'file' ? '📄' : '📝'}
+                    </span>
+                    <span className="pg__modal-ctx-name" title={item.name}>{item.name}</span>
+                    <button
+                      className="pg__modal-ctx-remove"
+                      onClick={() => onRemove(item.id)}
+                      aria-label={`${item.name} 삭제`}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         ) : (
           /* 텍스트 입력 뷰 */

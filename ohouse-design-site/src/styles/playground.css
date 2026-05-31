@@ -59,9 +59,13 @@
 }
 
 /* ─── 컨텍스트 섹션 ─────────────────────────────────────────────── */
+/* 우측 .pg__preview-bar(padding:10px 16px + 액션버튼 30px = 50px)와 높이 통일 */
 .pg__ctx {
+  height: 50px;
   border-bottom: 1px solid var(--c-border);
   flex-shrink: 0;
+  display: flex;
+  align-items: stretch;
 }
 
 /* 트리거 버튼 (드롭다운 → 모달 open) */
@@ -70,7 +74,7 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 10px 16px;
+  padding: 0 16px;   /* 상하 패딩 제거 — 부모 height로 제어 */
   background: none;
   border: none;
   cursor: pointer;
