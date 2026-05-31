@@ -403,11 +403,12 @@
 }
 
 /* ③ OS 셀렉터 — 폰 프레임 상단 플로팅 */
+/* ② 좌측 상단으로 이동 */
 .pg__os-selector {
   position: absolute;
   top: 14px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 16px;           /* center → left */
+  transform: none;       /* translateX(-50%) 제거 */
   display: flex;
   gap: 2px;
   background: rgba(255, 255, 255, 0.92);
@@ -423,8 +424,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 5px 14px;
-  border-radius: 16px;
+  padding: 4px 11px;    /* 5px 14px × 0.8 */
+  border-radius: 14px;
   border: none;
   cursor: pointer;
   background: none;
@@ -438,10 +439,10 @@
   color: #ffffff;
 }
 
-/* OS 이름 + 기기명 */
-.pg__os-btn > span:first-child { font-size: 11px; font-weight: 700; letter-spacing: -0.1px; }
+/* ① OS 라벨: 11px → 9px (×0.8), weight 800으로 강화 / 기기명: 9px → 7px */
+.pg__os-btn > span:first-child { font-size: 9px; font-weight: 800; letter-spacing: -0.1px; }
 .pg__os-device {
-  font-size: 9px;
+  font-size: 7px;
   font-weight: 400;
   opacity: 0.65;
   letter-spacing: 0;
