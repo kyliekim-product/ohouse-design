@@ -1,7 +1,15 @@
 /* ─── Playground 전용 스타일 ────────────────────────────────────── */
 :root {
   --pg-transition: 0.12s ease;
-  --pg-phone-scale: 0.85;
+}
+
+/* global.css의 오렌지(#ff6f0f)를 playground 스코프에서 black/gray로 override */
+.pg,
+.pg__modal-overlay,
+.pg__modal {
+  --c-accent:        #0a0a0a;
+  --c-accent-soft:   #f5f5f7;
+  --c-accent-strong: #000000;
 }
 
 .pg {
@@ -380,35 +388,42 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 .pg__os-btn {
-  padding: 4px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5px 14px;
   border-radius: 16px;
   border: none;
-  font-size: 11px;
-  font-weight: 600;
   cursor: pointer;
   background: none;
   color: var(--c-text-muted);
   transition: background var(--pg-transition), color var(--pg-transition);
-  letter-spacing: -0.1px;
   white-space: nowrap;
+  gap: 1px;
 }
 .pg__os-btn--active {
   background: #000000;
   color: #ffffff;
 }
 
-/* ② 폰 프레임 — 0.85 스케일 */
+/* OS 이름 + 기기명 */
+.pg__os-btn > span:first-child { font-size: 11px; font-weight: 700; letter-spacing: -0.1px; }
+.pg__os-device {
+  font-size: 9px;
+  font-weight: 400;
+  opacity: 0.65;
+  letter-spacing: 0;
+}
+
+/* 폰 프레임 — 크기·스케일은 JS 인라인 스타일로 동적 제어 */
 .pg__phone {
-  width: 390px;
-  height: min(844px, calc(100% - 48px)); /* OS selector 공간 확보 */
-  border-radius: 40px;
   overflow: hidden;
   box-shadow: 0 0 0 10px #1a1a1a, 0 20px 60px rgba(0, 0, 0, 0.25);
   background: #fff;
   position: relative;
   flex-shrink: 0;
-  transform: scale(var(--pg-phone-scale));
   transform-origin: center center;
+  transition: width 0.2s ease, height 0.2s ease, border-radius 0.2s ease;
 }
 
 /* iOS 노치 */
@@ -421,6 +436,20 @@
   height: 34px;
   background: #1a1a1a;
   border-radius: 0 0 20px 20px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* iPhone 16 Dynamic Island */
+.pg__dynamic-island {
+  position: absolute;
+  top: 13px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 35px;
+  background: #1a1a1a;
+  border-radius: 20px;
   z-index: 10;
   pointer-events: none;
 }
@@ -450,10 +479,55 @@
 
 /* AOS 프레임: 노치 없고 코너 더 작게 */
 .pg__phone--aos { border-radius: 30px; }
-/* Web뷰: 브라우저 느낌 (코너만 살짝) */
+/* Web뷰: 베젤 없음 */
 .pg__phone--web {
-  border-radius: 12px;
-  box-shadow: 0 0 0 1px var(--c-border), 0 8px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 0 0 1px var(--c-border), 0 8px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Web뷰 브라우저 크롬 바 */
+.pg__browser-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: var(--c-bg-elev);
+  border-bottom: 1px solid var(--c-border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  z-index: 10;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+.pg__browser-dots {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.pg__browser-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.pg__browser-url {
+  flex: 1;
+  height: 24px;
+  background: #fff;
+  border: 1px solid var(--c-border);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--c-text-soft);
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  letter-spacing: 0;
+}
+/* 브라우저 크롬 영역 위 iframe 오프셋 */
+.pg__phone--web .pg__iframe {
+  margin-top: 40px;
+  height: calc(100% - 40px);
 }
 
 /* 빈 프리뷰 */

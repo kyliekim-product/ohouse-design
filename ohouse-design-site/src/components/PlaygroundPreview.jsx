@@ -1,16 +1,43 @@
-// PlaygroundPreview — iframe 프리뷰 + OS 셀렉터 + A/B/C 탭 + Copy/Download
+// PlaygroundPreview — OS별 뷰포트 + 동적 스케일 + A/B/C 탭 + Copy/Download
 // @missing-ods:playground-preview
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 const MAX_VARIANTS = 3;
 const VARIANT_LABELS = ['A', 'B', 'C'];
-const OS_OPTIONS = [
-  { id: 'ios',  label: 'iOS'   },
-  { id: 'aos',  label: 'AOS'   },
-  { id: 'web',  label: 'Web뷰' },
-];
 
+// ─── OS 별 대표 디바이스 뷰포트 스펙 ──────────────────────────────
+const OS_SPECS = {
+  ios: {
+    label: 'iOS',
+    device: 'iPhone 16',
+    width: 393,    // pt (logical pixel)
+    height: 852,
+    radius: 50,    // corner radius
+    bezel: 12,     // outer frame border (px)
+    chrome: 'dynamic-island',
+  },
+  aos: {
+    label: 'AOS',
+    device: 'Pixel 9',
+    width: 412,    // dp
+    height: 917,
+    radius: 34,
+    bezel: 10,
+    chrome: 'statusbar',
+  },
+  web: {
+    label: 'Web뷰',
+    device: 'Mobile Web',
+    width: 390,
+    height: 780,   // first viewport (above the fold 중심)
+    radius: 12,
+    bezel: 0,
+    chrome: 'browser',
+  },
+};
+
+// ─── 아이콘 ───────────────────────────────────────────────────────
 function CopyIcon() {
   return (
     <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
@@ -19,7 +46,6 @@ function CopyIcon() {
     </svg>
   );
 }
-
 function DownloadIcon() {
   return (
     <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
@@ -28,31 +54,53 @@ function DownloadIcon() {
     </svg>
   );
 }
-
 function Toast({ msg }) {
   return (
     <div style={{
-      position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
-      background: '#0a0a0a', color: '#fff', padding: '8px 18px',
-      borderRadius: 10, fontSize: 13, fontWeight: 500, zIndex: 9999,
-      boxShadow: '0 4px 20px rgba(0,0,0,0.18)',
-      animation: 'pg-fadein 0.15s ease',
-      pointerEvents: 'none',
+      position:'fixed', bottom:32, left:'50%', transform:'translateX(-50%)',
+      background:'#0a0a0a', color:'#fff', padding:'8px 18px',
+      borderRadius:10, fontSize:13, fontWeight:500, zIndex:9999,
+      boxShadow:'0 4px 20px rgba(0,0,0,0.18)',
+      animation:'pg-fadein 0.15s ease', pointerEvents:'none',
     }}>
       {msg}
     </div>
   );
 }
 
+// ─── 메인 컴포넌트 ────────────────────────────────────────────────
 export default function PlaygroundPreview({ html, htmls }) {
-  const [variants, setVariants] = useState([{ html: null, label: 'A' }]);
+  const [variants, setVariants]   = useState([{ html: null, label: 'A' }]);
   const [activeIdx, setActiveIdx] = useState(0);
-  const [os, setOs] = useState('ios');
-  const [toast, setToast] = useState(null);
-  const iframeRef = useRef(null);
+  const [os, setOs]               = useState('ios');
+  const [scale, setScale]         = useState(0.82);
+  const [toast, setToast]         = useState(null);
+
+  const frameAreaRef  = useRef(null);
+  const iframeRef     = useRef(null);
   const toastTimerRef = useRef(null);
 
-  // 단일 html — active variant에 적용
+  // ── 동적 스케일 계산 ─────────────────────────────────────────────
+  useEffect(() => {
+    const calc = () => {
+      if (!frameAreaRef.current) return;
+      const { width: aW, height: aH } = frameAreaRef.current.getBoundingClientRect();
+      const spec = OS_SPECS[os];
+      const paddingH = 72; // OS selector 공간 + 상하 여유
+      const paddingW = 48; // 좌우 여유
+      const totalFrameH = spec.height + spec.bezel * 2;
+      const totalFrameW = spec.width  + spec.bezel * 2;
+      const scaleH = (aH - paddingH) / totalFrameH;
+      const scaleW = (aW - paddingW) / totalFrameW;
+      setScale(Math.min(scaleH, scaleW, 1.0));
+    };
+    calc();
+    const observer = new ResizeObserver(calc);
+    if (frameAreaRef.current) observer.observe(frameAreaRef.current);
+    return () => observer.disconnect();
+  }, [os]);
+
+  // ── variants 업데이트 ────────────────────────────────────────────
   useEffect(() => {
     if (!html) return;
     setVariants((prev) => {
@@ -62,10 +110,9 @@ export default function PlaygroundPreview({ html, htmls }) {
     });
   }, [html]);
 
-  // A/B/C 다중 htmls — 자동 variants 생성
   useEffect(() => {
     if (!htmls?.length) return;
-    setVariants(htmls.map((h, i) => ({ html: h, label: VARIANT_LABELS[i] ?? String(i + 1) })));
+    setVariants(htmls.map((h, i) => ({ html: h, label: VARIANT_LABELS[i] ?? String(i+1) })));
     setActiveIdx(0);
   }, [htmls]);
 
@@ -77,6 +124,7 @@ export default function PlaygroundPreview({ html, htmls }) {
     iframe.srcdoc = currentHtml;
   }, [currentHtml]);
 
+  // ── 액션 ─────────────────────────────────────────────────────────
   const showToast = useCallback((msg) => {
     clearTimeout(toastTimerRef.current);
     setToast(msg);
@@ -97,11 +145,9 @@ export default function PlaygroundPreview({ html, htmls }) {
     if (!currentHtml) return;
     const label = variants[activeIdx]?.label ?? 'A';
     const blob = new Blob([currentHtml], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `prototype-${label.toLowerCase()}.html`;
-    a.click();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = `prototype-${label.toLowerCase()}.html`; a.click();
     URL.revokeObjectURL(url);
     showToast(`prototype-${label.toLowerCase()}.html 다운로드`);
   };
@@ -112,66 +158,98 @@ export default function PlaygroundPreview({ html, htmls }) {
     setActiveIdx(variants.length);
   };
 
-  const hasAny = variants.some((v) => v.html);
-  const showAddTab = variants.length < MAX_VARIANTS && hasAny;
+  const spec     = OS_SPECS[os];
+  const hasAny   = variants.some((v) => v.html);
+  const showAdd  = variants.length < MAX_VARIANTS && hasAny;
+
+  // 폰 프레임 인라인 스타일 (OS별 크기 + 동적 스케일)
+  const phoneStyle = {
+    width:        spec.width,
+    height:       spec.height,
+    borderRadius: spec.radius,
+    transform:    `scale(${scale})`,
+    ...(spec.bezel > 0 && {
+      boxShadow: `0 0 0 ${spec.bezel}px #1a1a1a, 0 20px 60px rgba(0,0,0,0.25)`,
+    }),
+  };
 
   return (
     <div className="pg__preview">
-      {/* 상단 바 */}
+      {/* ── 상단 바 ── */}
       <div className="pg__preview-bar">
         <div className="pg__tabs" role="tablist" aria-label="Prototype 변형">
           {variants.map((v, i) => (
             <button
               key={v.label}
               className={`pg__tab${activeIdx === i ? ' pg__tab--active' : ''}`}
-              role="tab"
-              aria-selected={activeIdx === i}
+              role="tab" aria-selected={activeIdx === i}
               onClick={() => setActiveIdx(i)}
             >
               {v.label}
             </button>
           ))}
-          {showAddTab && (
+          {showAdd && (
             <button className="pg__tab" onClick={addVariant} aria-label="변형 추가">+</button>
           )}
         </div>
         <div className="pg__actions">
-          <button className="pg__action-btn" onClick={handleCopy} disabled={!currentHtml} title="HTML 클립보드 복사">
+          <button className="pg__action-btn" onClick={handleCopy} disabled={!currentHtml}>
             <CopyIcon /> Copy HTML
           </button>
-          <button className="pg__action-btn" onClick={handleDownload} disabled={!currentHtml} title="prototype.html 다운로드">
+          <button className="pg__action-btn" onClick={handleDownload} disabled={!currentHtml}>
             <DownloadIcon /> 저장
           </button>
         </div>
       </div>
 
-      {/* 프레임 영역 */}
-      <div className="pg__frame-area" role="region" aria-label="Prototype 미리보기">
+      {/* ── 프레임 영역 ── */}
+      <div className="pg__frame-area" ref={frameAreaRef} role="region" aria-label="Prototype 미리보기">
 
-        {/* ③ OS 셀렉터 — 폰 상단 플로팅 */}
+        {/* ③ OS 셀렉터 — 플로팅 pill */}
         <div className="pg__os-selector" role="radiogroup" aria-label="OS 유형 선택">
-          {OS_OPTIONS.map((opt) => (
+          {Object.entries(OS_SPECS).map(([key, s]) => (
             <button
-              key={opt.id}
-              className={`pg__os-btn${os === opt.id ? ' pg__os-btn--active' : ''}`}
-              onClick={() => setOs(opt.id)}
-              aria-pressed={os === opt.id}
+              key={key}
+              className={`pg__os-btn${os === key ? ' pg__os-btn--active' : ''}`}
+              onClick={() => setOs(key)}
+              aria-pressed={os === key}
             >
-              {opt.label}
+              {s.label}
+              <span className="pg__os-device">{s.device}</span>
             </button>
           ))}
         </div>
 
         {currentHtml ? (
-          <div className={`pg__phone pg__phone--${os}`} aria-label={`${os.toUpperCase()} 프레임`}>
-            {/* OS별 상단 요소 */}
-            {os === 'ios' && <div className="pg__phone-notch" aria-hidden="true" />}
-            {os === 'aos' && <div className="pg__phone-statusbar" aria-hidden="true" />}
-            {/* Web뷰는 상단 요소 없음 */}
+          <div
+            className={`pg__phone pg__phone--${os}`}
+            style={phoneStyle}
+            aria-label={`${spec.device} 프레임 (${spec.width}×${spec.height})`}
+          >
+            {/* iOS Dynamic Island */}
+            {spec.chrome === 'dynamic-island' && (
+              <div className="pg__dynamic-island" aria-hidden="true" />
+            )}
+            {/* AOS 상태바 */}
+            {spec.chrome === 'statusbar' && (
+              <div className="pg__phone-statusbar" aria-hidden="true" />
+            )}
+            {/* Web뷰 브라우저 크롬 */}
+            {spec.chrome === 'browser' && (
+              <div className="pg__browser-bar" aria-hidden="true">
+                <div className="pg__browser-dots">
+                  <span className="pg__browser-dot" style={{ background: '#ff5f57' }} />
+                  <span className="pg__browser-dot" style={{ background: '#febc2e' }} />
+                  <span className="pg__browser-dot" style={{ background: '#28c840' }} />
+                </div>
+                <div className="pg__browser-url">prototype.html</div>
+              </div>
+            )}
+
             <iframe
               ref={iframeRef}
               className="pg__iframe"
-              title={`Prototype ${variants[activeIdx]?.label}`}
+              title={`Prototype ${variants[activeIdx]?.label} — ${spec.device}`}
               sandbox="allow-scripts allow-same-origin"
             />
           </div>
