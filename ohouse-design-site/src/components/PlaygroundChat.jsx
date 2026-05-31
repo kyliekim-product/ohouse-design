@@ -23,7 +23,7 @@ function Message({ msg }) {
 }
 
 // ─── 컨텍스트 모달 ────────────────────────────────────────────────
-function ContextModal({ onClose, onAdd }) {
+function ContextModal({ onClose, onAdd, contextItems, onRemove }) {
   const [view, setView] = useState('main'); // 'main' | 'text'
   const [textVal, setTextVal] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
@@ -73,6 +73,27 @@ function ContextModal({ onClose, onAdd }) {
           <span className="pg__modal-title">소스 추가</span>
           <button className="pg__modal-close" onClick={onClose} aria-label="닫기">×</button>
         </div>
+
+        {/* 추가된 컨텍스트 목록 (있을 때만) */}
+        {contextItems.length > 0 && (
+          <div className="pg__modal-ctx-list">
+            {contextItems.map((item) => (
+              <div key={item.id} className="pg__modal-ctx-item">
+                <span className="pg__modal-ctx-icon">
+                  {item.type === 'file' ? '📄' : '📝'}
+                </span>
+                <span className="pg__modal-ctx-name" title={item.name}>{item.name}</span>
+                <button
+                  className="pg__modal-ctx-remove"
+                  onClick={() => onRemove(item.id)}
+                  aria-label={`${item.name} 삭제`}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
         {view === 'main' ? (
           <>
@@ -362,24 +383,7 @@ export default function PlaygroundChat({ onHtmlGenerated, apiKey: propApiKey, ha
           </svg>
         </button>
 
-        {/* 추가된 컨텍스트 아이템 목록 */}
-        {contextItems.length > 0 && (
-          <div className="pg__ctx-items">
-            {contextItems.map((item) => (
-              <div key={item.id} className="pg__ctx-item">
-                <span className="pg__ctx-item-icon">{item.type === 'file' ? '📄' : '📝'}</span>
-                <span className="pg__ctx-item-name" title={item.name}>{item.name}</span>
-                <button
-                  className="pg__ctx-item-remove"
-                  onClick={() => removeContextItem(item.id)}
-                  aria-label={`${item.name} 삭제`}
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* 아이템 목록은 모달 내부에서 확인 */}
       </div>
 
       {/* 메시지 목록 */}
@@ -446,6 +450,8 @@ export default function PlaygroundChat({ onHtmlGenerated, apiKey: propApiKey, ha
         <ContextModal
           onClose={() => setShowContextModal(false)}
           onAdd={(item) => { addContextItem(item); setShowContextModal(false); }}
+          contextItems={contextItems}
+          onRemove={removeContextItem}
         />
       )}
     </div>

@@ -658,6 +658,51 @@
 }
 .pg__modal-close:hover { background: var(--c-bg-elev-2); color: var(--c-text); }
 
+/* 모달 내 추가된 컨텍스트 목록 */
+.pg__modal-ctx-list {
+  margin: 0 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pg__modal-ctx-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  background: var(--c-bg-elev);
+  border-radius: 8px;
+  font-size: 12.5px;
+}
+
+.pg__modal-ctx-icon { flex-shrink: 0; font-size: 14px; line-height: 1; }
+
+.pg__modal-ctx-name {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--c-text);
+}
+
+.pg__modal-ctx-remove {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--c-text-soft);
+  cursor: pointer;
+}
+.pg__modal-ctx-remove:hover { background: var(--c-bg-elev-2); color: var(--c-text); }
+
 /* 드래그 드롭 영역 */
 .pg__drop-area {
   margin: 0 20px;

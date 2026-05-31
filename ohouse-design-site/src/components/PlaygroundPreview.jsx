@@ -23,10 +23,10 @@ const OS_SPECS = {
   },
   aos: {
     label: 'AOS',
-    device: 'Pixel 9',
-    width: 412,    // dp
-    height: 917,
-    radius: 34,
+    device: 'Galaxy S24',
+    width: 360,    // dp (Samsung Galaxy S시리즈 표준 — 1080px @ 3x)
+    height: 780,
+    radius: 42,
     bezel: 10,
     chrome: 'statusbar',
   },
