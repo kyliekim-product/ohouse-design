@@ -566,7 +566,7 @@
 /* 줌 컨트롤 — 프레임 영역 우하단 플로팅 */
 .pg__zoom-controls {
   position: absolute;
-  bottom: 16px;
+  top: 14px;   /* bottom → top (OS 셀렉터와 같은 높이) */
   right: 16px;
   display: flex;
   align-items: center;
