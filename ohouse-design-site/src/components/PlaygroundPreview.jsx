@@ -3,8 +3,12 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 
-const MAX_VARIANTS = 3;
+const MAX_VARIANTS   = 3;
 const VARIANT_LABELS = ['A', 'B', 'C'];
+const DEFAULT_SCALE  = 0.85;   // 디폴트 최대 스케일
+const MIN_SCALE      = 0.3;
+const MAX_SCALE      = 1.5;
+const ZOOM_STEP      = 0.05;
 
 // ─── OS 별 대표 디바이스 뷰포트 스펙 ──────────────────────────────
 const OS_SPECS = {
@@ -70,35 +74,43 @@ function Toast({ msg }) {
 
 // ─── 메인 컴포넌트 ────────────────────────────────────────────────
 export default function PlaygroundPreview({ html, htmls }) {
-  const [variants, setVariants]   = useState([{ html: null, label: 'A' }]);
-  const [activeIdx, setActiveIdx] = useState(0);
-  const [os, setOs]               = useState('ios');
-  const [scale, setScale]         = useState(0.82);
-  const [toast, setToast]         = useState(null);
+  const [variants, setVariants]     = useState([{ html: null, label: 'A' }]);
+  const [activeIdx, setActiveIdx]   = useState(0);
+  const [os, setOs]                 = useState('ios');
+  const [scale, setScale]           = useState(DEFAULT_SCALE);
+  const [userZoomed, setUserZoomed] = useState(false); // 수동 줌 여부
+  const [toast, setToast]           = useState(null);
 
   const frameAreaRef  = useRef(null);
   const iframeRef     = useRef(null);
   const toastTimerRef = useRef(null);
 
-  // ── 동적 스케일 계산 ─────────────────────────────────────────────
+  // ── 동적 스케일 계산 — 디폴트 0.85, 수동 줌 중엔 건드리지 않음 ──
   useEffect(() => {
     const calc = () => {
-      if (!frameAreaRef.current) return;
+      if (!frameAreaRef.current || userZoomed) return;
       const { width: aW, height: aH } = frameAreaRef.current.getBoundingClientRect();
-      const spec = OS_SPECS[os];
-      const paddingH = 72; // OS selector 공간 + 상하 여유
-      const paddingW = 48; // 좌우 여유
-      const totalFrameH = spec.height + spec.bezel * 2;
-      const totalFrameW = spec.width  + spec.bezel * 2;
-      const scaleH = (aH - paddingH) / totalFrameH;
-      const scaleW = (aW - paddingW) / totalFrameW;
-      setScale(Math.min(scaleH, scaleW, 1.0));
+      const spec     = OS_SPECS[os];
+      const paddingH = 72;
+      const paddingW = 48;
+      const fitH = (aH - paddingH) / (spec.height + spec.bezel * 2);
+      const fitW = (aW - paddingW) / (spec.width  + spec.bezel * 2);
+      setScale(Math.min(fitH, fitW, DEFAULT_SCALE)); // 최대 0.85
     };
     calc();
     const observer = new ResizeObserver(calc);
     if (frameAreaRef.current) observer.observe(frameAreaRef.current);
     return () => observer.disconnect();
-  }, [os]);
+  }, [os, userZoomed]);
+
+  // OS 변경 시 수동 줌 초기화
+  const handleOsChange = (newOs) => {
+    setOs(newOs);
+    setUserZoomed(false); // 리셋 → 자동 계산으로 복귀
+  };
+
+  const zoomIn  = () => { setScale((s) => Math.min(+(s + ZOOM_STEP).toFixed(2), MAX_SCALE)); setUserZoomed(true); };
+  const zoomOut = () => { setScale((s) => Math.max(+(s - ZOOM_STEP).toFixed(2), MIN_SCALE)); setUserZoomed(true); };
 
   // ── variants 업데이트 ────────────────────────────────────────────
   useEffect(() => {
@@ -205,19 +217,42 @@ export default function PlaygroundPreview({ html, htmls }) {
       {/* ── 프레임 영역 ── */}
       <div className="pg__frame-area" ref={frameAreaRef} role="region" aria-label="Prototype 미리보기">
 
-        {/* ③ OS 셀렉터 — 플로팅 pill */}
+        {/* ③ OS 셀렉터 — 상단 플로팅 pill */}
         <div className="pg__os-selector" role="radiogroup" aria-label="OS 유형 선택">
           {Object.entries(OS_SPECS).map(([key, s]) => (
             <button
               key={key}
               className={`pg__os-btn${os === key ? ' pg__os-btn--active' : ''}`}
-              onClick={() => setOs(key)}
+              onClick={() => handleOsChange(key)}
               aria-pressed={os === key}
             >
               {s.label}
               <span className="pg__os-device">{s.device}</span>
             </button>
           ))}
+        </div>
+
+        {/* 줌 컨트롤 — 우하단 플로팅 */}
+        <div className="pg__zoom-controls" role="group" aria-label="줌 조절">
+          <button
+            className="pg__zoom-btn"
+            onClick={zoomOut}
+            disabled={scale <= MIN_SCALE}
+            aria-label="축소"
+          >
+            −
+          </button>
+          <span className="pg__zoom-pct" aria-live="polite">
+            {Math.round(scale * 100)}%
+          </span>
+          <button
+            className="pg__zoom-btn"
+            onClick={zoomIn}
+            disabled={scale >= MAX_SCALE}
+            aria-label="확대"
+          >
+            +
+          </button>
         </div>
 
         {currentHtml ? (
