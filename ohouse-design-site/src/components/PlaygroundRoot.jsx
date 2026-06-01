@@ -4,6 +4,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import PlaygroundChat from './PlaygroundChat.jsx';
 import PlaygroundPreview from './PlaygroundPreview.jsx';
+import { mergeTargetVariantHtml } from '../lib/variant-merge.js';
 
 const VARIANT_LABELS = ['A', 'B', 'C'];
 
@@ -29,9 +30,9 @@ export default function PlaygroundRoot({ hasServerKey }) {
       })));
       setActiveVariantId(variantItems[0]?.id ?? 'A');
     } else if (html && targetVariantId) {
-      setVariants((prev) => prev.map((v) => v.id === targetVariantId ? { ...v, html } : v));
+      setVariants((prev) => mergeTargetVariantHtml(prev, targetVariantId, html));
     } else if (html) {
-      setVariants((prev) => prev.map((v) => v.id === activeVariantIdRef.current ? { ...v, html } : v));
+      setVariants((prev) => mergeTargetVariantHtml(prev, activeVariantIdRef.current, html));
     }
   }, []);
 

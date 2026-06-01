@@ -18,8 +18,10 @@ export interface PlaygroundRequest {
   userContext?: string;
   mode?: 'generate' | 'refine';
   targetVariantId?: 'A' | 'B' | 'C';
+  sourceVariantId?: 'A' | 'B' | 'C';
   currentHtml?: string;
-  intentType?: 'refine' | 'create_new' | 'create_derived';
+  referenceHtml?: string;
+  intentType?: 'refine' | 'create_new' | 'create_derived' | 'refine_with_reference';
 }
 
 type PlaygroundVariant = {
@@ -157,17 +159,46 @@ function buildAssistantMessages(assistantText: string, htmlBlocks: string[], var
 function buildRefineContext(body: PlaygroundRequest): PlaygroundMessage[] {
   if (body.mode !== 'refine' || !body.currentHtml?.trim()) return body.messages;
   const target = body.targetVariantId ? `${body.targetVariantId}안` : '현재 prototype';
+  const source = body.sourceVariantId ? `${body.sourceVariantId}안` : '참고 prototype';
 
-  const prefix = body.intentType === 'create_derived'
-    ? `참고 소스: 아래 HTML을 베이스로 ${target}을 새로 제작하세요. 사용자의 최신 요청을 반영한 완전한 HTML 문서를 생성하세요.`
-    : `수정 대상: ${target}. 아래 HTML에 사용자의 최신 요청을 반영해 수정하세요. 부분 코드나 diff가 아닌 완전한 HTML 문서만 생성해야 합니다.`;
+  let prefix: string;
+  let refineContext: string;
 
-  const refineContext = [
-    prefix,
-    '```html',
-    body.currentHtml.trim(),
-    '```',
-  ].join('\n');
+  if (body.intentType === 'refine_with_reference' && body.referenceHtml?.trim()) {
+    prefix = [
+      `수정 대상: ${target}.`,
+      `참고 소스: ${source}.`,
+      '아래 [수정 대상 HTML]의 기존 레이아웃, 콘텐츠, 스타일, CTA 흐름을 보존하세요.',
+      '사용자의 최신 요청에 필요한 요소만 [참고 소스 HTML]에서 참고하거나 이식하세요.',
+      'target의 기존 UI를 source 전체 UI로 교체하면 안 됩니다.',
+      '부분 코드나 diff가 아닌 수정 대상의 완전한 HTML 문서 하나만 생성하세요.',
+    ].join(' ');
+
+    refineContext = [
+      prefix,
+      '',
+      '[수정 대상 HTML]',
+      '```html',
+      body.currentHtml.trim(),
+      '```',
+      '',
+      '[참고 소스 HTML]',
+      '```html',
+      body.referenceHtml.trim(),
+      '```',
+    ].join('\n');
+  } else {
+    prefix = body.intentType === 'create_derived'
+      ? `참고 소스: 아래 HTML을 베이스로 ${target}을 새로 제작하세요. 사용자의 최신 요청을 반영한 완전한 HTML 문서를 생성하세요.`
+      : `수정 대상: ${target}. 아래 HTML에 사용자의 최신 요청을 반영해 수정하세요. 부분 코드나 diff가 아닌 완전한 HTML 문서만 생성해야 합니다.`;
+
+    refineContext = [
+      prefix,
+      '```html',
+      body.currentHtml.trim(),
+      '```',
+    ].join('\n');
+  }
 
   const refineMessage: PlaygroundMessage = { role: 'user', content: refineContext };
   return [refineMessage, ...body.messages];

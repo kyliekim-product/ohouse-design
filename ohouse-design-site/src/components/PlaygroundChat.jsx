@@ -3,6 +3,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { parseIntent } from '../lib/parse-intent.js';
+import { buildPlaygroundRequestPayload } from '../lib/playground-request.js';
 
 const EXAMPLE_PROMPTS = [
   '장바구니 화면의 빈 상태(empty state)를 만들어줘. 첫 구매 유도 CTA 포함.',
@@ -246,7 +247,7 @@ export default function PlaygroundChat({
   const sendMessage = useCallback(async (text) => {
     const userText = text.trim();
     if (!userText || streaming) return;
-    const { targetId, sourceId, intentType } = parseIntent(userText, variants, activeVariantId);
+    const { targetId } = parseIntent(userText, variants, activeVariantId);
     const hasExistingVariants = variants.some((v) => v.html);
     const mode = hasExistingVariants ? 'refine' : 'generate';
 
@@ -254,12 +255,6 @@ export default function PlaygroundChat({
       onOptimisticTabSwitch?.(targetId);
       onPreviewStatus?.('generating', `${targetId}안을 수정하고 있어요.`);
     }
-
-    const targetVariant = targetId ? variants.find((v) => v.id === targetId) : null;
-    const sourceVariant = sourceId ? variants.find((v) => v.id === sourceId) : null;
-    const sourceHtml = intentType === 'create_derived'
-      ? (sourceVariant?.html ?? null)
-      : (targetVariant?.html ?? null);
 
     const newUserMsg = { role: 'user', content: userText };
     const history = [...messages, newUserMsg];
@@ -283,16 +278,13 @@ export default function PlaygroundChat({
       const res = await fetch('/api/playground', {
         method: 'POST',
         headers,
-        body: JSON.stringify({
-          messages: history
-            .filter(({ role }) => role === 'user' || role === 'assistant')
-            .map(({ role, content }) => ({ role, content })),
+        body: JSON.stringify(buildPlaygroundRequestPayload({
+          userText,
+          messages: history,
+          variants,
+          activeVariantId,
           userContext: buildUserContext(),
-          mode,
-          targetVariantId: mode === 'refine' ? targetId : undefined,
-          intentType: mode === 'refine' ? intentType : undefined,
-          currentHtml: sourceHtml ?? undefined,
-        }),
+        })),
       });
 
       if (!res.ok) {
@@ -449,7 +441,7 @@ export default function PlaygroundChat({
             <div>
               <p className="pg__empty-title">무엇을 만들어볼까요?</p>
               <p className="pg__empty-subtitle" style={{ marginTop: 6 }}>
-                오늘의집 디자인 패턴을 아는 AI가<br />prototype.html을 바로 만들어드립니다.
+                오늘의집 디자인 패턴을 아는 AI가<br />prototype을 바로 만들어드려요
               </p>
             </div>
             <div className="pg__chips" role="list">
