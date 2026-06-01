@@ -338,7 +338,6 @@ export default function PlaygroundChat({
           }
         } else if (evt.type === 'error') {
           onPreviewError?.(evt.message);
-          throw new Error(evt.message);
         }
       };
 
