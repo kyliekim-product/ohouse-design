@@ -1,0 +1,15 @@
+---
+const { title, items = [], active = 'all' } = Astro.props;
+---
+
+<aside class="axis-side">
+  <div class="axis-side__title">{title}</div>
+  <nav class="axis-side__nav" aria-label={`${title} navigation`}>
+    {items.map((item) => (
+      <a class={`axis-side__item${item.slug === active ? ' is-active' : ''}`} href={item.href || `?item=${item.slug}`}>
+        <span>{item.label}</span>
+        <span>{item.count}</span>
+      </a>
+    ))}
+  </nav>
+</aside>

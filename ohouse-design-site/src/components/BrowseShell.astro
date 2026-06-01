@@ -1,0 +1,36 @@
+---
+import Layout from '../layouts/Layout.astro';
+import FilterBar from './FilterBar.astro';
+import AxisSidebar from './AxisSidebar.astro';
+import ReferenceCard from './ReferenceCard.astro';
+
+const { title, eyebrow, summary, sidebarItems, items, active = 'all' } = Astro.props;
+---
+
+<Layout title={title}>
+  <main class="browse">
+    <div class="wrap">
+      <header class="browse__head">
+        <span class="browse__eyebrow">{eyebrow}</span>
+        <h1>{title}</h1>
+        <p>{summary}</p>
+      </header>
+      <FilterBar sort="latest" />
+      <div class="browse__layout">
+        <AxisSidebar title={title} items={sidebarItems} active={active} />
+        <section class="browse__results" aria-label={`${title} results`}>
+          {items.length === 0 ? (
+            <div class="empty">
+              <div class="empty__title">표시할 항목이 없습니다</div>
+              <div class="empty__hint">콘텐츠 메타데이터가 추가되면 여기에 표시됩니다.</div>
+            </div>
+          ) : (
+            <div class="ref-grid">
+              {items.map((item) => <ReferenceCard item={item} />)}
+            </div>
+          )}
+        </section>
+      </div>
+    </div>
+  </main>
+</Layout>

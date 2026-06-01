@@ -1,0 +1,12 @@
+---
+import BrowseShell from '../components/BrowseShell.astro';
+import { getAllBrowseCards, getAxisSidebarItems } from '../lib/repo.js';
+---
+
+<BrowseShell
+  title="UI Elements"
+  eyebrow="Component browsing"
+  summary="ODS 컴포넌트와 제품 전용 UI 요소의 활용처를 탐색합니다."
+  sidebarItems={getAxisSidebarItems('ui-elements')}
+  items={getAllBrowseCards('ui-elements')}
+/>

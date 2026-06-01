@@ -404,6 +404,42 @@ code, pre { font-family: var(--f-mono); font-size: 0.92em; }
   .fbar__sort-item.is-active::after{bottom:-13px}
 }
 
+/* ── Browse pages ── */
+.browse{padding:56px 0 96px}
+.browse__head{max-width:720px;margin-bottom:24px}
+.browse__eyebrow{display:block;font-size:12px;font-weight:800;color:var(--c-text-soft);text-transform:uppercase;margin-bottom:8px}
+.browse__head h1{font-size:56px;line-height:1;font-weight:800;letter-spacing:-0.035em;margin-bottom:12px}
+.browse__head p{font-size:17px;color:var(--c-text-muted)}
+.browse__layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:32px;margin-top:24px;align-items:start}
+.axis-side{position:sticky;top:120px;border-right:1px solid var(--c-border);padding-right:16px}
+.axis-side__title{font-size:13px;font-weight:800;margin-bottom:10px;color:var(--c-text-soft)}
+.axis-side__nav{display:flex;flex-direction:column;gap:4px}
+.axis-side__item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;border-radius:10px;color:var(--c-text-muted);font-weight:650;font-size:14px}
+.axis-side__item:hover,.axis-side__item.is-active{background:var(--c-bg-elev);color:var(--c-text)}
+.axis-side__item span:last-child{font-size:12px;color:var(--c-text-soft);font-variant-numeric:tabular-nums}
+.ref-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+.ref-card{display:flex;flex-direction:column;background:#fff;border:1px solid var(--c-border-soft);border-radius:20px;overflow:hidden;box-shadow:var(--sh-sm);transition:transform .18s ease,box-shadow .18s ease}
+.ref-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+.ref-card__preview{aspect-ratio:4/3;background:var(--c-bg-elev);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.ref-card__preview img{width:100%;height:100%;object-fit:cover}
+.ref-card__preview span{font-size:44px;font-weight:800;color:var(--c-text-soft)}
+.ref-card__body{padding:14px;display:flex;flex-direction:column;gap:8px}
+.ref-card__meta{display:flex;flex-wrap:wrap;gap:6px}
+.ref-card__meta span,.ref-card__chips span{font-size:11px;font-weight:700;color:var(--c-text-muted);background:var(--c-bg-elev);border-radius:999px;padding:3px 8px}
+.ref-card h3{font-size:16px;line-height:1.25}
+.ref-card p{font-size:13px;color:var(--c-text-muted);min-height:36px}
+.ref-card__chips{display:flex;flex-wrap:wrap;gap:6px}
+@media (max-width:860px){
+  .browse__layout{grid-template-columns:1fr}
+  .axis-side{position:static;border-right:0;padding-right:0}
+  .axis-side__nav{flex-direction:row;overflow-x:auto}
+  .axis-side__item{white-space:nowrap;flex:0 0 auto}
+}
+@media (max-width:560px){
+  .browse{padding:40px 0 72px}
+  .browse__head h1{font-size:42px}
+}
+
 /* ── Home: MCP banner ── */
 .banner{display:flex;align-items:center;gap:12px;margin:16px 0 28px;padding:14px 18px;
   background:var(--c-bg-elev);border-radius:14px;font-size:13px;color:var(--c-text-muted);
