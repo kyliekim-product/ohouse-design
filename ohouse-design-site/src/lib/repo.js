@@ -166,14 +166,20 @@ export function relTime(isoOrAi) {
   return `${Math.floor(diffSec / (86400 * 365))}년 전`;
 }
 
+const lastModifiedCache = new Map();
+
 function lastModified(path) {
+  if (lastModifiedCache.has(path)) return lastModifiedCache.get(path);
   try {
     const out = execSync(`git log -1 --format=%ai -- "${path}"`, {
       cwd: ROOT,
       encoding: 'utf8',
     }).trim();
-    return out || null;
+    const value = out || null;
+    lastModifiedCache.set(path, value);
+    return value;
   } catch {
+    lastModifiedCache.set(path, null);
     return null;
   }
 }

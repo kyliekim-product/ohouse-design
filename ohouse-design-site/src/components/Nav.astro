@@ -107,7 +107,7 @@ const designSystemActive = rel.startsWith('/ods');
         root.addEventListener('focusout', (e) => {
           if (!root.contains(e.relatedTarget as Node | null)) overlay.hidden = true;
         });
-        trigger.addEventListener('keydown', (e) => {
+        root.addEventListener('keydown', (e) => {
           if (e.key === 'Escape') overlay.hidden = true;
         });
       });
