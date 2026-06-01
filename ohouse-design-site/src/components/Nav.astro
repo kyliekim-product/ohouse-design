@@ -36,62 +36,22 @@ const designActive =
         <img src={`${base}ohouse-3d.png`} alt="" class="brand__logo" width="32" height="32" />
       </a>
       <nav class="nav-tabs" aria-label="Ohouse Design browse axes">
-        <div class="nav-axis" data-axis-root>
-          <a href={base} class={`nav-tab${designActive ? ' is-active' : ''}`} data-axis-trigger>
-            Ohouse Design
-          </a>
-          <button type="button" class="nav-backdrop" data-axis-backdrop hidden aria-label="메뉴 닫기"></button>
-          <div class="nav-overlay" data-axis-overlay hidden>
-            <div class="nav-overlay__rail">
-              <div class="nav-overlay__eyebrow">Browse</div>
-              {axes.map((item) => (
-                <button
-                  type="button"
-                  class={`nav-overlay__rail-item${item.id === activeAxis.id ? ' is-active' : ''}`}
-                  data-axis-option={item.id}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-            <div class="nav-overlay__body">
-              {axes.map((axis) => (
-                <div class="nav-overlay__panel" data-axis-panel={axis.id} hidden={axis.id !== activeAxis.id}>
-                  <div class="nav-overlay__head">
-                    <strong>{axis.label}</strong>
-                    <span>{axis.summary}</span>
-                  </div>
-                  <div class="nav-overlay__groups">
-                    {axis.groups.map((group) => (
-                      <section class="nav-overlay__group">
-                        <h3>{group.group}</h3>
-                        {group.items.map((item) => (
-                          <a class="nav-overlay__item" href={item.href}>
-                            <span>{item.label}</span>
-                            <span>{item.count}</span>
-                          </a>
-                        ))}
-                      </section>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <a href={base} class={`nav-tab${designActive ? ' is-active' : ''}`}>
+          Ohouse Design
+        </a>
         <a href={`${base}ods`} class={`nav-tab nav-tab--system${designSystemActive ? ' is-active' : ''}`}>
           Design system
         </a>
       </nav>
     </div>
 
-    <div class="nav-search">
+    <button type="button" class="nav-search" data-search-trigger aria-label="Search Ohouse Design">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
-      <input type="text" placeholder="Search Ohouse Design..." aria-label="검색" />
+      <span class="nav-search__placeholder">Search Ohouse Design...</span>
       <span class="nav-search__kbd">⌘K</span>
-    </div>
+    </button>
 
     <div class="nav-right">
       <button class="nav-icon" aria-label="북마크">
@@ -105,62 +65,88 @@ const designActive =
       <div class="nav-avatar" aria-label="요한" title="요한">요</div>
     </div>
   </div>
-  <script>
-    function initAxisOverlay() {
-      document.querySelectorAll<HTMLElement>('[data-axis-root]').forEach((root) => {
-        if (root.dataset.bound) return;
-        root.dataset.bound = '1';
-        const trigger = root.querySelector<HTMLElement>('[data-axis-trigger]');
-        const overlay = root.querySelector<HTMLElement>('[data-axis-overlay]');
-        const backdrop = root.querySelector<HTMLElement>('[data-axis-backdrop]');
-        if (!trigger || !overlay) return;
-        const options = Array.from(root.querySelectorAll<HTMLElement>('[data-axis-option]'));
-        const panels = Array.from(root.querySelectorAll<HTMLElement>('[data-axis-panel]'));
-        let closeTimer: number | null = null;
-        function open() {
-          if (closeTimer) window.clearTimeout(closeTimer);
-          overlay.hidden = false;
-          if (backdrop) backdrop.hidden = false;
-        }
-        function close() {
-          overlay.hidden = true;
-          if (backdrop) backdrop.hidden = true;
-        }
-        function closeSoon() {
-          closeTimer = window.setTimeout(close, 120);
-        }
-        function activateAxis(id: string) {
-          options.forEach((option) => {
-            option.classList.toggle('is-active', option.dataset.axisOption === id);
-          });
-          panels.forEach((panel) => {
-            panel.hidden = panel.dataset.axisPanel !== id;
-          });
-        }
-        root.addEventListener('mouseenter', open);
-        root.addEventListener('mouseleave', closeSoon);
-        trigger.addEventListener('focus', open);
-        trigger.addEventListener('click', (e) => {
-          e.preventDefault();
-          open();
-        });
-        backdrop?.addEventListener('click', close);
-        options.forEach((option) => {
-          option.addEventListener('click', () => {
-            activateAxis(option.dataset.axisOption || '');
-            open();
-          });
-          option.addEventListener('focus', open);
-        });
-        root.addEventListener('focusout', (e) => {
-          if (!root.contains(e.relatedTarget as Node | null)) close();
-        });
-        root.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape') close();
-        });
+</header>
+
+<button type="button" class="nav-backdrop" data-axis-backdrop hidden aria-label="메뉴 닫기"></button>
+<div class="nav-overlay" data-axis-overlay hidden>
+  <div class="nav-overlay__rail">
+    <div class="nav-overlay__eyebrow">Browse</div>
+    {axes.map((item) => (
+      <button
+        type="button"
+        class={`nav-overlay__rail-item${item.id === activeAxis.id ? ' is-active' : ''}`}
+        data-axis-option={item.id}
+      >
+        {item.label}
+      </button>
+    ))}
+  </div>
+  <div class="nav-overlay__body">
+    {axes.map((axis) => (
+      <div class="nav-overlay__panel" data-axis-panel={axis.id} hidden={axis.id !== activeAxis.id}>
+        <div class="nav-overlay__head">
+          <strong>{axis.label}</strong>
+          <span>{axis.summary}</span>
+        </div>
+        <div class="nav-overlay__groups">
+          {axis.groups.map((group) => (
+            <section class="nav-overlay__group">
+              <h3>{group.group}</h3>
+              {group.items.map((item) => (
+                <a class="nav-overlay__item" href={item.href}>
+                  <span>{item.label}</span>
+                  <span>{item.count}</span>
+                </a>
+              ))}
+            </section>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
+<script>
+  function initAxisOverlay() {
+    const trigger = document.querySelector<HTMLElement>('[data-search-trigger]');
+    const overlay = document.querySelector<HTMLElement>('[data-axis-overlay]');
+    const backdrop = document.querySelector<HTMLElement>('[data-axis-backdrop]');
+    if (!trigger || !overlay || trigger.dataset.bound) return;
+    trigger.dataset.bound = '1';
+
+    const options = Array.from(document.querySelectorAll<HTMLElement>('[data-axis-option]'));
+    const panels = Array.from(document.querySelectorAll<HTMLElement>('[data-axis-panel]'));
+
+    function open() {
+      overlay.hidden = false;
+      if (backdrop) backdrop.hidden = false;
+    }
+    function close() {
+      overlay.hidden = true;
+      if (backdrop) backdrop.hidden = true;
+    }
+    function activateAxis(id: string) {
+      options.forEach((option) => {
+        option.classList.toggle('is-active', option.dataset.axisOption === id);
+      });
+      panels.forEach((panel) => {
+        panel.hidden = panel.dataset.axisPanel !== id;
       });
     }
-    initAxisOverlay();
-    document.addEventListener('astro:page-load', initAxisOverlay);
-  </script>
-</header>
+
+    trigger.addEventListener('click', open);
+    trigger.addEventListener('focus', open);
+    backdrop?.addEventListener('click', close);
+    options.forEach((option) => {
+      option.addEventListener('click', () => {
+        activateAxis(option.dataset.axisOption || '');
+        open();
+      });
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') close();
+    });
+  }
+  initAxisOverlay();
+  document.addEventListener('astro:page-load', initAxisOverlay);
+</script>

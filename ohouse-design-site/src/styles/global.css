@@ -204,7 +204,6 @@ code, pre { font-family: var(--f-mono); font-size: 0.92em; }
 .nav-tab{padding:6px 0;font-size:15px;font-weight:600;color:var(--c-text-soft);letter-spacing:-0.01em;transition:color .15s}
 .nav-tab:hover{color:var(--c-text)}
 .nav-tab.is-active{color:var(--c-text)}
-.nav-axis{position:relative}
 .nav-backdrop{
   position:fixed;inset:0;z-index:70;
   background:rgba(255,255,255,.58);
@@ -236,8 +235,9 @@ code, pre { font-family: var(--f-mono); font-size: 0.92em; }
 .nav-tab--system{color:var(--c-text-muted)}
 .nav-search{display:flex;align-items:center;gap:10px;background:var(--c-bg-elev);height:40px;padding:0 16px;
   border-radius:999px;max-width:560px;width:100%;justify-self:center;color:var(--c-text-soft);}
-.nav-search input{flex:1;border:0;background:transparent;outline:none;font-family:inherit;font-size:14px;color:var(--c-text)}
-.nav-search input::placeholder{color:var(--c-text-soft)}
+.nav-search:hover{background:var(--c-bg-elev-2);color:var(--c-text-muted)}
+.nav-search:focus-visible{outline:2px solid var(--c-text);outline-offset:2px}
+.nav-search__placeholder{flex:1;text-align:left;font-size:14px;color:var(--c-text-soft);font-weight:500}
 .nav-search__kbd{font-size:11px;font-weight:500;color:var(--c-text-soft);padding:2px 6px;background:#fff;border:1px solid var(--c-border);border-radius:6px}
 .nav-right{display:flex;align-items:center;gap:10px}
 .nav-icon{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;color:var(--c-text-muted)}
@@ -246,12 +246,17 @@ code, pre { font-family: var(--f-mono); font-size: 0.92em; }
 .nav-github:hover{background:#000;color:#fff}
 .nav-avatar{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;
   background:linear-gradient(135deg,#ffd9a8 0%,#ffaf68 100%);color:#6b3a0a;font-weight:700;font-size:13px;border-radius:999px;}
-@media (max-width:960px){.nav-search{display:none}.nav-inner{grid-template-columns:auto auto;justify-content:space-between}}
+@media (max-width:960px){
+  .nav-inner{grid-template-columns:auto minmax(44px,1fr) auto;justify-content:normal}
+  .nav-search{max-width:360px}
+}
 @media (max-width:720px){
-  .nav-inner{height:60px;padding:0 20px;gap:16px}
+  .nav-inner{height:60px;padding:0 20px;gap:12px;grid-template-columns:auto 44px auto}
   .nav-tabs{gap:16px}
   .nav-right{gap:6px}
   .nav-github{display:none}
+  .nav-search{width:40px;height:40px;padding:0;justify-content:center;justify-self:end}
+  .nav-search__placeholder,.nav-search__kbd{display:none}
   .nav-overlay{
     width:calc(100vw - 24px);max-height:calc(100vh - 24px);
     grid-template-columns:1fr;padding:16px;border-radius:20px;
