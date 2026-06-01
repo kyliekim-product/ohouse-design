@@ -43,4 +43,10 @@ describe('parseIntent', () => {
       targetId: 'B', sourceId: 'A', intentType: 'create_derived',
     });
   });
+
+  it('소스만 있고 activeVariantId null → create_new', () => {
+    const result = parseIntent('A안 기반으로 만들어줘', variants, null);
+    expect(result.intentType).toBe('create_new');
+    expect(result.targetId).toBeNull();
+  });
 });

@@ -18,14 +18,22 @@ export function parseIntent(message, variants, activeVariantId) {
   const targetId = targetMatch ? targetMatch[1].toUpperCase() : (activeVariantId ?? null);
 
   const isDerive = Boolean(sourceId) && sourceId !== targetId;
-  const targetVariant = targetId ? variants.find((v) => v.id === targetId) : null;
+  const targetVariant = targetId ? variants?.find((v) => v.id === targetId) : null;
   const targetHasHtml = Boolean(targetVariant?.html);
 
-  const intentType = isDerive
-    ? 'create_derived'
-    : targetHasHtml
-      ? 'refine'
-      : 'create_new';
+  // If sourceId is set but targetId is null, force create_new and clear sourceId (can't derive without target)
+  let finalSourceId = sourceId;
+  let intentType;
+  if (sourceId && !targetId) {
+    finalSourceId = null;
+    intentType = 'create_new';
+  } else {
+    intentType = isDerive
+      ? 'create_derived'
+      : targetHasHtml
+        ? 'refine'
+        : 'create_new';
+  }
 
-  return { targetId, sourceId, intentType };
+  return { targetId, sourceId: finalSourceId, intentType };
 }
