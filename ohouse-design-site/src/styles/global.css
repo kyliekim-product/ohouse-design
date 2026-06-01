@@ -212,7 +212,7 @@ code, pre { font-family: var(--f-mono); font-size: 0.92em; }
 }
 .nav-backdrop[hidden]{display:none}
 .nav-overlay{
-  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  position:fixed;top:72px;left:50%;transform:translateX(-50%);
   width:min(860px,calc(100vw - 40px));max-height:min(760px,calc(100vh - 40px));
   display:flex;flex-direction:column;gap:22px;
   background:rgba(34,34,34,.96);color:#fff;border-radius:24px;
@@ -232,11 +232,11 @@ code, pre { font-family: var(--f-mono); font-size: 0.92em; }
 .nav-overlay__head{display:flex;flex-direction:column;gap:4px;margin-bottom:20px}
 .nav-overlay__head strong{font-size:20px}
 .nav-overlay__head span{font-size:13px;color:rgba(255,255,255,.56)}
-.nav-overlay__groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 28px;max-height:calc(min(760px,100vh - 40px) - 112px);overflow:auto;padding-right:8px}
+.nav-overlay__groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 28px;max-height:calc(min(760px,100vh - 112px) - 112px);overflow:auto;padding-right:8px}
 .nav-overlay__group h3{font-size:12px;color:rgba(255,255,255,.42);margin-bottom:8px}
 .nav-overlay__item{display:flex;justify-content:space-between;gap:16px;padding:7px 0;color:rgba(255,255,255,.88);font-size:14px;font-weight:650}
 .nav-overlay__item span:last-child{color:rgba(255,255,255,.42);font-variant-numeric:tabular-nums}
-.nav-search-results{display:flex;flex-direction:column;gap:10px;max-height:calc(min(760px,100vh - 40px) - 86px);overflow:auto;padding-right:8px}
+.nav-search-results{display:flex;flex-direction:column;gap:10px;max-height:calc(min(760px,100vh - 112px) - 86px);overflow:auto;padding-right:8px}
 .nav-search-results[hidden]{display:none}
 .nav-result{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:14px;align-items:center;padding:10px;border-radius:14px;color:#fff}
 .nav-result:hover{background:rgba(255,255,255,.12);color:#fff}
@@ -274,7 +274,7 @@ code, pre { font-family: var(--f-mono); font-size: 0.92em; }
   .nav-search{width:40px;height:40px;padding:0;justify-content:center;justify-self:end}
   .nav-search__placeholder,.nav-search__kbd{display:none}
   .nav-overlay{
-    width:calc(100vw - 24px);max-height:calc(100vh - 24px);
+    top:12px;width:calc(100vw - 24px);max-height:calc(100vh - 24px);
     padding:16px;border-radius:20px;gap:16px;
   }
   .nav-overlay__search input{font-size:16px}
@@ -283,8 +283,8 @@ code, pre { font-family: var(--f-mono); font-size: 0.92em; }
   .nav-overlay__eyebrow{display:none}
   .nav-overlay__rail-item{width:auto;white-space:nowrap;flex:0 0 auto}
   .nav-overlay__body{padding:16px 0 0}
-  .nav-overlay__groups{grid-template-columns:1fr;max-height:calc(100vh - 200px);gap:18px}
-  .nav-search-results{max-height:calc(100vh - 120px)}
+  .nav-overlay__groups{grid-template-columns:1fr;max-height:calc(100vh - 184px);gap:18px}
+  .nav-search-results{max-height:calc(100vh - 108px)}
 }
 
 /* ── Domain Head ── */
