@@ -5,40 +5,33 @@ import { useState, useCallback } from 'react';
 import PlaygroundChat from './PlaygroundChat.jsx';
 import PlaygroundPreview from './PlaygroundPreview.jsx';
 
+const VARIANT_LABELS = ['A', 'B', 'C'];
+
 export default function PlaygroundRoot({ hasServerKey }) {
-  const [generatedHtml, setGeneratedHtml] = useState(null);   // 단일
-  const [generatedHtmls, setGeneratedHtmls] = useState(null); // A/B 배열
-  const [generatedVariants, setGeneratedVariants] = useState(null);
-  const [currentHtml, setCurrentHtml] = useState(null);
-  const [currentVariantId, setCurrentVariantId] = useState('A');
+  const [variants, setVariants] = useState([{ id: 'A', html: null, label: 'A' }]);
+  const [activeVariantId, setActiveVariantId] = useState('A');
   const [previewStatus, setPreviewStatus] = useState('idle');
   const [previewStatusMessage, setPreviewStatusMessage] = useState('');
   const [previewError, setPreviewError] = useState(null);
 
   // Chat → Preview 브릿지
   // html: 단일 prototype (partial 포함), htmls: A/B/C 완성 배열
-  const handleHtmlGenerated = useCallback((html, htmls, variants) => {
+  const handleHtmlGenerated = useCallback((html, _htmls, variantItems, targetVariantId) => {
     setPreviewError(null);
-    if (variants?.length) {
-      setGeneratedVariants(variants);
-      setGeneratedHtmls(null);
-      setGeneratedHtml(null);
-      setCurrentHtml(variants[0]?.html ?? null);
-      setCurrentVariantId(variants[0]?.id ?? 'A');
-    } else if (htmls) {
-      setGeneratedVariants(null);
-      setGeneratedHtmls(htmls);
-      setGeneratedHtml(null);
-      setCurrentHtml(htmls[0] ?? null);
-      setCurrentVariantId('A');
+    if (variantItems?.length) {
+      setVariants(variantItems.map((v, i) => ({
+        id: v.id ?? VARIANT_LABELS[i] ?? String(i + 1),
+        html: v.html,
+        label: v.id ?? v.label ?? VARIANT_LABELS[i] ?? String(i + 1),
+        summary: v.summary,
+      })));
+      setActiveVariantId(variantItems[0]?.id ?? 'A');
+    } else if (html && targetVariantId) {
+      setVariants((prev) => prev.map((v) => v.id === targetVariantId ? { ...v, html } : v));
     } else if (html) {
-      setGeneratedVariants(null);
-      setGeneratedHtml(html);
-      setGeneratedHtmls(null);
-      setCurrentHtml(html);
-      setCurrentVariantId('A');
+      setVariants((prev) => prev.map((v) => v.id === activeVariantId ? { ...v, html } : v));
     }
-  }, []);
+  }, [activeVariantId]);
 
   const handlePreviewStatus = useCallback((stage, message) => {
     setPreviewStatus(stage);
@@ -51,10 +44,13 @@ export default function PlaygroundRoot({ hasServerKey }) {
     setPreviewError(message);
   }, []);
 
+  const handleOptimisticTabSwitch = useCallback((targetId) => {
+    setActiveVariantId(targetId);
+  }, []);
+
   const handleActiveVariantChange = useCallback((variant) => {
     if (!variant) return;
-    setCurrentVariantId(variant.id ?? variant.label ?? 'A');
-    setCurrentHtml(variant.html ?? null);
+    setActiveVariantId(variant.id ?? variant.label ?? 'A');
   }, []);
 
   return (
@@ -63,14 +59,14 @@ export default function PlaygroundRoot({ hasServerKey }) {
         onHtmlGenerated={handleHtmlGenerated}
         onPreviewStatus={handlePreviewStatus}
         onPreviewError={handlePreviewError}
-        currentHtml={currentHtml}
-        currentVariantId={currentVariantId}
+        variants={variants}
+        activeVariantId={activeVariantId}
+        onOptimisticTabSwitch={handleOptimisticTabSwitch}
         hasServerKey={hasServerKey}
       />
       <PlaygroundPreview
-        html={generatedHtml}
-        htmls={generatedHtmls}
-        variantItems={generatedVariants}
+        variantItems={variants}
+        activeVariantId={activeVariantId}
         status={previewStatus}
         statusMessage={previewStatusMessage}
         error={previewError}
