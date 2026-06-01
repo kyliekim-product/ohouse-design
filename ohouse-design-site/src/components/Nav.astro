@@ -40,6 +40,7 @@ const designActive =
           <a href={base} class={`nav-tab${designActive ? ' is-active' : ''}`} data-axis-trigger>
             Ohouse Design
           </a>
+          <button type="button" class="nav-backdrop" data-axis-backdrop hidden aria-label="메뉴 닫기"></button>
           <div class="nav-overlay" data-axis-overlay hidden>
             <div class="nav-overlay__rail">
               <div class="nav-overlay__eyebrow">Browse</div>
@@ -111,6 +112,7 @@ const designActive =
         root.dataset.bound = '1';
         const trigger = root.querySelector<HTMLElement>('[data-axis-trigger]');
         const overlay = root.querySelector<HTMLElement>('[data-axis-overlay]');
+        const backdrop = root.querySelector<HTMLElement>('[data-axis-backdrop]');
         if (!trigger || !overlay) return;
         const options = Array.from(root.querySelectorAll<HTMLElement>('[data-axis-option]'));
         const panels = Array.from(root.querySelectorAll<HTMLElement>('[data-axis-panel]'));
@@ -118,9 +120,14 @@ const designActive =
         function open() {
           if (closeTimer) window.clearTimeout(closeTimer);
           overlay.hidden = false;
+          if (backdrop) backdrop.hidden = false;
+        }
+        function close() {
+          overlay.hidden = true;
+          if (backdrop) backdrop.hidden = true;
         }
         function closeSoon() {
-          closeTimer = window.setTimeout(() => { overlay.hidden = true; }, 120);
+          closeTimer = window.setTimeout(close, 120);
         }
         function activateAxis(id: string) {
           options.forEach((option) => {
@@ -133,6 +140,11 @@ const designActive =
         root.addEventListener('mouseenter', open);
         root.addEventListener('mouseleave', closeSoon);
         trigger.addEventListener('focus', open);
+        trigger.addEventListener('click', (e) => {
+          e.preventDefault();
+          open();
+        });
+        backdrop?.addEventListener('click', close);
         options.forEach((option) => {
           option.addEventListener('click', () => {
             activateAxis(option.dataset.axisOption || '');
@@ -141,10 +153,10 @@ const designActive =
           option.addEventListener('focus', open);
         });
         root.addEventListener('focusout', (e) => {
-          if (!root.contains(e.relatedTarget as Node | null)) overlay.hidden = true;
+          if (!root.contains(e.relatedTarget as Node | null)) close();
         });
         root.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape') overlay.hidden = true;
+          if (e.key === 'Escape') close();
         });
       });
     }
