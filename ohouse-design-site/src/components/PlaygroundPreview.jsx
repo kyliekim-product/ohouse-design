@@ -310,7 +310,7 @@ export default function PlaygroundPreview({
   useEffect(() => {
     if (!activeVariantId) return;
     const idx = variants.findIndex((v) => v.id === activeVariantId);
-    if (idx >= 0 && idx !== activeIdx) setActiveIdx(idx);
+    if (idx >= 0) setActiveIdx(idx);
   }, [activeVariantId, variants]);
 
   const currentHtml = variants[activeIdx]?.html ?? null;
