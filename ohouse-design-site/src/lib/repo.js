@@ -215,6 +215,13 @@ function markerStatus(markers) {
   return 'verified';
 }
 
+function browseCardStatus(screen, markers) {
+  const status = markerStatus(markers);
+  if (status !== 'verified') return status;
+  if (!screen.prototype && !screen.thumb && markers.length === 0) return 'draft';
+  return 'verified';
+}
+
 function findTaxonomyBySlug(slug, list) {
   return list.find((item) => slug.includes(item.slug) || item.slug.includes(slug));
 }
@@ -384,8 +391,8 @@ export function getAllBrowseCards(axis = 'screens') {
 
   const cards = [];
   domains.forEach((domain) => {
-    getDomainScreens(domain.slug).forEach((screen, localIndex) => {
-      const index = cards.length + localIndex;
+    getDomainScreens(domain.slug).forEach((screen) => {
+      const index = cards.length;
       const pattern = findTaxonomyBySlug(screen.slug, SCREEN_PATTERNS) || SCREEN_PATTERNS[index % SCREEN_PATTERNS.length];
       const element = UI_ELEMENT_GROUPS[index % UI_ELEMENT_GROUPS.length];
       const flow = FLOW_GROUPS[index % FLOW_GROUPS.length];
@@ -398,7 +405,7 @@ export function getAllBrowseCards(axis = 'screens') {
         domain: domain.label,
         os: fallbackOs(index),
         source: screen.prototype ? 'prototype' : fallbackSource(index),
-        status: markerStatus(markers),
+        status: browseCardStatus(screen, markers),
         pattern: pattern.label,
         element: element.label,
         flow: flow.label,
