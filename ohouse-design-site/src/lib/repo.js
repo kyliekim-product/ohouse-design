@@ -83,6 +83,68 @@ export const CATEGORIES = {
   Global: ['search-jp', 'home-jp', 'shopping-jp', 'content-jp', 'core-jp'],
 };
 
+export const OS_OPTIONS = [
+  { value: 'ios', label: 'iOS' },
+  { value: 'android', label: 'Android' },
+  { value: 'web', label: 'Web' },
+  { value: 'mobile-web', label: 'Mobile Web' },
+];
+
+export const SOURCE_OPTIONS = [
+  { value: 'html', label: 'HTML' },
+  { value: 'figma', label: 'Figma' },
+  { value: 'screenshot', label: 'Screenshot' },
+  { value: 'prototype', label: 'Prototype' },
+];
+
+export const STATUS_OPTIONS = [
+  { value: 'verified', label: 'Verified' },
+  { value: 'draft', label: 'Draft' },
+  { value: 'missing-ods', label: 'Missing ODS' },
+  { value: 'code-connect', label: 'Code Connect' },
+];
+
+export const DISCOVERY_AXES = [
+  { id: 'categories', label: 'Categories', href: 'categories', summary: 'Browse by Ohouse product domains.', featured: ['home', 'shopping', 'content-detail', 'mypage', 'search'] },
+  { id: 'screens', label: 'Screens', href: 'screens', summary: 'Browse reusable UX screen patterns.', featured: ['onboarding', 'product-detail', 'search-result', 'checkout', 'profile'] },
+  { id: 'ui-elements', label: 'UI Elements', href: 'ui-elements', summary: 'Browse ODS and product component usage.', featured: ['cards', 'navigation', 'bottom-sheet', 'form', 'carousel'] },
+  { id: 'flows', label: 'Flows', href: 'flows', summary: 'Browse multi-step user journeys.', featured: ['signup', 'login', 'purchase', 'bookmark', 'share'] },
+];
+
+export const SCREEN_PATTERNS = [
+  { slug: 'onboarding', label: 'Onboarding', group: 'Account', countHint: 4 },
+  { slug: 'product-detail', label: 'Product Detail', group: 'Commerce', countHint: 7 },
+  { slug: 'search-result', label: 'Search Result', group: 'Discovery', countHint: 5 },
+  { slug: 'checkout', label: 'Checkout', group: 'Commerce', countHint: 3 },
+  { slug: 'profile', label: 'Profile', group: 'Account', countHint: 4 },
+  { slug: 'feed', label: 'Feed', group: 'Content', countHint: 5 },
+  { slug: 'settings', label: 'Settings', group: 'Account', countHint: 2 },
+  { slug: 'empty-state', label: 'Empty State', group: 'System', countHint: 3 },
+  { slug: 'error-state', label: 'Error State', group: 'System', countHint: 2 },
+];
+
+export const UI_ELEMENT_GROUPS = [
+  { slug: 'ods-components', label: 'ODS Components', group: 'System', countHint: 12 },
+  { slug: 'product-components', label: 'Product Components', group: 'Product', countHint: 8 },
+  { slug: 'cards', label: 'Cards', group: 'Layout', countHint: 10 },
+  { slug: 'navigation', label: 'Navigation', group: 'Navigation', countHint: 7 },
+  { slug: 'bottom-sheet', label: 'Bottom Sheet', group: 'Overlay', countHint: 5 },
+  { slug: 'modal', label: 'Modal', group: 'Overlay', countHint: 4 },
+  { slug: 'toast', label: 'Toast', group: 'Feedback', countHint: 3 },
+  { slug: 'form', label: 'Form', group: 'Input', countHint: 6 },
+  { slug: 'carousel', label: 'Carousel', group: 'Content', countHint: 4 },
+];
+
+export const FLOW_GROUPS = [
+  { slug: 'account', label: 'Account', group: 'Account', countHint: 5 },
+  { slug: 'commerce', label: 'Commerce', group: 'Commerce', countHint: 8 },
+  { slug: 'content', label: 'Content', group: 'Content', countHint: 4 },
+  { slug: 'search', label: 'Search', group: 'Discovery', countHint: 3 },
+  { slug: 'membership', label: 'Membership', group: 'Commerce', countHint: 3 },
+  { slug: 'permission', label: 'Permission', group: 'System', countHint: 2 },
+  { slug: 'order', label: 'Order', group: 'Commerce', countHint: 4 },
+];
+
 function safeRead(path) {
   try { return readFileSync(path, 'utf8'); } catch { return null; }
 }
@@ -137,6 +199,24 @@ function listMd(dir) {
   if (!existsSync(dir)) return [];
   return readdirSync(dir)
     .filter((f) => f.endsWith('.md') && f !== 'INDEX.md' && f !== 'README.md');
+}
+
+function fallbackOs(index) {
+  return OS_OPTIONS[index % OS_OPTIONS.length].value;
+}
+
+function fallbackSource(index) {
+  return SOURCE_OPTIONS[index % 2].value;
+}
+
+function markerStatus(markers) {
+  if (markers.some((m) => m.kind === 'missing-ods')) return 'missing-ods';
+  if (markers.some((m) => m.kind === 'code-connect')) return 'code-connect';
+  return 'verified';
+}
+
+function findTaxonomyBySlug(slug, list) {
+  return list.find((item) => slug.includes(item.slug) || item.slug.includes(slug));
 }
 
 // ─────────────────────────────────────────────
@@ -263,6 +343,101 @@ export function getDomainExperiments(slug) {
       updated: lastModified(`domains/${slug}/experiments/${file}`),
     };
   });
+}
+
+export function getAxisSidebarItems(axis) {
+  if (axis === 'categories') {
+    return [{ slug: 'all', label: 'All Categories', count: getAllDomains().length }]
+      .concat(getAllDomains().map((d) => ({ slug: d.slug, label: d.label, count: d.counts.screens })));
+  }
+  if (axis === 'screens') {
+    return [{ slug: 'all', label: 'All Screens', count: getAllBrowseCards('screens').length }]
+      .concat(SCREEN_PATTERNS.map((p) => ({ slug: p.slug, label: p.label, count: p.countHint })));
+  }
+  if (axis === 'ui-elements') {
+    return [{ slug: 'all', label: 'All Elements', count: getAllBrowseCards('ui-elements').length }]
+      .concat(UI_ELEMENT_GROUPS.map((p) => ({ slug: p.slug, label: p.label, count: p.countHint })));
+  }
+  if (axis === 'flows') {
+    return [{ slug: 'all', label: 'All Flows', count: getAllBrowseCards('flows').length }]
+      .concat(FLOW_GROUPS.map((p) => ({ slug: p.slug, label: p.label, count: p.countHint })));
+  }
+  return [];
+}
+
+export function getAllBrowseCards(axis = 'screens') {
+  const domains = getAllDomains();
+  if (axis === 'categories') {
+    return domains.map((domain, index) => ({
+      id: domain.slug,
+      label: domain.label,
+      summary: domain.description || `${domain.label} domain references`,
+      href: withBase(`d/${domain.slug}`),
+      domain: domain.label,
+      os: fallbackOs(index),
+      source: fallbackSource(index),
+      status: domain.counts.screens > 0 ? 'verified' : 'draft',
+      count: domain.counts.screens,
+    }));
+  }
+
+  const cards = [];
+  domains.forEach((domain) => {
+    getDomainScreens(domain.slug).forEach((screen, localIndex) => {
+      const index = cards.length + localIndex;
+      const pattern = findTaxonomyBySlug(screen.slug, SCREEN_PATTERNS) || SCREEN_PATTERNS[index % SCREEN_PATTERNS.length];
+      const element = UI_ELEMENT_GROUPS[index % UI_ELEMENT_GROUPS.length];
+      const flow = FLOW_GROUPS[index % FLOW_GROUPS.length];
+      const markers = screen.markers || [];
+      cards.push({
+        id: `${domain.slug}-${screen.slug}`,
+        label: screen.label,
+        summary: screen.summary || `${domain.label} · ${pattern.label}`,
+        href: withBase(`d/${domain.slug}/s/${screen.slug}`),
+        domain: domain.label,
+        os: fallbackOs(index),
+        source: screen.prototype ? 'prototype' : fallbackSource(index),
+        status: markerStatus(markers),
+        pattern: pattern.label,
+        element: element.label,
+        flow: flow.label,
+        thumb: screen.thumb,
+        markers,
+      });
+    });
+  });
+
+  if (axis === 'ui-elements') {
+    return cards.map((card) => ({ ...card, label: card.element, summary: `${card.element} usage in ${card.domain}` }));
+  }
+  if (axis === 'flows') {
+    return cards.map((card) => ({ ...card, label: card.flow, summary: `${card.flow} flow reference in ${card.domain}` }));
+  }
+  return cards;
+}
+
+export function getOverlayGroups(axis) {
+  const source = axis === 'screens' ? SCREEN_PATTERNS : axis === 'ui-elements' ? UI_ELEMENT_GROUPS : axis === 'flows' ? FLOW_GROUPS : [];
+  if (axis === 'categories') {
+    return Object.entries(CATEGORIES).map(([group, slugs]) => ({
+      group,
+      items: slugs.map((slug) => {
+        const domain = getDomain(slug);
+        return { slug, label: domain?.label || slug, count: domain?.counts?.screens || 0, href: withBase(`d/${slug}`) };
+      }),
+    }));
+  }
+  const grouped = new Map();
+  source.forEach((item) => {
+    if (!grouped.has(item.group)) grouped.set(item.group, []);
+    grouped.get(item.group).push({
+      slug: item.slug,
+      label: item.label,
+      count: item.countHint,
+      href: withBase(`${axis}?item=${item.slug}`),
+    });
+  });
+  return Array.from(grouped.entries()).map(([group, items]) => ({ group, items }));
 }
 
 // ─────────────────────────────────────────────
