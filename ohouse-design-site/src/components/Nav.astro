@@ -1,26 +1,19 @@
 ---
+import { DISCOVERY_AXES, getOverlayGroups } from '../lib/repo.js';
+
 const base = import.meta.env.BASE_URL;
 const path = Astro.url.pathname;
 
 // base 를 제거한 경로로 match (sub-path 빌드에서도 활성 탭 판정 정확하게).
 const rel = '/' + path.replace(base, '').replace(/^\/+/, '');
 
-// 디자인 소스 기준: 좌측 두 탭 (Ohouse Design / Design system)
-const tabs = [
-  {
-    label: 'Ohouse Design',
-    href: base,
-    match: (p) =>
-      p === '/' ||
-      p.startsWith('/d/') ||
-      p.startsWith('/c/') ||
-      p.startsWith('/knowledge') ||
-      p.startsWith('/mcp') ||
-      p.startsWith('/asset') ||
-      p.startsWith('/vision'),
-  },
-  { label: 'Design system', href: `${base}ods`, match: (p) => p.startsWith('/ods') },
-];
+const axes = DISCOVERY_AXES.map((axis) => ({
+  ...axis,
+  href: `${base}${axis.href}`,
+  active: rel === `/${axis.href}` || rel.startsWith(`/${axis.href}/`),
+  groups: getOverlayGroups(axis.id),
+}));
+const designSystemActive = rel.startsWith('/ods');
 ---
 
 <header class="nav-root">
@@ -29,12 +22,46 @@ const tabs = [
       <a href={base} class="brand" aria-label="오늘의집">
         <img src={`${base}ohouse-3d.png`} alt="" class="brand__logo" width="32" height="32" />
       </a>
-      <nav class="nav-tabs">
-        {tabs.map((t) => (
-          <a href={t.href} class={`nav-tab${t.match(rel) ? ' is-active' : ''}`}>
-            {t.label}
-          </a>
+      <nav class="nav-tabs" aria-label="Ohouse Design browse axes">
+        {axes.map((axis) => (
+          <div class="nav-axis" data-axis-root>
+            <a href={axis.href} class={`nav-tab${axis.active ? ' is-active' : ''}`} data-axis-trigger={axis.id}>
+              {axis.label}
+            </a>
+            <div class="nav-overlay" data-axis-overlay={axis.id} hidden>
+              <div class="nav-overlay__rail">
+                <div class="nav-overlay__eyebrow">Browse</div>
+                {axes.map((item) => (
+                  <a class={`nav-overlay__rail-item${item.id === axis.id ? ' is-active' : ''}`} href={item.href}>
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+              <div class="nav-overlay__body">
+                <div class="nav-overlay__head">
+                  <strong>{axis.label}</strong>
+                  <span>{axis.summary}</span>
+                </div>
+                <div class="nav-overlay__groups">
+                  {axis.groups.map((group) => (
+                    <section class="nav-overlay__group">
+                      <h3>{group.group}</h3>
+                      {group.items.map((item) => (
+                        <a class="nav-overlay__item" href={item.href}>
+                          <span>{item.label}</span>
+                          <span>{item.count}</span>
+                        </a>
+                      ))}
+                    </section>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         ))}
+        <a href={`${base}ods`} class={`nav-tab nav-tab--system${designSystemActive ? ' is-active' : ''}`}>
+          Design system
+        </a>
       </nav>
     </div>
 
@@ -58,4 +85,34 @@ const tabs = [
       <div class="nav-avatar" aria-label="요한" title="요한">요</div>
     </div>
   </div>
+  <script>
+    function initAxisOverlay() {
+      document.querySelectorAll<HTMLElement>('[data-axis-root]').forEach((root) => {
+        if (root.dataset.bound) return;
+        root.dataset.bound = '1';
+        const trigger = root.querySelector<HTMLElement>('[data-axis-trigger]');
+        const overlay = root.querySelector<HTMLElement>('[data-axis-overlay]');
+        if (!trigger || !overlay) return;
+        let closeTimer: number | null = null;
+        function open() {
+          if (closeTimer) window.clearTimeout(closeTimer);
+          overlay.hidden = false;
+        }
+        function closeSoon() {
+          closeTimer = window.setTimeout(() => { overlay.hidden = true; }, 120);
+        }
+        root.addEventListener('mouseenter', open);
+        root.addEventListener('mouseleave', closeSoon);
+        trigger.addEventListener('focus', open);
+        root.addEventListener('focusout', (e) => {
+          if (!root.contains(e.relatedTarget as Node | null)) overlay.hidden = true;
+        });
+        trigger.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') overlay.hidden = true;
+        });
+      });
+    }
+    initAxisOverlay();
+    document.addEventListener('astro:page-load', initAxisOverlay);
+  </script>
 </header>
