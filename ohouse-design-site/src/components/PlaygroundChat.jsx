@@ -2,6 +2,7 @@
 // @missing-ods:playground-chat
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { parseIntent } from '../lib/parse-intent.js';
 
 const EXAMPLE_PROMPTS = [
   '장바구니 화면의 빈 상태(empty state)를 만들어줘. 첫 구매 유도 CTA 포함.',
@@ -194,8 +195,9 @@ export default function PlaygroundChat({
   onHtmlGenerated,
   onPreviewStatus,
   onPreviewError,
-  currentHtml,
-  currentVariantId,
+  variants,
+  activeVariantId,
+  onOptimisticTabSwitch,
   apiKey: propApiKey,
   hasServerKey,
 }) {
@@ -244,7 +246,20 @@ export default function PlaygroundChat({
   const sendMessage = useCallback(async (text) => {
     const userText = text.trim();
     if (!userText || streaming) return;
-    const shouldRefine = Boolean(currentHtml) && /수정|바꿔|변경|더|덜|추가|제거|교체|개선|A안|B안|C안|CTA|카피|색|간격|톤|문구/.test(userText);
+    const { targetId, sourceId, intentType } = parseIntent(userText, variants, activeVariantId);
+    const hasExistingVariants = variants.some((v) => v.html);
+    const mode = hasExistingVariants ? 'refine' : 'generate';
+
+    if (mode === 'refine' && targetId) {
+      onOptimisticTabSwitch?.(targetId);
+      onPreviewStatus?.('generating', `${targetId}안을 수정하고 있어요.`);
+    }
+
+    const targetVariant = targetId ? variants.find((v) => v.id === targetId) : null;
+    const sourceVariant = sourceId ? variants.find((v) => v.id === sourceId) : null;
+    const sourceHtml = intentType === 'create_derived'
+      ? (sourceVariant?.html ?? null)
+      : (targetVariant?.html ?? null);
 
     const newUserMsg = { role: 'user', content: userText };
     const history = [...messages, newUserMsg];
@@ -273,9 +288,10 @@ export default function PlaygroundChat({
             .filter(({ role }) => role === 'user' || role === 'assistant')
             .map(({ role, content }) => ({ role, content })),
           userContext: buildUserContext(),
-          mode: shouldRefine ? 'refine' : 'generate',
-          targetVariantId: shouldRefine ? currentVariantId : undefined,
-          currentHtml: shouldRefine ? currentHtml : undefined,
+          mode,
+          targetVariantId: mode === 'refine' ? targetId : undefined,
+          intentType: mode === 'refine' ? intentType : undefined,
+          currentHtml: sourceHtml ?? undefined,
         }),
       });
 
@@ -311,9 +327,14 @@ export default function PlaygroundChat({
           appendAssistantText(evt.text);
         } else if (evt.type === 'prototype_done') {
           if (evt.variants?.length) {
-            onHtmlGenerated?.(null, null, evt.variants);
+            if (mode === 'refine' && targetId) {
+              const match = evt.variants.find((v) => v.id === targetId) ?? evt.variants[0];
+              onHtmlGenerated?.(match.html, null, null, targetId);
+            } else {
+              onHtmlGenerated?.(null, null, evt.variants, null);
+            }
           } else if (evt.html) {
-            onHtmlGenerated?.(evt.html, null);
+            onHtmlGenerated?.(evt.html, null, null, targetId ?? activeVariantId);
           }
         } else if (evt.type === 'error') {
           onPreviewError?.(evt.message);
@@ -365,8 +386,9 @@ export default function PlaygroundChat({
     messages,
     streaming,
     contextItems,
-    currentHtml,
-    currentVariantId,
+    variants,
+    activeVariantId,
+    onOptimisticTabSwitch,
     effectiveApiKey,
     hasServerKey,
     onHtmlGenerated,
