@@ -225,6 +225,7 @@ export default function PlaygroundPreview({
   html,
   htmls,
   variantItems,
+  activeVariantId,
   status = 'idle',
   statusMessage = '',
   error = null,
@@ -304,8 +305,13 @@ export default function PlaygroundPreview({
       label: variant.id ?? variant.label ?? VARIANT_LABELS[i] ?? String(i+1),
       summary: variant.summary,
     })));
-    setActiveIdx(0);
   }, [variantItems]);
+
+  useEffect(() => {
+    if (!activeVariantId) return;
+    const idx = variants.findIndex((v) => v.id === activeVariantId);
+    if (idx >= 0 && idx !== activeIdx) setActiveIdx(idx);
+  }, [activeVariantId, variants]);
 
   const currentHtml = variants[activeIdx]?.html ?? null;
   const currentVariant = variants[activeIdx] ?? null;
