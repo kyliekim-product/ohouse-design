@@ -1,16 +1,11 @@
 ---
-// 필터 row — 디자인 소스(preview-home.html) 기준.
-// 좌: [All | HTML | Figma] type 토글  (홈 JS 가 #typeToggle 로 grid[data-filter] 제어)
-// 가운데: 정렬 탭 (Latest · Recently updated · Most viewed · All)
-// 우: ≡ Filter
-// 스타일은 global.css 의 .fbar* 이 소유.
+import { OS_OPTIONS, SOURCE_OPTIONS, STATUS_OPTIONS } from '../lib/repo.js';
+
 const { sort = 'latest' } = Astro.props;
 
-const types = [
-  { value: 'all', label: 'All' },
-  { value: 'html', label: 'HTML' },
-  { value: 'figma', label: 'Figma' },
-];
+const osOptions = [{ value: 'all', label: 'All OS' }, ...OS_OPTIONS];
+const sourceOptions = [{ value: 'all', label: 'All Sources' }, ...SOURCE_OPTIONS];
+const statusOptions = [{ value: 'all', label: 'All Status' }, ...STATUS_OPTIONS];
 
 const sorts = [
   { value: 'latest', label: 'Latest' },
@@ -21,12 +16,21 @@ const sorts = [
 ---
 
 <div class="fbar">
-  <div class="fbar__platform" id="typeToggle">
-    {types.map((t) => (
-      <button type="button" class={`fbar__pf${t.value === 'all' ? ' is-active' : ''}`} data-type={t.value}>
+  <div class="fbar__platform" id="osToggle" aria-label="OS filter">
+    {osOptions.map((t) => (
+      <button type="button" class={`fbar__pf${t.value === 'all' ? ' is-active' : ''}`} data-filter-key="os" data-filter-value={t.value}>
         {t.label}
       </button>
     ))}
+  </div>
+
+  <div class="fbar__selects">
+    <select class="fbar__select" data-filter-key="source" aria-label="Source filter">
+      {sourceOptions.map((t) => <option value={t.value}>{t.label}</option>)}
+    </select>
+    <select class="fbar__select" data-filter-key="status" aria-label="Status filter">
+      {statusOptions.map((t) => <option value={t.value}>{t.label}</option>)}
+    </select>
   </div>
 
   <div class="fbar__sort">
@@ -36,13 +40,4 @@ const sorts = [
       </button>
     ))}
   </div>
-
-  <button type="button" class="fbar__filter" aria-label="필터">
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <line x1="4" y1="6" x2="20" y2="6"/>
-      <line x1="7" y1="12" x2="17" y2="12"/>
-      <line x1="10" y1="18" x2="14" y2="18"/>
-    </svg>
-    <span>Filter</span>
-  </button>
 </div>
