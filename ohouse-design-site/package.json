@@ -9,7 +9,8 @@
     "build": "npm run validate:ods-previews && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "validate:ods-previews": "node scripts/validate-ods-previews.mjs"
+    "validate:ods-previews": "node scripts/validate-ods-previews.mjs",
+    "test": "vitest run src/lib/__tests__"
   },
   "dependencies": {
     "@astrojs/node": "^9.0.0",
@@ -38,5 +39,8 @@
     "@bucketplace/ods-web-preview": "0.1.0",
     "@bucketplace/tokens": "^3.12.0",
     "@bucketplace/ui": "^1.1.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.7"
   }
 }
