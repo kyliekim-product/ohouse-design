@@ -1,0 +1,38 @@
+export const PLAYGROUND_VIEWPORT_SPECS = {
+  ios: {
+    label: 'iOS',
+    device: 'iPhone 16',
+    width: 393,
+    height: 852,
+    radius: 50,
+    bezel: 12,
+    chrome: 'dynamic-island',
+  },
+  aos: {
+    label: 'AOS',
+    device: 'Galaxy S24',
+    width: 360,
+    height: 780,
+    radius: 42,
+    bezel: 10,
+    chrome: 'statusbar',
+  },
+  web: {
+    label: 'Web뷰',
+    device: 'Mobile Web',
+    width: 390,
+    height: 780,
+    radius: 12,
+    bezel: 0,
+    chrome: 'browser',
+  },
+  desktop: {
+    label: 'Desktop',
+    device: 'Desktop Web',
+    width: 1200,
+    height: 780,
+    radius: 12,
+    bezel: 0,
+    chrome: 'browser',
+  },
+};

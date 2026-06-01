@@ -2,6 +2,7 @@
 // @missing-ods:playground-preview
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { PLAYGROUND_VIEWPORT_SPECS } from '../lib/playground-viewports.js';
 
 const MAX_VARIANTS   = 3;
 const VARIANT_LABELS = ['A', 'B', 'C'];
@@ -15,36 +16,7 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-// ─── OS 별 대표 디바이스 뷰포트 스펙 ──────────────────────────────
-const OS_SPECS = {
-  ios: {
-    label: 'iOS',
-    device: 'iPhone 16',
-    width: 393,    // pt (logical pixel)
-    height: 852,
-    radius: 50,    // corner radius
-    bezel: 12,     // outer frame border (px)
-    chrome: 'dynamic-island',
-  },
-  aos: {
-    label: 'AOS',
-    device: 'Galaxy S24',
-    width: 360,    // dp (Samsung Galaxy S시리즈 표준 — 1080px @ 3x)
-    height: 780,
-    radius: 42,
-    bezel: 10,
-    chrome: 'statusbar',
-  },
-  web: {
-    label: 'Web뷰',
-    device: 'Mobile Web',
-    width: 390,
-    height: 780,   // first viewport (above the fold 중심)
-    radius: 12,
-    bezel: 0,
-    chrome: 'browser',
-  },
-};
+const OS_SPECS = PLAYGROUND_VIEWPORT_SPECS;
 
 // ─── 아이콘 ───────────────────────────────────────────────────────
 function CopyIcon() {

@@ -519,6 +519,9 @@
 .pg__phone--web {
   box-shadow: 0 0 0 1px var(--c-border), 0 8px 30px rgba(0, 0, 0, 0.1);
 }
+.pg__phone--desktop {
+  box-shadow: 0 0 0 1px var(--c-border), 0 12px 36px rgba(0, 0, 0, 0.12);
+}
 
 /* Web뷰 브라우저 크롬 바 */
 .pg__browser-bar {
@@ -562,6 +565,10 @@
 }
 /* 브라우저 크롬 영역 위 iframe 오프셋 */
 .pg__phone--web .pg__iframe {
+  margin-top: 40px;
+  height: calc(100% - 40px);
+}
+.pg__phone--desktop .pg__iframe {
   margin-top: 40px;
   height: calc(100% - 40px);
 }
