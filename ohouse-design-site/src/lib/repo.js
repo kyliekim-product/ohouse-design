@@ -295,6 +295,7 @@ export function getDomainScreens(slug) {
       label: readme.title || s,
       summary: readme.summary || null,
       thumb: thumb ? withBase(`api/asset?path=${encodeURIComponent(thumb.replace(ROOT + '/', ''))}`) : null,
+      prototype: prototypeHtml ? prototypeHtml.replace(ROOT + '/', '') : null,
       markers,
       updated: lastModified(`domains/${slug}/screens/${s}`),
     };
