@@ -19,6 +19,7 @@ export interface PlaygroundRequest {
   mode?: 'generate' | 'refine';
   targetVariantId?: 'A' | 'B' | 'C';
   currentHtml?: string;
+  intentType?: 'refine' | 'create_new' | 'create_derived';
 }
 
 type PlaygroundVariant = {
@@ -156,10 +157,13 @@ function buildAssistantMessages(assistantText: string, htmlBlocks: string[], var
 function buildRefineContext(body: PlaygroundRequest): PlaygroundMessage[] {
   if (body.mode !== 'refine' || !body.currentHtml?.trim()) return body.messages;
   const target = body.targetVariantId ? `${body.targetVariantId}안` : '현재 prototype';
+
+  const prefix = body.intentType === 'create_derived'
+    ? `참고 소스: 아래 HTML을 베이스로 ${target}을 새로 제작하세요. 사용자의 최신 요청을 반영한 완전한 HTML 문서를 생성하세요.`
+    : `수정 대상: ${target}. 아래 HTML에 사용자의 최신 요청을 반영해 수정하세요. 부분 코드나 diff가 아닌 완전한 HTML 문서만 생성해야 합니다.`;
+
   const refineContext = [
-    `수정 대상: ${target}`,
-    '아래는 현재 prototype.html입니다. 사용자의 최신 요청을 반영해 수정된 전체 HTML을 다시 출력하세요.',
-    '부분 코드나 diff가 아니라 완전한 HTML 문서만 생성해야 합니다.',
+    prefix,
     '```html',
     body.currentHtml.trim(),
     '```',
