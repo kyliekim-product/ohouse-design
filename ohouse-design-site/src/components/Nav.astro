@@ -13,6 +13,16 @@ const axes = DISCOVERY_AXES.map((axis) => ({
   active: rel === `/${axis.href}` || rel.startsWith(`/${axis.href}/`),
   groups: getOverlayGroups(axis.id),
 }));
+const searchItems = axes.flatMap((axis) =>
+  axis.groups.flatMap((group) =>
+    group.items.map((item) => ({
+      ...item,
+      axis: axis.label,
+      group: group.group,
+      searchText: `${item.label} ${axis.label} ${group.group} ${item.slug}`.toLowerCase(),
+    })),
+  ),
+);
 const activeAxis = axes.find((axis) => axis.active) || axes[0];
 const designSystemActive = rel.startsWith('/ods');
 const designActive =
@@ -69,40 +79,64 @@ const designActive =
 
 <button type="button" class="nav-backdrop" data-axis-backdrop hidden aria-label="메뉴 닫기"></button>
 <div class="nav-overlay" data-axis-overlay hidden>
-  <div class="nav-overlay__rail">
-    <div class="nav-overlay__eyebrow">Browse</div>
-    {axes.map((item) => (
-      <button
-        type="button"
-        class={`nav-overlay__rail-item${item.id === activeAxis.id ? ' is-active' : ''}`}
-        data-axis-option={item.id}
-      >
-        {item.label}
-      </button>
-    ))}
+  <div class="nav-overlay__search">
+    <input
+      type="text"
+      data-overlay-search
+      placeholder="iOS Apps, Screens, UI Elements, Flows or Keywords..."
+      aria-label="Search Ohouse Design"
+      autocomplete="off"
+    />
   </div>
-  <div class="nav-overlay__body">
-    {axes.map((axis) => (
-      <div class="nav-overlay__panel" data-axis-panel={axis.id} hidden={axis.id !== activeAxis.id}>
-        <div class="nav-overlay__head">
-          <strong>{axis.label}</strong>
-          <span>{axis.summary}</span>
+  <div class="nav-overlay__browse" data-browse-shell>
+    <div class="nav-overlay__rail">
+      <div class="nav-overlay__eyebrow">Browse</div>
+      {axes.map((item) => (
+        <button
+          type="button"
+          class={`nav-overlay__rail-item${item.id === activeAxis.id ? ' is-active' : ''}`}
+          data-axis-option={item.id}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+    <div class="nav-overlay__body">
+      {axes.map((axis) => (
+        <div class="nav-overlay__panel" data-axis-panel={axis.id} hidden={axis.id !== activeAxis.id}>
+          <div class="nav-overlay__head">
+            <strong>{axis.label}</strong>
+            <span>{axis.summary}</span>
+          </div>
+          <div class="nav-overlay__groups">
+            {axis.groups.map((group) => (
+              <section class="nav-overlay__group">
+                <h3>{group.group}</h3>
+                {group.items.map((item) => (
+                  <a class="nav-overlay__item" href={item.href}>
+                    <span>{item.label}</span>
+                    <span>{item.count}</span>
+                  </a>
+                ))}
+              </section>
+            ))}
+          </div>
         </div>
-        <div class="nav-overlay__groups">
-          {axis.groups.map((group) => (
-            <section class="nav-overlay__group">
-              <h3>{group.group}</h3>
-              {group.items.map((item) => (
-                <a class="nav-overlay__item" href={item.href}>
-                  <span>{item.label}</span>
-                  <span>{item.count}</span>
-                </a>
-              ))}
-            </section>
-          ))}
-        </div>
-      </div>
+      ))}
+    </div>
+  </div>
+  <div class="nav-search-results" data-search-results hidden>
+    {searchItems.map((item) => (
+      <a class="nav-result" href={item.href} data-search-item data-search-text={item.searchText}>
+        <span class="nav-result__icon">{item.axis.slice(0, 1)}</span>
+        <span class="nav-result__text">
+          <strong>{item.label}</strong>
+          <span>{item.axis}{item.group ? ` · ${item.group}` : ''}</span>
+        </span>
+        <span class="nav-result__count">{item.count}</span>
+      </a>
     ))}
+    <div class="nav-result-empty" data-search-empty hidden>검색 결과가 없습니다</div>
   </div>
 </div>
 
@@ -114,16 +148,37 @@ const designActive =
     if (!trigger || !overlay || trigger.dataset.bound) return;
     trigger.dataset.bound = '1';
 
+    const input = overlay.querySelector<HTMLInputElement>('[data-overlay-search]');
+    const browseShell = overlay.querySelector<HTMLElement>('[data-browse-shell]');
+    const results = overlay.querySelector<HTMLElement>('[data-search-results]');
+    const resultItems = Array.from(overlay.querySelectorAll<HTMLElement>('[data-search-item]'));
+    const empty = overlay.querySelector<HTMLElement>('[data-search-empty]');
     const options = Array.from(document.querySelectorAll<HTMLElement>('[data-axis-option]'));
     const panels = Array.from(document.querySelectorAll<HTMLElement>('[data-axis-panel]'));
 
     function open() {
       overlay.hidden = false;
       if (backdrop) backdrop.hidden = false;
+      window.setTimeout(() => input?.focus(), 0);
     }
     function close() {
       overlay.hidden = true;
       if (backdrop) backdrop.hidden = true;
+      if (input) input.value = '';
+      updateSearch('');
+    }
+    function updateSearch(raw: string) {
+      const query = raw.trim().toLowerCase();
+      const isSearching = query.length > 0;
+      if (browseShell) browseShell.hidden = isSearching;
+      if (results) results.hidden = !isSearching;
+      let visibleCount = 0;
+      resultItems.forEach((item) => {
+        const match = !query || (item.dataset.searchText || '').includes(query);
+        item.hidden = !match;
+        if (match) visibleCount += 1;
+      });
+      if (empty) empty.hidden = !isSearching || visibleCount > 0;
     }
     function activateAxis(id: string) {
       options.forEach((option) => {
@@ -136,6 +191,7 @@ const designActive =
 
     trigger.addEventListener('click', open);
     trigger.addEventListener('focus', open);
+    input?.addEventListener('input', () => updateSearch(input.value));
     backdrop?.addEventListener('click', close);
     options.forEach((option) => {
       option.addEventListener('click', () => {
