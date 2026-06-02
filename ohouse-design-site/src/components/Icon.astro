@@ -1,0 +1,35 @@
+---
+const { name, size = 16, class: className = '' } = Astro.props;
+const attrs = {
+  class: `icon ${className}`.trim(),
+  width: size,
+  height: size,
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  'stroke-width': '2',
+  'stroke-linecap': 'round',
+  'stroke-linejoin': 'round',
+  'aria-hidden': 'true',
+};
+---
+
+{name === 'chevron-down' && (
+  <svg {...attrs}>
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+)}
+
+{name === 'arrow-up-right' && (
+  <svg {...attrs}>
+    <path d="M7 17 17 7" />
+    <path d="M7 7h10v10" />
+  </svg>
+)}
+
+{name === 'arrow-right' && (
+  <svg {...attrs}>
+    <path d="M5 12h14" />
+    <path d="m12 5 7 7-7 7" />
+  </svg>
+)}

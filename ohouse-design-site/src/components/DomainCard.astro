@@ -4,6 +4,7 @@
 // 카드 클릭 → /d/${slug}, 도메인 칩 클릭 → /d/${slug} (stopPropagation).
 // 액션: Copy Prompt(클립보드+토스트) / Figma Move(토스트) — Layout 의 JS 가 처리.
 import { buildPrompt } from '../lib/repo.js';
+import Icon from './Icon.astro';
 
 const base = import.meta.env.BASE_URL;
 const { domain, index = 0 } = Astro.props;
@@ -53,7 +54,7 @@ const prompt = buildPrompt({ kind: 'screen', domain: domain.slug, screen: pageId
       </div>
       <a class="dcard__dchip" href={`${base}d/${domain.slug}`} data-stop title={`${domain.label} 도메인으로`}>
         {domain.label}
-        <span class="dcard__dchip-arrow" aria-hidden="true">→</span>
+        <span class="dcard__dchip-arrow" aria-hidden="true"><Icon name="arrow-right" size={14} /></span>
       </a>
     </div>
   </div>

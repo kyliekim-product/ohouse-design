@@ -6,6 +6,7 @@ const html = readFileSync(resolve(process.cwd(), 'dist/index.html'), 'utf8');
 const requiredSnippets = [
   'class="fbar__sortbox"',
   'data-close-on-outside',
+  'class="icon"',
   'class="fbar__sort-panel"',
   'class="fbar__sort-option is-active"',
   'class="fbar__filterbox"',
@@ -39,6 +40,10 @@ for (const snippet of forbiddenSnippets) {
   if (html.includes(snippet)) {
     throw new Error(`Filter panel validation failed: found deprecated snippet ${JSON.stringify(snippet)}`);
   }
+}
+
+if (html.includes('>⌄<')) {
+  throw new Error('Filter panel validation failed: found text chevron glyph.');
 }
 
 console.log('Filter panel validation passed.');

@@ -26,6 +26,14 @@ for (const page of pages) {
     throw new Error(`${page}: missing clickable title arrow affordance`);
   }
 
+  if (!html.includes('class="icon"')) {
+    throw new Error(`${page}: missing SVG icon asset`);
+  }
+
+  if (html.includes('>↗<')) {
+    throw new Error(`${page}: found text arrow glyph`);
+  }
+
   for (const target of pages.filter((item) => item !== page)) {
     if (!html.includes(`href="/${target}"`)) {
       throw new Error(`${page}: missing title dropdown link to /${target}`);

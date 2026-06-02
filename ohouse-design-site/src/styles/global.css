@@ -69,6 +69,8 @@ img { max-width: 100%; height: auto; display: block; }
 
 code, pre { font-family: var(--f-mono); font-size: 0.92em; }
 
+.icon{display:block;flex:0 0 auto}
+
 /* ── 공통 컨테이너 — 헤더와 좌우 마진 동일 ── */
 .wrap { max-width: 1440px; margin: 0 auto; padding: 0 32px; }
 .wrap-narrow { max-width: 880px; margin: 0 auto; padding: 0 32px; }
@@ -379,7 +381,7 @@ code, pre { font-family: var(--f-mono); font-size: 0.92em; }
 @media (max-width:480px){.menu5{grid-template-columns:1fr;gap:24px;margin-bottom:36px}.mcol__item{font-size:22px}.mcol__title{margin-bottom:16px}}
 
 /* ── Home: FilterBar ── */
-.fbar{display:flex;align-items:center;padding:16px 0;border-bottom:1px solid var(--c-border);gap:24px}
+.fbar{display:flex;align-items:center;padding:16px 0;border-bottom:1px solid var(--c-border);gap:8px}
 .fbar__platform{display:inline-flex;align-items:center;background:var(--c-bg-elev);padding:3px;border-radius:999px}
 .fbar__pf{padding:5px 14px;font-size:13px;font-weight:500;color:var(--c-text-muted);border-radius:999px;transition:color .15s,background .15s}
 .fbar__pf:hover{color:var(--c-text)}
@@ -388,7 +390,7 @@ code, pre { font-family: var(--f-mono); font-size: 0.92em; }
 .fbar__sort-trigger{height:36px;display:inline-flex;align-items:center;gap:8px;padding:0 12px 0 14px;border:1px solid var(--c-border);border-radius:999px;background:#fff;font-size:13px;font-weight:700;color:var(--c-text);list-style:none;cursor:pointer}
 .fbar__sort-trigger::-webkit-details-marker{display:none}
 .fbar__sortbox[open] .fbar__sort-trigger,.fbar__sort-trigger:hover{background:var(--c-bg-elev)}
-.fbar__sort-trigger span[aria-hidden="true"],.fbar__filter span[aria-hidden="true"]{width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;line-height:1}
+.fbar__sort-trigger .icon,.fbar__filter .icon{width:16px;height:16px}
 .fbar__sort-panel{position:absolute;left:0;top:calc(100% + 8px);z-index:30;width:190px;padding:8px;background:#fff;border:1px solid var(--c-border);border-radius:16px;box-shadow:var(--sh-lg);display:flex;flex-direction:column;gap:4px}
 .fbar__sort-option{width:100%;text-align:left;padding:9px 10px;border-radius:10px;font-size:14px;font-weight:650;color:var(--c-text-muted)}
 .fbar__sort-option:hover,.fbar__sort-option.is-active{background:var(--c-bg-elev);color:var(--c-text)}
@@ -431,7 +433,7 @@ code, pre { font-family: var(--f-mono); font-size: 0.92em; }
 .browse-title-link::-webkit-details-marker{display:none}
 .browse-title-link:hover{color:var(--c-text)}
 .browse-title-link > span:first-child{font-size:56px;line-height:1;font-weight:800;letter-spacing:-0.035em}
-.browse-title-link__arrow{width:42px;height:42px;margin-top:6px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--c-border);border-radius:999px;font-size:22px;line-height:1;color:var(--c-text-muted);transition:background .15s,color .15s,transform .15s}
+.browse-title-link__arrow{width:42px;height:42px;margin-top:6px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--c-border);border-radius:999px;color:var(--c-text-muted);transition:background .15s,color .15s,transform .15s}
 .browse-title-link:hover .browse-title-link__arrow,.browse-title-menu[open] .browse-title-link__arrow{background:var(--c-text);color:#fff;transform:translate(1px,-1px)}
 .browse-title-menu__panel{position:absolute;left:0;top:calc(100% + 10px);z-index:30;width:min(420px,calc(100vw - 64px));padding:8px;background:#fff;border:1px solid var(--c-border);border-radius:16px;box-shadow:var(--sh-lg)}
 .browse-title-menu__item{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px;border-radius:12px;color:var(--c-text)}
@@ -545,7 +547,7 @@ code, pre { font-family: var(--f-mono); font-size: 0.92em; }
   padding:7px 14px;background:var(--c-bg-elev);border-radius:999px;font-size:13px;font-weight:600;color:var(--c-text);
   letter-spacing:-0.01em;transition:background .15s;text-decoration:none;white-space:nowrap}
 .dcard__dchip:hover{background:var(--c-bg-elev-2)}
-.dcard__dchip-arrow{display:inline-flex;align-items:center;justify-content:center;color:var(--c-text-soft);font-weight:700;font-size:14px}
+.dcard__dchip-arrow{display:inline-flex;align-items:center;justify-content:center;color:var(--c-text-soft)}
 .dcard__foot{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--c-text-muted)}
 .dcard__owner{display:inline-flex;align-items:center;min-width:0}
 .dcard__owner-dot{width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;

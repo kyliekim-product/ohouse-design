@@ -1,5 +1,6 @@
 ---
 import { OS_OPTIONS, SOURCE_OPTIONS, STATUS_OPTIONS } from '../lib/repo.js';
+import Icon from './Icon.astro';
 
 const { sort = 'latest' } = Astro.props;
 
@@ -26,7 +27,7 @@ const activeSort = sorts.find((s) => s.value === sort) || sorts[0];
   <details class="fbar__sortbox" data-close-on-outside>
     <summary class="fbar__sort-trigger">
       <span data-sort-label>{activeSort.label}</span>
-      <span aria-hidden="true">⌄</span>
+      <Icon name="chevron-down" size={15} />
     </summary>
     <div class="fbar__sort-panel">
       {sorts.map((s) => (
@@ -40,7 +41,7 @@ const activeSort = sorts.find((s) => s.value === sort) || sorts[0];
   <details class="fbar__filterbox" data-close-on-outside>
     <summary class="fbar__filter">
       <span>Filter</span>
-      <span aria-hidden="true">⌄</span>
+      <Icon name="chevron-down" size={15} />
     </summary>
     <div class="fbar__filter-panel">
       <fieldset class="fbar__filter-group">
