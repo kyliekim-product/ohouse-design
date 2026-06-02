@@ -105,10 +105,10 @@ export const STATUS_OPTIONS = [
 ];
 
 export const DISCOVERY_AXES = [
-  { id: 'categories', label: 'Categories', href: 'categories', summary: 'Browse by Ohouse product domains.', featured: ['home', 'shopping', 'content-detail', 'mypage', 'search'] },
-  { id: 'screens', label: 'Screens', href: 'screens', summary: 'Browse reusable UX screen patterns.', featured: ['onboarding', 'product-detail', 'search-result', 'checkout', 'profile'] },
-  { id: 'ui-elements', label: 'UI Elements', href: 'ui-elements', summary: 'Browse ODS and product component usage.', featured: ['cards', 'navigation', 'bottom-sheet', 'form', 'carousel'] },
-  { id: 'flows', label: 'Flows', href: 'flows', summary: 'Browse multi-step user journeys.', featured: ['signup', 'login', 'purchase', 'bookmark', 'share'] },
+  { id: 'categories', label: 'Categories', href: 'categories', summary: '오늘의집 도메인 기준으로 화면과 정책, 실험, 컴포넌트 자산을 탐색합니다.', featured: ['home', 'shopping', 'content-detail', 'mypage', 'search'] },
+  { id: 'screens', label: 'Screens', href: 'screens', summary: '도메인을 넘어서 재사용 가능한 UX 화면 패턴을 탐색합니다.', featured: ['onboarding', 'product-detail', 'search-result', 'checkout', 'profile'] },
+  { id: 'ui-elements', label: 'UI Elements', href: 'ui-elements', summary: 'ODS 컴포넌트와 제품 UI 요소의 활용 사례를 탐색합니다.', featured: ['cards', 'navigation', 'bottom-sheet', 'form', 'carousel'] },
+  { id: 'flows', label: 'Flows', href: 'flows', summary: '여러 화면으로 이어지는 사용자 여정과 플로우를 탐색합니다.', featured: ['signup', 'login', 'purchase', 'bookmark', 'share'] },
 ];
 
 export const SCREEN_PATTERNS = [
