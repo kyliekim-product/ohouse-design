@@ -115,10 +115,18 @@ const recommended = getAllBrowseCards('screens')
 
     function updateFilterCount() {
       const selectedCount = state.source.length + state.status.length;
-      const badge = root.querySelector('[data-filter-count]') as HTMLElement | null;
-      if (!badge) return;
-      badge.hidden = selectedCount === 0;
+      const trigger = root.querySelector('.fbar__filter') as HTMLElement | null;
+      const currentBadge = trigger?.querySelector('[data-filter-count]');
+      if (!trigger) return;
+      if (selectedCount === 0) {
+        currentBadge?.remove();
+        return;
+      }
+      const badge = currentBadge || document.createElement('span');
+      badge.className = 'fbar__filter-count';
+      badge.setAttribute('data-filter-count', '');
       badge.textContent = String(selectedCount);
+      if (!currentBadge) trigger.insertBefore(badge, trigger.lastElementChild);
     }
 
     root.querySelector('.fbar__platform')?.addEventListener('click', (event) => {
@@ -145,14 +153,17 @@ const recommended = getAllBrowseCards('screens')
       });
     });
 
-    root.querySelector('.fbar__sort')?.addEventListener('click', (event) => {
-      const button = (event.target as HTMLElement).closest<HTMLElement>('[data-sort]');
+    root.querySelector('.fbar__sortbox')?.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLElement>('.fbar__sort-option');
       if (!button) return;
 
       state.sort = button.dataset.sort || 'latest';
-      root.querySelectorAll<HTMLElement>('[data-sort]').forEach((item) => {
+      root.querySelectorAll<HTMLElement>('.fbar__sort-option').forEach((item) => {
         item.classList.toggle('is-active', item === button);
       });
+      const label = root.querySelector('[data-sort-label]');
+      if (label) label.textContent = button.textContent?.trim() || 'Latest';
+      (root.querySelector('.fbar__sortbox') as HTMLDetailsElement | null)?.removeAttribute('open');
       render();
     });
 

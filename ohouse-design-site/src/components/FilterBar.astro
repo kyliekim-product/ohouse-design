@@ -10,9 +10,8 @@ const statusOptions = STATUS_OPTIONS;
 const sorts = [
   { value: 'latest', label: 'Latest' },
   { value: 'updated', label: 'Recently updated' },
-  { value: 'popular', label: 'Most viewed' },
-  { value: 'all', label: 'All' },
 ];
+const activeSort = sorts.find((s) => s.value === sort) || sorts[0];
 ---
 
 <div class="fbar">
@@ -24,18 +23,23 @@ const sorts = [
     ))}
   </div>
 
-  <div class="fbar__sort">
-    {sorts.map((s) => (
-      <button type="button" class={`fbar__sort-item${s.value === sort ? ' is-active' : ''}`} data-sort={s.value}>
-        {s.label}
-      </button>
-    ))}
-  </div>
+  <details class="fbar__sortbox">
+    <summary class="fbar__sort-trigger">
+      <span data-sort-label>{activeSort.label}</span>
+      <span aria-hidden="true">⌄</span>
+    </summary>
+    <div class="fbar__sort-panel">
+      {sorts.map((s) => (
+        <button type="button" class={`fbar__sort-option${s.value === activeSort.value ? ' is-active' : ''}`} data-sort={s.value}>
+          {s.label}
+        </button>
+      ))}
+    </div>
+  </details>
 
   <details class="fbar__filterbox">
     <summary class="fbar__filter">
       <span>Filter</span>
-      <span class="fbar__filter-count" data-filter-count hidden></span>
       <span aria-hidden="true">⌄</span>
     </summary>
     <div class="fbar__filter-panel">
