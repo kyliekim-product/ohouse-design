@@ -1,13 +1,17 @@
 ---
 const { item } = Astro.props;
-const osLabel = String(item.os || '')
-  .replace('mobile-web', 'Mobile Web')
-  .replace('ios', 'iOS')
-  .replace('android', 'Android')
-  .replace('web', 'Web');
-const sourceLabel = String(item.source || '').toUpperCase();
-const identity = [item.domain, item.pattern].filter(Boolean).join(' · ');
-const taxonomy = [item.domain, item.pattern, item.element, item.flow].filter(Boolean);
+const osLabels = Array.isArray(item.os)
+  ? item.os.map((value) => String(value))
+  : String(item.os || '').split(',');
+const displayOsLabels = osLabels
+  .map((value) => value.trim())
+  .filter(Boolean)
+  .map((value) => value
+    .replace('mobile-web', 'Mobile Web')
+    .replace('ios', 'iOS')
+    .replace('android', 'Android')
+    .replace('web', 'Web'));
+const identityBadges = [item.domain, item.pattern].filter(Boolean);
 ---
 
 <a
@@ -20,7 +24,11 @@ const taxonomy = [item.domain, item.pattern, item.element, item.flow].filter(Boo
   data-updated={item.updated || ''}
 >
   <div class="ref-card__canvas">
-    {sourceLabel && <span class="ref-card__pill">{sourceLabel}</span>}
+    {displayOsLabels.length > 0 && (
+      <div class="ref-card__pills" aria-label="OS">
+        {displayOsLabels.map((label) => <span class="ref-card__pill">{label}</span>)}
+      </div>
+    )}
     <div class="ref-card__phone">
       {item.thumb ? (
         <img class="ref-card__shot" src={item.thumb} alt={item.label} loading="lazy" />
@@ -36,15 +44,10 @@ const taxonomy = [item.domain, item.pattern, item.element, item.flow].filter(Boo
     <div class="ref-card__identity">
       <div>
         <h3>{item.label}</h3>
-        {identity && <p>{identity}</p>}
+        <div class="ref-card__identity-badges">
+          {identityBadges.map((value) => <span>{value}</span>)}
+        </div>
       </div>
-      <div class="ref-card__state">
-        {osLabel && <span>{osLabel}</span>}
-        {item.status && <span>{item.status}</span>}
-      </div>
-    </div>
-    <div class="ref-card__taxonomy">
-      {taxonomy.map((value) => <span>{value}</span>)}
     </div>
   </div>
 </a>

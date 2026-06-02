@@ -9,12 +9,17 @@ const requiredSnippets = [
   'class="ref-card__phone"',
   'class="ref-card__placeholder"',
   'class="ref-card__identity"',
-  'class="ref-card__taxonomy"',
+  'class="ref-card__identity-badges"',
 ];
 
 const forbiddenSnippets = [
   'class="ref-card__preview"',
   'class="ref-card__meta"',
+  'class="ref-card__state"',
+  'class="ref-card__taxonomy"',
+  'class="ref-card__pill">HTML</span>',
+  'class="ref-card__pill">FIGMA</span>',
+  '<span>draft</span>',
 ];
 
 for (const snippet of requiredSnippets) {
