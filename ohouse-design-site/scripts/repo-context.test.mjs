@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import {
   getAxisSidebarItems,
+  getDomainComponentOverview,
   getDomainPolicies,
-  getScreenComponents,
+  getScreenComponentUsage,
 } from '../src/lib/repo.js';
 
 function testCategoriesSidebarUsesDomainGroups() {
@@ -37,23 +38,52 @@ function testDomainPoliciesReadMappedTrackMarkdown() {
   assert.match(policiesSubdoc.html, /Contents Track · Policies/);
 }
 
-function testScreenComponentsReadMappedTrackComponents() {
-  const components = getScreenComponents('house-tour', 'content-tab');
-  assert.ok(components.length >= 4, 'content-tab should include contents track component docs');
+function testScreenComponentUsageReadsReadmeMarkers() {
+  const usage = getScreenComponentUsage('house-tour', 'content-tab');
 
-  const slugs = components.map((component) => component.slug);
-  assert.ok(slugs.includes('contents-plain-tab'));
-  assert.ok(slugs.includes('topic-chip'));
-  assert.ok(slugs.includes('author-info'));
+  assert.deepEqual(
+    usage.ods.map((component) => component.slug),
+    ['ContentsLandscapeCard', 'ContentsPortraitCard'],
+  );
 
-  const plainTab = components.find((component) => component.slug === 'contents-plain-tab');
-  assert.equal(plainTab.track, 'contents');
-  assert.equal(plainTab.source, 'track');
-  assert.match(plainTab.html, /Contents Plain Tab/);
+  assert.deepEqual(
+    usage.domain.map((component) => `${component.ownerDomain}/${component.slug}`),
+    [
+      'house-tour/interest-feed',
+      'house-tour/hscroll',
+      'house-tour/recommended-project-section',
+      'house-tour/topic-chip',
+      'content-detail/contents-plain-tab',
+      'content-detail/author-info',
+    ],
+  );
+
+  const authorInfo = usage.domain.find((component) => component.slug === 'author-info');
+  assert.equal(authorInfo.source, 'domain');
+  assert.match(authorInfo.html, /Author Info/);
+}
+
+function testDomainComponentOverviewSeparatesOwnedAndUsed() {
+  const overview = getDomainComponentOverview('house-tour');
+
+  assert.deepEqual(
+    overview.owned.map((component) => component.slug),
+    ['hscroll', 'interest-feed', 'legacy-interest-post', 'recommended-project-section', 'topic-chip'],
+  );
+
+  assert.ok(
+    overview.used.some((component) => component.ownerDomain === 'content-detail' && component.slug === 'author-info'),
+    'house-tour overview should include content-detail/author-info because content-tab uses it',
+  );
+  assert.ok(
+    overview.used.some((component) => component.ownerDomain === 'house-tour' && component.slug === 'hscroll'),
+    'house-tour overview should include owned components when screens use them',
+  );
 }
 
 testCategoriesSidebarUsesDomainGroups();
 testDomainPoliciesReadMappedTrackMarkdown();
-testScreenComponentsReadMappedTrackComponents();
+testScreenComponentUsageReadsReadmeMarkers();
+testDomainComponentOverviewSeparatesOwnedAndUsed();
 
 console.log('repo context tests passed');

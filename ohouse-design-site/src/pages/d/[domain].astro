@@ -4,7 +4,7 @@ import {
   getAllDomains,
   getDomain,
   getDomainScreens,
-  getDomainComponents,
+  getDomainComponentOverview,
   getDomainPolicies,
   getDomainExperiments,
   buildPrompt,
@@ -21,7 +21,9 @@ const domain = getDomain(slug);
 if (!domain) return Astro.redirect(base);
 
 const screens = getDomainScreens(slug);
-const components = getDomainComponents(slug);
+const componentOverview = getDomainComponentOverview(slug);
+const usedComponents = componentOverview.used;
+const ownedComponents = componentOverview.owned;
 const policies = getDomainPolicies(slug);
 const experiments = getDomainExperiments(slug);
 
@@ -32,7 +34,7 @@ const figmaCount = screensTyped.length - htmlCount;
 
 const tabs = [
   { id: 'screens', label: 'Screens', count: screens.length },
-  { id: 'components', label: 'Components', count: components.length },
+  { id: 'components', label: 'Components', count: usedComponents.length || ownedComponents.length },
   { id: 'policies', label: 'Policies', count: policies.length },
   { id: 'experiments', label: 'Experiments', count: experiments.length },
 ];
@@ -139,26 +141,66 @@ const typeLabel = (t) => (t === 'figma' ? 'Figma' : 'HTML');
       <!-- Components -->
       <div class="dpanel" data-panel="components" hidden>
         <div class="sechead">
-          <div class="sechead__title">Screen-only Components</div>
-          <div class="sechead__count">ODS 미대응 {components.length}건</div>
+          <div class="sechead__title">Components</div>
+          <div class="sechead__count">{usedComponents.length} used · {ownedComponents.length} owned</div>
         </div>
-        {components.length === 0 ? (
+        {usedComponents.length === 0 && ownedComponents.length === 0 ? (
           <div class="empty">
             <div class="empty__title">화면 전용 컴포넌트가 아직 없습니다</div>
-            <div class="empty__hint">ODS 미대응 항목을 발견하면 여기에 추가됩니다.</div>
+            <div class="empty__hint">도메인 컴포넌트나 track component 문서가 있으면 여기에 표시됩니다.</div>
           </div>
         ) : (
-          <div class="lgrid">
-            {components.map((c) => (
-              <div class="lcard">
-                <div class="lcard__head">
-                  <span class="lcard__title">{c.label}</span>
-                  <span class="badge badge--accent">{c.type}</span>
+          <div>
+            <nav class="component-subtabs" aria-label="component tabs" id="component-subtabs">
+              {usedComponents.length > 0 && (
+                <a class="component-subtab is-active" href={`${base}d/${slug}?tab=components&component=used`} data-component-tab="used">
+                  Used in this domain <span>{usedComponents.length}</span>
+                </a>
+              )}
+              {ownedComponents.length > 0 && (
+                <a class={`component-subtab${usedComponents.length === 0 ? ' is-active' : ''}`} href={`${base}d/${slug}?tab=components&component=owned`} data-component-tab="owned">
+                  Owned by this domain <span>{ownedComponents.length}</span>
+                </a>
+              )}
+            </nav>
+
+            {usedComponents.length > 0 && (
+              <div class="component-subpanel" data-component-panel="used">
+                <div class="lgrid">
+                  {usedComponents.map((c) => (
+                    <div class="lcard">
+                      <div class="lcard__head">
+                        <span class="lcard__title">{c.label}</span>
+                        <span class="badge badge--accent">{c.ownerDomain}</span>
+                      </div>
+                      {c.summary && <p class="lcard__summary">{c.summary}</p>}
+                      <div class="lcard__foot">
+                        <span>{c.type}</span>
+                        {c.status && <span>{c.status}</span>}
+                        {c.sourcePath && <span>{c.sourcePath}</span>}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                {c.summary && <p class="lcard__summary">{c.summary}</p>}
-                {c.updated && <div class="lcard__foot"><span>{relTime(c.updated)}</span></div>}
               </div>
-            ))}
+            )}
+
+            {ownedComponents.length > 0 && (
+              <div class="component-subpanel" data-component-panel="owned" hidden={usedComponents.length > 0}>
+                <div class="lgrid">
+                  {ownedComponents.map((c) => (
+                    <div class="lcard">
+                      <div class="lcard__head">
+                        <span class="lcard__title">{c.label}</span>
+                        <span class="badge badge--accent">{c.type}</span>
+                      </div>
+                      {c.summary && <p class="lcard__summary">{c.summary}</p>}
+                      {c.updated && <div class="lcard__foot"><span>{relTime(c.updated)}</span></div>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -261,4 +303,35 @@ const typeLabel = (t) => (t === 'figma' ? 'Figma' : 'HTML');
   }
   initTabs();
   document.addEventListener('astro:page-load', initTabs);
+
+  function initComponentTabs() {
+    const tabsNav = document.getElementById('component-subtabs');
+    if (!tabsNav || (tabsNav as HTMLElement).dataset.bound) return;
+    (tabsNav as HTMLElement).dataset.bound = '1';
+
+    const panels = Array.from(document.querySelectorAll<HTMLElement>('.component-subpanel'));
+    const links = Array.from(tabsNav.querySelectorAll<HTMLElement>('.component-subtab'));
+
+    function activate(id: string) {
+      links.forEach((l) => l.classList.toggle('is-active', l.dataset.componentTab === id));
+      panels.forEach((p) => { p.hidden = p.dataset.componentPanel !== id; });
+    }
+
+    const initial = new URLSearchParams(window.location.search).get('component') || links[0]?.dataset.componentTab || 'used';
+    activate(initial);
+
+    tabsNav.addEventListener('click', (e) => {
+      const link = (e.target as HTMLElement).closest('.component-subtab') as HTMLElement | null;
+      if (!link) return;
+      e.preventDefault();
+      const id = link.dataset.componentTab || 'used';
+      activate(id);
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', 'components');
+      url.searchParams.set('component', id);
+      window.history.replaceState({}, '', url);
+    });
+  }
+  initComponentTabs();
+  document.addEventListener('astro:page-load', initComponentTabs);
 </script>

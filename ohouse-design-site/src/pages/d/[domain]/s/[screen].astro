@@ -5,7 +5,7 @@ import {
   getDomain,
   getDomainScreens,
   getScreen,
-  getScreenComponents,
+  getScreenComponentUsage,
   buildPrompt,
   relTime,
 } from '../../../../lib/repo.js';
@@ -29,7 +29,7 @@ const screen = getScreen(dSlug, sSlug);
 if (!domain || !screen) return Astro.redirect(`${base}d/${dSlug}`);
 
 const prompt = buildPrompt({ kind: 'screen', domain: dSlug, screen: sSlug, markers: screen.markers });
-const components = getScreenComponents(dSlug, sSlug);
+const componentUsage = getScreenComponentUsage(dSlug, sSlug);
 ---
 
 <Layout title={`${screen.label} · ${domain.label}`}>
@@ -84,6 +84,11 @@ const components = getScreenComponents(dSlug, sSlug);
             )}
           </div>
 
+          <div class="prompt-preview prompt-preview--inline">
+            <h3>Copy prompt 미리보기</h3>
+            <pre class="prompt-box">{prompt}</pre>
+          </div>
+
           {screen.markers.length > 0 && (
             <div class="shead__markers">
               <div class="shead__markers-label">사용 컴포넌트 · 마커</div>
@@ -101,36 +106,98 @@ const components = getScreenComponents(dSlug, sSlug);
     </div>
   </section>
 
-  <section class="prompt-preview">
-    <div class="wrap-narrow">
-      <h3>Copy prompt 미리보기</h3>
-      <pre class="prompt-box">{prompt}</pre>
-    </div>
-  </section>
-
-  {components.length > 0 && (
-    <section class="screen-components">
+  {(componentUsage.ods.length > 0 || componentUsage.domain.length > 0) && (
+    <section class="screen-usage">
       <div class="wrap-narrow">
-        <div class="screen-components__head">
-          <h2>Track components</h2>
-          <span>{components.length} components</span>
+        <div class="screen-usage__head">
+          <h2>Components</h2>
+          <span>{componentUsage.ods.length} ODS · {componentUsage.domain.length} domain/track</span>
         </div>
-        <div class="screen-components__stack">
-          {components.map((component) => (
-            <article class="screen-component-doc">
-              <div class="screen-component-doc__meta">
-                <span class="badge">track:{component.track}</span>
-                {component.status && <span class="badge badge--accent">{component.status}</span>}
-                {component.owner && <span class="badge">{component.owner}</span>}
-                <span class="screen-component-doc__path">{component.sourcePath}</span>
-              </div>
-              <div class="prose screen-component-doc__body" set:html={component.html} />
-            </article>
-          ))}
-        </div>
+
+        <nav class="screen-component-tabs" aria-label="screen component tabs" id="screen-component-tabs">
+          {componentUsage.ods.length > 0 && (
+            <a class="screen-component-tab is-active" href={`${base}d/${dSlug}/s/${sSlug}?component=ods`} data-screen-component-tab="ods">
+              ODS components <span>{componentUsage.ods.length}</span>
+            </a>
+          )}
+          {componentUsage.domain.length > 0 && (
+            <a class={`screen-component-tab${componentUsage.ods.length === 0 ? ' is-active' : ''}`} href={`${base}d/${dSlug}/s/${sSlug}?component=domain`} data-screen-component-tab="domain">
+              Domain / Track components <span>{componentUsage.domain.length}</span>
+            </a>
+          )}
+        </nav>
+
+        {componentUsage.ods.length > 0 && (
+          <div class="screen-component-panel" data-screen-component-panel="ods">
+            <div class="screen-component-list">
+              {componentUsage.ods.map((component) => (
+                <div class="screen-component-card">
+                  <div class="screen-component-card__head">
+                    <span>{component.label}</span>
+                    <span class="badge badge--accent">ODS</span>
+                  </div>
+                  <p>linked_yaml_components</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {componentUsage.domain.length > 0 && (
+          <div class="screen-component-panel" data-screen-component-panel="domain" hidden={componentUsage.ods.length > 0}>
+            <div class="screen-component-list">
+              {componentUsage.domain.map((component) => (
+                <div class="screen-component-card">
+                  <div class="screen-component-card__head">
+                    <span>{component.label}</span>
+                    <span class="badge badge--accent">{component.ownerDomain}</span>
+                  </div>
+                  {component.summary && <p>{component.summary}</p>}
+                  <div class="screen-component-card__meta">
+                    <span>{component.type}</span>
+                    {component.status && <span>{component.status}</span>}
+                    {component.sourcePath && <span>{component.sourcePath}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   )}
+
+  <script>
+    function initScreenComponentTabs() {
+      const tabsNav = document.getElementById('screen-component-tabs');
+      if (!tabsNav || (tabsNav as HTMLElement).dataset.bound) return;
+      (tabsNav as HTMLElement).dataset.bound = '1';
+
+      const panels = Array.from(document.querySelectorAll<HTMLElement>('.screen-component-panel'));
+      const links = Array.from(tabsNav.querySelectorAll<HTMLElement>('.screen-component-tab'));
+
+      function activate(id: string) {
+        links.forEach((l) => l.classList.toggle('is-active', l.dataset.screenComponentTab === id));
+        panels.forEach((p) => { p.hidden = p.dataset.screenComponentPanel !== id; });
+      }
+
+      const initial = new URLSearchParams(window.location.search).get('component') || links[0]?.dataset.screenComponentTab || 'ods';
+      activate(initial);
+
+      tabsNav.addEventListener('click', (e) => {
+        const link = (e.target as HTMLElement).closest('.screen-component-tab') as HTMLElement | null;
+        if (!link) return;
+        e.preventDefault();
+        const id = link.dataset.screenComponentTab || 'ods';
+        activate(id);
+        const url = new URL(window.location.href);
+        url.searchParams.set('component', id);
+        window.history.replaceState({}, '', url);
+      });
+    }
+    initScreenComponentTabs();
+    document.addEventListener('astro:page-load', initScreenComponentTabs);
+  </script>
 </Layout>
 
 <style>
@@ -215,6 +282,7 @@ const components = getScreenComponents(dSlug, sSlug);
   .shead__markers-list { display: flex; flex-wrap: wrap; gap: 6px; }
 
   .prompt-preview { padding: 32px 0 40px; }
+  .prompt-preview--inline { padding: 20px 0 0; }
   .prompt-preview h3 { font-size: 12px; font-weight: 500; color: var(--c-text-soft); margin-bottom: 12px; }
   .prompt-box {
     background: var(--c-bg-elev);
@@ -226,29 +294,38 @@ const components = getScreenComponents(dSlug, sSlug);
     font-family: var(--f-mono);
   }
 
-  .screen-components { padding: 0 0 96px; }
-  .screen-components__head {
+  .screen-usage { padding: 0 0 96px; }
+  .screen-usage__head {
     display: flex; align-items: baseline; justify-content: space-between;
-    gap: 16px; margin-bottom: 16px;
+    gap: 16px; margin-bottom: 14px;
   }
-  .screen-components__head h2 {
-    font-size: 18px; font-weight: 700; letter-spacing: -0.01em;
+  .screen-usage__head h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+  .screen-usage__head span { font-size: 13px; color: var(--c-text-soft); }
+  .screen-component-tabs {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    padding: 4px; margin-bottom: 16px;
+    background: var(--c-bg-elev); border-radius: 999px; width: fit-content;
   }
-  .screen-components__head span {
-    font-size: 13px; color: var(--c-text-soft); font-variant-numeric: tabular-nums;
+  .screen-component-tab {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 12px; border-radius: 999px;
+    font-size: 13px; font-weight: 700; color: var(--c-text-muted);
   }
-  .screen-components__stack { display: flex; flex-direction: column; gap: 24px; }
-  .screen-component-doc {
-    border: 1px solid var(--c-border);
-    border-radius: var(--r-card);
-    padding: 24px;
-    background: #fff;
+  .screen-component-tab.is-active,
+  .screen-component-tab:hover { background: #fff; color: var(--c-text); }
+  .screen-component-tab span {
+    font-size: 11px; color: var(--c-text-soft); font-variant-numeric: tabular-nums;
   }
-  .screen-component-doc__meta {
-    display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
+  .screen-component-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .screen-component-card {
+    padding: 16px; border-radius: 16px; background: var(--c-bg-elev);
+    display: flex; flex-direction: column; gap: 8px;
   }
-  .screen-component-doc__path {
-    font-size: 12px; color: var(--c-text-soft); font-family: var(--f-mono);
+  .screen-component-card__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .screen-component-card__head > span:first-child { font-size: 15px; font-weight: 700; color: var(--c-text); }
+  .screen-component-card p { font-size: 13px; line-height: 1.55; color: var(--c-text-muted); }
+  .screen-component-card__meta {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    font-size: 11px; color: var(--c-text-soft); font-family: var(--f-mono);
   }
-  .screen-component-doc__body h1:first-child { margin-top: 0; }
 </style>

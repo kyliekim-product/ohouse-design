@@ -6,6 +6,7 @@ import { join, resolve, dirname } from 'path';
 import { execSync } from 'child_process';
 import matter from 'gray-matter';
 import { marked } from 'marked';
+import yaml from 'js-yaml';
 
 // 사이트는 ohouse-design-site/ 에 살고, 콘텐츠는 Claude_Study 의 SSOT 에서 읽는다.
 // 폴더 이름이 'product-design' 또는 'product design' (스페이스) 둘 다 허용.
@@ -231,6 +232,16 @@ function parseMd(filePath) {
   return { ...parsed.data, body: parsed.content, _path: filePath };
 }
 
+function parseYaml(filePath) {
+  const raw = safeRead(filePath);
+  if (!raw) return null;
+  try {
+    return yaml.load(raw) || {};
+  } catch {
+    return null;
+  }
+}
+
 function listDirs(dir) {
   if (!existsSync(dir)) return [];
   return readdirSync(dir)
@@ -289,37 +300,6 @@ function getTrackPoliciesForDomain(slug) {
   if (policiesDoc) docs.push(policiesDoc);
 
   return docs;
-}
-
-function trackComponentDoc(track, filePath, relPath, slug) {
-  const parsed = parseMd(filePath);
-  if (!parsed) return null;
-  const titleFromHeading = parsed.body.match(/^#\s+(.+)$/m)?.[1];
-  return {
-    slug,
-    label: parsed.title || titleFromHeading || slug,
-    summary: parsed['when-to-read'] || parsed.summary || null,
-    owner: parsed.owner || null,
-    status: parsed.status || null,
-    track,
-    source: 'track',
-    sourcePath: relPath,
-    html: marked.parse(parsed.body),
-    updated: lastModifiedContext(relPath),
-  };
-}
-
-function getTrackComponentsForDomain(slug) {
-  const track = DOMAIN_TRACK_MAP[slug];
-  const dir = join(CONTEXT_ROOT, 'tracks', track || '', 'components');
-  if (!track || !existsSync(dir)) return [];
-
-  return listMd(dir).map((file) => trackComponentDoc(
-    track,
-    join(dir, file),
-    `tracks/${track}/components/${file}`,
-    file.replace(/\.md$/, ''),
-  )).filter(Boolean);
 }
 
 function fallbackOs(index) {
@@ -430,20 +410,117 @@ export function getDomainScreens(slug) {
   });
 }
 
+function normalizeComponentKey(value) {
+  return String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function componentTitleFromBody(body) {
+  return String(body || '').match(/^#\s+(.+)$/m)?.[1] || null;
+}
+
+function componentDefinition(domainSlug, componentSlug) {
+  const dir = join(ROOT, 'domains', domainSlug, 'components', componentSlug);
+  if (!existsSync(dir)) return null;
+  const meta = parseYaml(join(dir, 'meta.yaml')) || {};
+  const spec = parseMd(join(dir, 'spec.md'));
+  const titleFromSpec = componentTitleFromBody(spec?.body);
+
+  return {
+    slug: componentSlug,
+    ownerDomain: domainSlug,
+    label: meta.title || titleFromSpec || componentSlug,
+    type: meta.type || spec?.type || 'component',
+    status: meta.status || spec?.status || null,
+    summary: meta.description || spec?.['when-to-read'] || spec?.summary || null,
+    owner: meta.owner || spec?.owner || null,
+    source: 'domain',
+    sourcePath: `domains/${domainSlug}/components/${componentSlug}/spec.md`,
+    html: spec?.body ? marked.parse(spec.body) : null,
+    updated: lastModified(`domains/${domainSlug}/components/${componentSlug}`),
+  };
+}
+
+function resolveComponentDefinition(domainSlug, componentName) {
+  const dir = join(ROOT, 'domains', domainSlug, 'components');
+  const targetKey = normalizeComponentKey(componentName);
+  const match = listDirs(dir).find((componentSlug) => {
+    const meta = parseYaml(join(dir, componentSlug, 'meta.yaml')) || {};
+    return normalizeComponentKey(componentSlug) === targetKey
+      || normalizeComponentKey(meta.title) === targetKey;
+  });
+
+  if (match) return componentDefinition(domainSlug, match);
+
+  const fallbackSlug = String(componentName || '')
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .replace(/[\s_]+/g, '-')
+    .toLowerCase();
+  return {
+    slug: fallbackSlug,
+    ownerDomain: domainSlug,
+    label: componentName || fallbackSlug,
+    type: 'component',
+    status: 'planned',
+    summary: null,
+    owner: null,
+    source: 'marker',
+    sourcePath: null,
+    html: null,
+    updated: null,
+  };
+}
+
+function dedupeComponents(components) {
+  const seen = new Set();
+  return components.filter((component) => {
+    const key = `${component.ownerDomain}/${component.slug}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export function getDomainComponents(slug) {
   const dir = join(ROOT, 'domains', slug, 'components');
-  return listDirs(dir).map((c) => {
-    const meta = parseMd(join(dir, c, 'meta.yaml'));
-    const readme = parseMd(join(dir, c, 'README.md'));
-    const m = meta || readme || {};
-    return {
-      slug: c,
-      label: m.title || c,
-      type: m.type || 'component',
-      summary: m.summary || null,
-      updated: lastModified(`domains/${slug}/components/${c}`),
-    };
-  });
+  return listDirs(dir).map((c) => componentDefinition(slug, c)).filter(Boolean);
+}
+
+function parseDomainComponentMarker(value) {
+  const [ownerDomain, componentName] = String(value || '').split('/');
+  if (!ownerDomain || !componentName) return null;
+  return { ownerDomain, componentName };
+}
+
+export function getScreenComponentUsage(domainSlug, screenSlug) {
+  const dir = join(ROOT, 'domains', domainSlug, 'screens', screenSlug);
+  const readme = parseMd(join(dir, 'README.md'));
+  if (!readme) return { ods: [], domain: [] };
+
+  const ods = (readme.linked_yaml_components || []).map((name) => ({
+    slug: name,
+    label: name,
+    type: 'ods',
+    source: 'linked_yaml_components',
+  }));
+
+  const domain = extractMarkers(readme.body)
+    .filter((marker) => marker.kind === 'domain-component')
+    .map((marker) => parseDomainComponentMarker(marker.value))
+    .filter(Boolean)
+    .map(({ ownerDomain, componentName }) => resolveComponentDefinition(ownerDomain, componentName));
+
+  return { ods, domain: dedupeComponents(domain) };
+}
+
+export function getDomainComponentOverview(slug) {
+  const owned = getDomainComponents(slug);
+  const used = getDomainScreens(slug)
+    .flatMap((screen) => getScreenComponentUsage(slug, screen.slug).domain);
+
+  return {
+    owned,
+    used: dedupeComponents(used),
+  };
 }
 
 export function getDomainPolicies(slug) {
@@ -613,12 +690,6 @@ export function getScreen(domainSlug, screenSlug) {
     prototype: prototypePath ? prototypePath.replace(ROOT + '/', '') : null,
     updated: lastModified(`domains/${domainSlug}/screens/${screenSlug}`),
   };
-}
-
-export function getScreenComponents(domainSlug, screenSlug) {
-  const screen = getScreen(domainSlug, screenSlug);
-  if (!screen) return [];
-  return getTrackComponentsForDomain(domainSlug);
 }
 
 // ─────────────────────────────────────────────
