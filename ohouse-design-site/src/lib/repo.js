@@ -342,8 +342,9 @@ export function getAllDomains() {
     if (folderSlugs.has(slug)) {
       const readme = parseMd(join(dir, slug, 'README.md')) || {};
       const screens = listDirs(join(dir, slug, 'screens'));
-      const components = listDirs(join(dir, slug, 'components'));
-      const policies = listMd(join(dir, slug, 'policies'));
+      const ownedComponents = listDirs(join(dir, slug, 'components'));
+      const domainPolicies = listMd(join(dir, slug, 'policies'));
+      const trackPolicies = getTrackPoliciesForDomain(slug);
       const experiments = listMd(join(dir, slug, 'experiments'));
       return {
         slug,
@@ -355,8 +356,8 @@ export function getAllDomains() {
         description: readme.description || readme['when-to-read'] || null,
         counts: {
           screens: screens.length,
-          components: components.length,
-          policies: policies.length,
+          components: ownedComponents.length,
+          policies: domainPolicies.length + trackPolicies.length,
           experiments: experiments.length,
         },
         updated: lastModified(`domains/${slug}`),

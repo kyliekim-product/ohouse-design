@@ -106,66 +106,65 @@ const componentUsage = getScreenComponentUsage(dSlug, sSlug);
     </div>
   </section>
 
-  {(componentUsage.ods.length > 0 || componentUsage.domain.length > 0) && (
-    <section class="screen-usage">
-      <div class="wrap-narrow">
-        <div class="screen-usage__head">
-          <h2>Components</h2>
-          <span>{componentUsage.ods.length} ODS · {componentUsage.domain.length} domain/track</span>
-        </div>
+  <section class="screen-usage">
+    <nav class="dtabs" aria-label="screen component tabs" id="screen-component-tabs">
+      <div class="wrap dtabs__inner">
+        <a class="dtab is-active" href={`${base}d/${dSlug}/s/${sSlug}?component=ods`} data-screen-component-tab="ods">
+          ODS Components <span class="dtab__count">{componentUsage.ods.length}</span>
+        </a>
+        <a class="dtab" href={`${base}d/${dSlug}/s/${sSlug}?component=domain`} data-screen-component-tab="domain">
+          Domain / Track Components <span class="dtab__count">{componentUsage.domain.length}</span>
+        </a>
+      </div>
+    </nav>
 
-        <nav class="screen-component-tabs" aria-label="screen component tabs" id="screen-component-tabs">
-          {componentUsage.ods.length > 0 && (
-            <a class="screen-component-tab is-active" href={`${base}d/${dSlug}/s/${sSlug}?component=ods`} data-screen-component-tab="ods">
-              ODS components <span>{componentUsage.ods.length}</span>
-            </a>
-          )}
-          {componentUsage.domain.length > 0 && (
-            <a class={`screen-component-tab${componentUsage.ods.length === 0 ? ' is-active' : ''}`} href={`${base}d/${dSlug}/s/${sSlug}?component=domain`} data-screen-component-tab="domain">
-              Domain / Track components <span>{componentUsage.domain.length}</span>
-            </a>
-          )}
-        </nav>
-
-        {componentUsage.ods.length > 0 && (
-          <div class="screen-component-panel" data-screen-component-panel="ods">
-            <div class="screen-component-list">
-              {componentUsage.ods.map((component) => (
-                <div class="screen-component-card">
-                  <div class="screen-component-card__head">
-                    <span>{component.label}</span>
-                    <span class="badge badge--accent">ODS</span>
-                  </div>
-                  <p>linked_yaml_components</p>
+    <div class="wrap screen-usage__body">
+      <div class="screen-component-panel" data-screen-component-panel="ods">
+        {componentUsage.ods.length > 0 ? (
+          <div class="screen-component-list">
+            {componentUsage.ods.map((component) => (
+              <div class="screen-component-card">
+                <div class="screen-component-card__head">
+                  <span>{component.label}</span>
+                  <span class="badge badge--accent">ODS</span>
                 </div>
-              ))}
-            </div>
+                <p>linked_yaml_components</p>
+              </div>
+            ))}
           </div>
-        )}
-
-        {componentUsage.domain.length > 0 && (
-          <div class="screen-component-panel" data-screen-component-panel="domain" hidden={componentUsage.ods.length > 0}>
-            <div class="screen-component-list">
-              {componentUsage.domain.map((component) => (
-                <div class="screen-component-card">
-                  <div class="screen-component-card__head">
-                    <span>{component.label}</span>
-                    <span class="badge badge--accent">{component.ownerDomain}</span>
-                  </div>
-                  {component.summary && <p>{component.summary}</p>}
-                  <div class="screen-component-card__meta">
-                    <span>{component.type}</span>
-                    {component.status && <span>{component.status}</span>}
-                    {component.sourcePath && <span>{component.sourcePath}</span>}
-                  </div>
-                </div>
-              ))}
-            </div>
+        ) : (
+          <div class="empty">
+            <div class="empty__title">ODS 컴포넌트가 없습니다</div>
           </div>
         )}
       </div>
-    </section>
-  )}
+
+      <div class="screen-component-panel" data-screen-component-panel="domain" hidden>
+        {componentUsage.domain.length > 0 ? (
+          <div class="screen-component-list">
+            {componentUsage.domain.map((component) => (
+              <div class="screen-component-card">
+                <div class="screen-component-card__head">
+                  <span>{component.label}</span>
+                  <span class="badge badge--accent">{component.ownerDomain}</span>
+                </div>
+                {component.summary && <p>{component.summary}</p>}
+                <div class="screen-component-card__meta">
+                  <span>{component.type}</span>
+                  {component.status && <span>{component.status}</span>}
+                  {component.sourcePath && <span>{component.sourcePath}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div class="empty">
+            <div class="empty__title">Domain / Track 컴포넌트가 없습니다</div>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
 
   <script>
     function initScreenComponentTabs() {
@@ -174,7 +173,7 @@ const componentUsage = getScreenComponentUsage(dSlug, sSlug);
       (tabsNav as HTMLElement).dataset.bound = '1';
 
       const panels = Array.from(document.querySelectorAll<HTMLElement>('.screen-component-panel'));
-      const links = Array.from(tabsNav.querySelectorAll<HTMLElement>('.screen-component-tab'));
+      const links = Array.from(tabsNav.querySelectorAll<HTMLElement>('.dtab'));
 
       function activate(id: string) {
         links.forEach((l) => l.classList.toggle('is-active', l.dataset.screenComponentTab === id));
@@ -185,7 +184,7 @@ const componentUsage = getScreenComponentUsage(dSlug, sSlug);
       activate(initial);
 
       tabsNav.addEventListener('click', (e) => {
-        const link = (e.target as HTMLElement).closest('.screen-component-tab') as HTMLElement | null;
+        const link = (e.target as HTMLElement).closest('.dtab') as HTMLElement | null;
         if (!link) return;
         e.preventDefault();
         const id = link.dataset.screenComponentTab || 'ods';
@@ -295,27 +294,7 @@ const componentUsage = getScreenComponentUsage(dSlug, sSlug);
   }
 
   .screen-usage { padding: 0 0 96px; }
-  .screen-usage__head {
-    display: flex; align-items: baseline; justify-content: space-between;
-    gap: 16px; margin-bottom: 14px;
-  }
-  .screen-usage__head h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
-  .screen-usage__head span { font-size: 13px; color: var(--c-text-soft); }
-  .screen-component-tabs {
-    display: flex; gap: 8px; flex-wrap: wrap;
-    padding: 4px; margin-bottom: 16px;
-    background: var(--c-bg-elev); border-radius: 999px; width: fit-content;
-  }
-  .screen-component-tab {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 7px 12px; border-radius: 999px;
-    font-size: 13px; font-weight: 700; color: var(--c-text-muted);
-  }
-  .screen-component-tab.is-active,
-  .screen-component-tab:hover { background: #fff; color: var(--c-text); }
-  .screen-component-tab span {
-    font-size: 11px; color: var(--c-text-soft); font-variant-numeric: tabular-nums;
-  }
+  .screen-usage__body { padding-top: 32px; }
   .screen-component-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
   .screen-component-card {
     padding: 16px; border-radius: 16px; background: var(--c-bg-elev);

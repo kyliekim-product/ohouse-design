@@ -27,18 +27,17 @@ const ownedComponents = componentOverview.owned;
 const policies = getDomainPolicies(slug);
 const experiments = getDomainExperiments(slug);
 
-// 화면 type 은 index 로 deterministic 하게 html/figma 교차 (home 카드와 동일 규칙)
 const screensTyped = screens.map((s, i) => ({ ...s, type: i % 2 === 0 ? 'html' : 'figma' }));
 const htmlCount = screensTyped.filter((s) => s.type === 'html').length;
 const figmaCount = screensTyped.length - htmlCount;
+const typeLabel = (t) => (t === 'figma' ? 'Figma' : 'HTML');
 
 const tabs = [
   { id: 'policies', label: 'Policies', count: policies.length },
   { id: 'experiments', label: 'Experiments', count: experiments.length },
-  { id: 'components', label: 'Components', count: usedComponents.length || ownedComponents.length },
+  { id: 'components', label: 'Components', count: ownedComponents.length },
   { id: 'screens', label: 'Screens', count: screens.length },
 ];
-const typeLabel = (t) => (t === 'figma' ? 'Figma' : 'HTML');
 ---
 
 <Layout title={domain.label}>
@@ -57,17 +56,6 @@ const typeLabel = (t) => (t === 'figma' ? 'Figma' : 'HTML');
             <span class="dhead__metavalue">{domain.reviewer}</span>
           </div>
         )}
-        <div class="dhead__metacol">
-          <span class="dhead__metalabel">Developer</span>
-          <span class="dhead__metavalue">{domain.developer}</span>
-        </div>
-        <div class="dhead__metacol">
-          <span class="dhead__metalabel">Screens</span>
-          <span class="dhead__metavalue">
-            {screens.length}
-            <span class="dhead__metavalue-sub">HTML {htmlCount} · Figma {figmaCount}</span>
-          </span>
-        </div>
         {domain.updated && (
           <div class="dhead__metacol">
             <span class="dhead__metalabel">Last updated</span>
