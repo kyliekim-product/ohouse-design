@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   getAxisSidebarItems,
   getDomainPolicies,
+  getScreenComponents,
 } from '../src/lib/repo.js';
 
 function testCategoriesSidebarUsesDomainGroups() {
@@ -36,7 +37,23 @@ function testDomainPoliciesReadMappedTrackMarkdown() {
   assert.match(policiesSubdoc.html, /Contents Track · Policies/);
 }
 
+function testScreenComponentsReadMappedTrackComponents() {
+  const components = getScreenComponents('house-tour', 'content-tab');
+  assert.ok(components.length >= 4, 'content-tab should include contents track component docs');
+
+  const slugs = components.map((component) => component.slug);
+  assert.ok(slugs.includes('contents-plain-tab'));
+  assert.ok(slugs.includes('topic-chip'));
+  assert.ok(slugs.includes('author-info'));
+
+  const plainTab = components.find((component) => component.slug === 'contents-plain-tab');
+  assert.equal(plainTab.track, 'contents');
+  assert.equal(plainTab.source, 'track');
+  assert.match(plainTab.html, /Contents Plain Tab/);
+}
+
 testCategoriesSidebarUsesDomainGroups();
 testDomainPoliciesReadMappedTrackMarkdown();
+testScreenComponentsReadMappedTrackComponents();
 
 console.log('repo context tests passed');

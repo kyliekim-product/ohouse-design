@@ -5,6 +5,7 @@ import {
   getDomain,
   getDomainScreens,
   getScreen,
+  getScreenComponents,
   buildPrompt,
   relTime,
 } from '../../../../lib/repo.js';
@@ -28,6 +29,7 @@ const screen = getScreen(dSlug, sSlug);
 if (!domain || !screen) return Astro.redirect(`${base}d/${dSlug}`);
 
 const prompt = buildPrompt({ kind: 'screen', domain: dSlug, screen: sSlug, markers: screen.markers });
+const components = getScreenComponents(dSlug, sSlug);
 ---
 
 <Layout title={`${screen.label} · ${domain.label}`}>
@@ -105,6 +107,30 @@ const prompt = buildPrompt({ kind: 'screen', domain: dSlug, screen: sSlug, marke
       <pre class="prompt-box">{prompt}</pre>
     </div>
   </section>
+
+  {components.length > 0 && (
+    <section class="screen-components">
+      <div class="wrap-narrow">
+        <div class="screen-components__head">
+          <h2>Track components</h2>
+          <span>{components.length} components</span>
+        </div>
+        <div class="screen-components__stack">
+          {components.map((component) => (
+            <article class="screen-component-doc">
+              <div class="screen-component-doc__meta">
+                <span class="badge">track:{component.track}</span>
+                {component.status && <span class="badge badge--accent">{component.status}</span>}
+                {component.owner && <span class="badge">{component.owner}</span>}
+                <span class="screen-component-doc__path">{component.sourcePath}</span>
+              </div>
+              <div class="prose screen-component-doc__body" set:html={component.html} />
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
 </Layout>
 
 <style>
@@ -188,7 +214,7 @@ const prompt = buildPrompt({ kind: 'screen', domain: dSlug, screen: sSlug, marke
   .shead__markers-label { font-size: 12px; font-weight: 500; color: var(--c-text-soft); margin-bottom: 10px; }
   .shead__markers-list { display: flex; flex-wrap: wrap; gap: 6px; }
 
-  .prompt-preview { padding: 32px 0 96px; }
+  .prompt-preview { padding: 32px 0 40px; }
   .prompt-preview h3 { font-size: 12px; font-weight: 500; color: var(--c-text-soft); margin-bottom: 12px; }
   .prompt-box {
     background: var(--c-bg-elev);
@@ -199,4 +225,30 @@ const prompt = buildPrompt({ kind: 'screen', domain: dSlug, screen: sSlug, marke
     color: var(--c-text);
     font-family: var(--f-mono);
   }
+
+  .screen-components { padding: 0 0 96px; }
+  .screen-components__head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 16px; margin-bottom: 16px;
+  }
+  .screen-components__head h2 {
+    font-size: 18px; font-weight: 700; letter-spacing: -0.01em;
+  }
+  .screen-components__head span {
+    font-size: 13px; color: var(--c-text-soft); font-variant-numeric: tabular-nums;
+  }
+  .screen-components__stack { display: flex; flex-direction: column; gap: 24px; }
+  .screen-component-doc {
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-card);
+    padding: 24px;
+    background: #fff;
+  }
+  .screen-component-doc__meta {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
+  }
+  .screen-component-doc__path {
+    font-size: 12px; color: var(--c-text-soft); font-family: var(--f-mono);
+  }
+  .screen-component-doc__body h1:first-child { margin-top: 0; }
 </style>

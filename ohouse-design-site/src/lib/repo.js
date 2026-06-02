@@ -291,6 +291,37 @@ function getTrackPoliciesForDomain(slug) {
   return docs;
 }
 
+function trackComponentDoc(track, filePath, relPath, slug) {
+  const parsed = parseMd(filePath);
+  if (!parsed) return null;
+  const titleFromHeading = parsed.body.match(/^#\s+(.+)$/m)?.[1];
+  return {
+    slug,
+    label: parsed.title || titleFromHeading || slug,
+    summary: parsed['when-to-read'] || parsed.summary || null,
+    owner: parsed.owner || null,
+    status: parsed.status || null,
+    track,
+    source: 'track',
+    sourcePath: relPath,
+    html: marked.parse(parsed.body),
+    updated: lastModifiedContext(relPath),
+  };
+}
+
+function getTrackComponentsForDomain(slug) {
+  const track = DOMAIN_TRACK_MAP[slug];
+  const dir = join(CONTEXT_ROOT, 'tracks', track || '', 'components');
+  if (!track || !existsSync(dir)) return [];
+
+  return listMd(dir).map((file) => trackComponentDoc(
+    track,
+    join(dir, file),
+    `tracks/${track}/components/${file}`,
+    file.replace(/\.md$/, ''),
+  )).filter(Boolean);
+}
+
 function fallbackOs(index) {
   return OS_OPTIONS[index % OS_OPTIONS.length].value;
 }
@@ -582,6 +613,12 @@ export function getScreen(domainSlug, screenSlug) {
     prototype: prototypePath ? prototypePath.replace(ROOT + '/', '') : null,
     updated: lastModified(`domains/${domainSlug}/screens/${screenSlug}`),
   };
+}
+
+export function getScreenComponents(domainSlug, screenSlug) {
+  const screen = getScreen(domainSlug, screenSlug);
+  if (!screen) return [];
+  return getTrackComponentsForDomain(domainSlug);
 }
 
 // ─────────────────────────────────────────────
