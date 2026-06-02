@@ -78,7 +78,30 @@ const base = import.meta.env.BASE_URL;
         if (e.key === 'Escape' && lb?.classList.contains('is-open')) closeLightbox();
       });
 
+      function bindCloseOnOutside() {
+        const doc = document.documentElement;
+        if (doc.dataset.closeDropdowns) return;
+        doc.dataset.closeDropdowns = '1';
+
+        document.addEventListener('click', (event) => {
+          const target = event.target as Node | null;
+          document.querySelectorAll<HTMLDetailsElement>('details[data-close-on-outside][open]').forEach((details) => {
+            if (target && details.contains(target)) return;
+            details.removeAttribute('open');
+          });
+        });
+
+        document.addEventListener('keydown', (event) => {
+          if (event.key !== 'Escape') return;
+          document.querySelectorAll<HTMLDetailsElement>('details[data-close-on-outside][open]').forEach((details) => {
+            details.removeAttribute('open');
+          });
+        });
+      }
+
       function bind() {
+        bindCloseOnOutside();
+
         // Copy prompt
         document.querySelectorAll<HTMLElement>('[data-copy-prompt]').forEach((btn) => {
           if (btn.dataset.bound) return;

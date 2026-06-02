@@ -384,10 +384,11 @@ code, pre { font-family: var(--f-mono); font-size: 0.92em; }
 .fbar__pf{padding:5px 14px;font-size:13px;font-weight:500;color:var(--c-text-muted);border-radius:999px;transition:color .15s,background .15s}
 .fbar__pf:hover{color:var(--c-text)}
 .fbar__pf.is-active{background:#fff;color:var(--c-text);font-weight:600;box-shadow:var(--sh-sm)}
-.fbar__sortbox{position:relative;flex:1}
-.fbar__sort-trigger{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--c-border);border-radius:999px;background:#fff;font-size:13px;font-weight:700;color:var(--c-text);list-style:none;cursor:pointer}
+.fbar__sortbox{position:relative;margin-left:auto}
+.fbar__sort-trigger{height:36px;display:inline-flex;align-items:center;gap:8px;padding:0 12px 0 14px;border:1px solid var(--c-border);border-radius:999px;background:#fff;font-size:13px;font-weight:700;color:var(--c-text);list-style:none;cursor:pointer}
 .fbar__sort-trigger::-webkit-details-marker{display:none}
 .fbar__sortbox[open] .fbar__sort-trigger,.fbar__sort-trigger:hover{background:var(--c-bg-elev)}
+.fbar__sort-trigger span[aria-hidden="true"],.fbar__filter span[aria-hidden="true"]{width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;line-height:1}
 .fbar__sort-panel{position:absolute;left:0;top:calc(100% + 8px);z-index:30;width:190px;padding:8px;background:#fff;border:1px solid var(--c-border);border-radius:16px;box-shadow:var(--sh-lg);display:flex;flex-direction:column;gap:4px}
 .fbar__sort-option{width:100%;text-align:left;padding:9px 10px;border-radius:10px;font-size:14px;font-weight:650;color:var(--c-text-muted)}
 .fbar__sort-option:hover,.fbar__sort-option.is-active{background:var(--c-bg-elev);color:var(--c-text)}
@@ -396,9 +397,9 @@ code, pre { font-family: var(--f-mono); font-size: 0.92em; }
 .fbar__sort-item:hover{color:var(--c-text)}
 .fbar__sort-item.is-active{color:var(--c-text);font-weight:600}
 .fbar__sort-item.is-active::after{content:'';position:absolute;left:0;right:0;bottom:-17px;height:2px;background:var(--c-text)}
-.fbar__filterbox{position:relative;margin-left:auto}
+.fbar__filterbox{position:relative}
 .fbar__filterbox[open] .fbar__filter{background:var(--c-bg-elev)}
-.fbar__filter{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;font-size:13px;font-weight:700;color:var(--c-text);background:#fff;border:1px solid var(--c-border);border-radius:999px;list-style:none}
+.fbar__filter{height:36px;display:inline-flex;align-items:center;gap:8px;padding:0 12px 0 14px;font-size:13px;font-weight:700;color:var(--c-text);background:#fff;border:1px solid var(--c-border);border-radius:999px;list-style:none}
 .fbar__filter::-webkit-details-marker{display:none}
 .fbar__filter:hover{background:var(--c-bg-elev)}
 .fbar__filter-count{min-width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;background:var(--c-text);color:#fff;border-radius:999px;font-size:11px;font-weight:800}
@@ -411,7 +412,7 @@ code, pre { font-family: var(--f-mono); font-size: 0.92em; }
 @media (max-width:720px){
   .fbar{flex-wrap:wrap;gap:12px}
   .fbar__platform{max-width:100%;overflow-x:auto}
-  .fbar__sortbox{order:3;flex:0 0 auto}
+  .fbar__sortbox{order:3;margin-left:0;flex:0 0 auto}
   .fbar__sort-panel{left:0}
   .fbar__filterbox{margin-left:0}
   .fbar__filter-panel{right:auto;left:0;width:min(260px,calc(100vw - 40px))}

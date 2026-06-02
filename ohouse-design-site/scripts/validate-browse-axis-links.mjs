@@ -14,6 +14,10 @@ for (const page of pages) {
     throw new Error(`${page}: missing clickable title dropdown`);
   }
 
+  if (!html.includes('data-close-on-outside')) {
+    throw new Error(`${page}: title dropdown does not opt into outside-click close`);
+  }
+
   if (!html.includes('class="browse-title-link"')) {
     throw new Error(`${page}: missing clickable title link`);
   }

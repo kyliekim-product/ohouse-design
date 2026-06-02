@@ -5,6 +5,7 @@ const html = readFileSync(resolve(process.cwd(), 'dist/index.html'), 'utf8');
 
 const requiredSnippets = [
   'class="fbar__sortbox"',
+  'data-close-on-outside',
   'class="fbar__sort-panel"',
   'class="fbar__sort-option is-active"',
   'class="fbar__filterbox"',
@@ -14,6 +15,7 @@ const requiredSnippets = [
   'type="checkbox"',
   'data-filter-key="source"',
   'data-filter-key="status"',
+  'details[data-close-on-outside][open]',
 ];
 
 const forbiddenSnippets = [

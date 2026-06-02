@@ -23,7 +23,7 @@ const activeSort = sorts.find((s) => s.value === sort) || sorts[0];
     ))}
   </div>
 
-  <details class="fbar__sortbox">
+  <details class="fbar__sortbox" data-close-on-outside>
     <summary class="fbar__sort-trigger">
       <span data-sort-label>{activeSort.label}</span>
       <span aria-hidden="true">⌄</span>
@@ -37,7 +37,7 @@ const activeSort = sorts.find((s) => s.value === sort) || sorts[0];
     </div>
   </details>
 
-  <details class="fbar__filterbox">
+  <details class="fbar__filterbox" data-close-on-outside>
     <summary class="fbar__filter">
       <span>Filter</span>
       <span aria-hidden="true">⌄</span>
