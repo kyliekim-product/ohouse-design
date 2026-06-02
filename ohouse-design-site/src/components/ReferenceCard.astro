@@ -5,6 +5,9 @@ const osLabel = String(item.os || '')
   .replace('ios', 'iOS')
   .replace('android', 'Android')
   .replace('web', 'Web');
+const sourceLabel = String(item.source || '').toUpperCase();
+const identity = [item.domain, item.pattern].filter(Boolean).join(' · ');
+const taxonomy = [item.domain, item.pattern, item.element, item.flow].filter(Boolean);
 ---
 
 <a
@@ -16,22 +19,32 @@ const osLabel = String(item.os || '')
   data-status={item.status || ''}
   data-updated={item.updated || ''}
 >
-  <div class="ref-card__preview">
-    {item.thumb ? <img src={item.thumb} alt={item.label} /> : <span>{item.label.slice(0, 1)}</span>}
-  </div>
-  <div class="ref-card__body">
-    <div class="ref-card__meta">
-      {osLabel && <span>{osLabel}</span>}
-      {item.source && <span>{item.source}</span>}
-      {item.status && <span>{item.status}</span>}
+  <div class="ref-card__canvas">
+    {sourceLabel && <span class="ref-card__pill">{sourceLabel}</span>}
+    <div class="ref-card__phone">
+      {item.thumb ? (
+        <img class="ref-card__shot" src={item.thumb} alt={item.label} loading="lazy" />
+      ) : (
+        <div class="ref-card__placeholder" aria-hidden="true">
+          <span>{item.domain?.slice(0, 1) || item.label.slice(0, 1)}</span>
+        </div>
+      )}
     </div>
-    <h3>{item.label}</h3>
-    <p>{item.summary}</p>
-    <div class="ref-card__chips">
-      {item.domain && <span>{item.domain}</span>}
-      {item.pattern && <span>{item.pattern}</span>}
-      {item.element && <span>{item.element}</span>}
-      {item.flow && <span>{item.flow}</span>}
+  </div>
+
+  <div class="ref-card__body">
+    <div class="ref-card__identity">
+      <div>
+        <h3>{item.label}</h3>
+        {identity && <p>{identity}</p>}
+      </div>
+      <div class="ref-card__state">
+        {osLabel && <span>{osLabel}</span>}
+        {item.status && <span>{item.status}</span>}
+      </div>
+    </div>
+    <div class="ref-card__taxonomy">
+      {taxonomy.map((value) => <span>{value}</span>)}
     </div>
   </div>
 </a>
