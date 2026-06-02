@@ -33,10 +33,10 @@ const htmlCount = screensTyped.filter((s) => s.type === 'html').length;
 const figmaCount = screensTyped.length - htmlCount;
 
 const tabs = [
-  { id: 'screens', label: 'Screens', count: screens.length },
-  { id: 'components', label: 'Components', count: usedComponents.length || ownedComponents.length },
   { id: 'policies', label: 'Policies', count: policies.length },
   { id: 'experiments', label: 'Experiments', count: experiments.length },
+  { id: 'components', label: 'Components', count: usedComponents.length || ownedComponents.length },
+  { id: 'screens', label: 'Screens', count: screens.length },
 ];
 const typeLabel = (t) => (t === 'figma' ? 'Figma' : 'HTML');
 ---
@@ -83,7 +83,7 @@ const typeLabel = (t) => (t === 'figma' ? 'Figma' : 'HTML');
     <div class="wrap dtabs__inner">
       {tabs.map((t) => (
         <a
-          class={`dtab${t.id === 'screens' ? ' is-active' : ''}`}
+          class={`dtab${t.id === 'policies' ? ' is-active' : ''}`}
           href={`${base}d/${slug}?tab=${t.id}`}
           data-tab={t.id}
         >
@@ -97,7 +97,7 @@ const typeLabel = (t) => (t === 'figma' ? 'Figma' : 'HTML');
   <section class="dbody">
     <div class="wrap">
       <!-- Screens -->
-      <div class="dpanel" data-panel="screens">
+      <div class="dpanel" data-panel="screens" hidden>
         <div class="sechead">
           <div class="sechead__title">Screens</div>
           <div class="sechead__count">{screens.length} screens{domain.updated ? ` · ${relTime(domain.updated)} 업데이트` : ''}</div>
@@ -206,7 +206,7 @@ const typeLabel = (t) => (t === 'figma' ? 'Figma' : 'HTML');
       </div>
 
       <!-- Policies -->
-      <div class="dpanel" data-panel="policies" hidden>
+      <div class="dpanel" data-panel="policies">
         <div class="sechead">
           <div class="sechead__title">Policies</div>
           <div class="sechead__count">{policies.length} policies</div>
@@ -287,14 +287,14 @@ const typeLabel = (t) => (t === 'figma' ? 'Figma' : 'HTML');
       panels.forEach((p) => { p.hidden = p.dataset.panel !== id; });
     }
 
-    const initial = new URLSearchParams(window.location.search).get('tab') || 'screens';
-    if (initial !== 'screens') activate(initial);
+    const initial = new URLSearchParams(window.location.search).get('tab') || 'policies';
+    if (initial !== 'policies') activate(initial);
 
     tabsNav.addEventListener('click', (e) => {
       const link = (e.target as HTMLElement).closest('.dtab') as HTMLElement | null;
       if (!link) return;
       e.preventDefault();
-      const id = link.dataset.tab || 'screens';
+      const id = link.dataset.tab || 'policies';
       activate(id);
       const url = new URL(window.location.href);
       url.searchParams.set('tab', id);

@@ -22,6 +22,7 @@ const identityBadges = [item.domain, item.pattern].filter(Boolean);
   data-source={item.source || ''}
   data-status={item.status || ''}
   data-updated={item.updated || ''}
+  data-domain-slug={item.domainSlug || ''}
 >
   <div class="ref-card__canvas">
     {displayOsLabels.length > 0 && (

@@ -590,20 +590,6 @@ export function getAxisSidebarItems(axis) {
 
 export function getAllBrowseCards(axis = 'screens') {
   const domains = getAllDomains();
-  if (axis === 'categories') {
-    return domains.map((domain, index) => ({
-      id: domain.slug,
-      label: domain.label,
-      summary: domain.description || `${domain.label} domain references`,
-      href: withBase(`d/${domain.slug}`),
-      domain: domain.label,
-      os: fallbackOs(index),
-      source: fallbackSource(index),
-      status: domain.counts.screens > 0 ? 'verified' : 'draft',
-      count: domain.counts.screens,
-    }));
-  }
-
   const cards = [];
   domains.forEach((domain) => {
     getDomainScreens(domain.slug).forEach((screen) => {
@@ -618,6 +604,7 @@ export function getAllBrowseCards(axis = 'screens') {
         summary: screen.summary || `${domain.label} · ${pattern.label}`,
         href: withBase(`d/${domain.slug}/s/${screen.slug}`),
         domain: domain.label,
+        domainSlug: domain.slug,
         os: fallbackOs(index),
         source: screen.prototype ? 'prototype' : fallbackSource(index),
         status: browseCardStatus(screen, markers),

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {
+  getAllBrowseCards,
   getAxisSidebarItems,
   getDomainComponentOverview,
   getDomainPolicies,
@@ -19,6 +20,16 @@ function testCategoriesSidebarUsesDomainGroups() {
     discovery.items.map((item) => item.slug),
     ['home', 'house-tour', 'shopping-home', 'category'],
   );
+}
+
+function testCategoryBrowseCardsUseDomainScreens() {
+  const items = getAllBrowseCards('categories');
+  const houseTourContentTab = items.find((item) => item.id === 'house-tour-content-tab');
+
+  assert.ok(houseTourContentTab, 'categories browse cards should include domain screen cards');
+  assert.equal(houseTourContentTab.domainSlug, 'house-tour');
+  assert.equal(houseTourContentTab.href, '/d/house-tour/s/content-tab');
+  assert.notEqual(houseTourContentTab.href, '/d/house-tour');
 }
 
 function testDomainPoliciesReadMappedTrackMarkdown() {
@@ -82,6 +93,7 @@ function testDomainComponentOverviewSeparatesOwnedAndUsed() {
 }
 
 testCategoriesSidebarUsesDomainGroups();
+testCategoryBrowseCardsUseDomainScreens();
 testDomainPoliciesReadMappedTrackMarkdown();
 testScreenComponentUsageReadsReadmeMarkers();
 testDomainComponentOverviewSeparatesOwnedAndUsed();

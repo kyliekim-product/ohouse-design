@@ -1,8 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import FilterBar from '../components/FilterBar.astro';
+import AxisSidebar from '../components/AxisSidebar.astro';
 import ReferenceCard from '../components/ReferenceCard.astro';
-import { DISCOVERY_AXES, getAllBrowseCards, getOverlayGroups } from '../lib/repo.js';
+import Icon from '../components/Icon.astro';
+import { DISCOVERY_AXES, getAllBrowseCards, getAllDomains, getAxisSidebarItems, getOverlayGroups } from '../lib/repo.js';
 
 const base = import.meta.env.BASE_URL;
 
@@ -17,18 +19,43 @@ const axes = DISCOVERY_AXES.map((axis) => {
   };
 });
 
-const recommended = getAllBrowseCards('screens')
-  .slice()
-  .sort((a, b) => {
-    const aTime = a.updated ? new Date(a.updated).getTime() : 0;
-    const bTime = b.updated ? new Date(b.updated).getTime() : 0;
-    return bTime - aTime;
-  })
-  .slice(0, 12);
+const axisCopy = {
+  categories: {
+    eyebrow: 'Domain browsing',
+    summary: '오늘의집 도메인 기준으로 화면, 정책, 실험, 컴포넌트 자산을 탐색합니다.',
+  },
+  screens: {
+    eyebrow: 'UX pattern browsing',
+    summary: '도메인을 넘어서 유사한 화면 패턴을 찾고 비교합니다.',
+  },
+  'ui-elements': {
+    eyebrow: 'Component browsing',
+    summary: 'ODS 컴포넌트와 제품 전용 UI 요소의 활용처를 탐색합니다.',
+  },
+  flows: {
+    eyebrow: 'Flow browsing',
+    summary: '여러 화면으로 이어지는 사용자 여정과 플로우를 탐색합니다.',
+  },
+};
+
+const browseAxes = axes.map((axis) => ({
+  ...axis,
+  ...axisCopy[axis.id],
+  sidebarItems: getAxisSidebarItems(axis.id),
+  items: getAllBrowseCards(axis.id),
+}));
+
+const domainsBySlug = new Map(getAllDomains().map((domain) => [domain.slug, domain]));
+const categoryDomainEntries = getAxisSidebarItems('categories')[0]?.groups
+  ?.flatMap((group) => group.items.map((item) => ({
+    ...item,
+    group: group.label,
+    counts: domainsBySlug.get(item.slug)?.counts || { policies: 0, experiments: 0, components: 0 },
+  }))) || [];
 ---
 
 <Layout title="Ohouse Design">
-  <main class="wrap home home-v2" data-home-filter-root>
+  <main class="wrap home home-v2" data-home-browse-root>
     <section class="home-hero">
       <div>
         <span class="home-hero__eyebrow">Ohouse Design Pattern</span>
@@ -36,56 +63,127 @@ const recommended = getAllBrowseCards('screens')
       </div>
     </section>
 
-    <section class="axis-grid" aria-label="Browse axes">
-      {axes.map((axis) => (
-        <a class="axis-card" href={axis.href}>
-          <span class="axis-card__label">{axis.label}</span>
-          <strong>{axis.summary}</strong>
-          <div class="axis-card__links">
-            {axis.featuredLabels.map((item) => <span>{item}</span>)}
+    {browseAxes.map((axis) => (
+      <section
+        id={`home-axis-${axis.id}`}
+        class="home-axis-panel"
+        data-home-axis-panel={axis.id}
+        hidden={axis.id !== 'categories'}
+      >
+        <header class="browse__head home-browse__head">
+          <span class="browse__eyebrow">{axis.eyebrow}</span>
+          <div class="browse__title-row">
+            <details class="browse-title-menu" data-close-on-outside>
+              <summary class="browse-title-link">
+                <span>{axis.label}</span>
+                <span class="browse-title-link__arrow" aria-hidden="true">
+                  <Icon name="arrow-up-right" size={26} />
+                </span>
+              </summary>
+              <div class="browse-title-menu__panel">
+                {browseAxes
+                  .filter((targetAxis) => targetAxis.id !== axis.id)
+                  .map((targetAxis) => (
+                    <button
+                      type="button"
+                      class="browse-title-menu__item"
+                      data-home-axis-option={targetAxis.id}
+                      aria-controls={`home-axis-${targetAxis.id}`}
+                      aria-pressed="false"
+                    >
+                      <span>
+                        <strong>{targetAxis.label}</strong>
+                        <small>{targetAxis.summary}</small>
+                      </span>
+                      <Icon name="arrow-up-right" size={20} />
+                    </button>
+                  ))}
+              </div>
+            </details>
           </div>
-        </a>
-      ))}
-    </section>
-
-    <FilterBar sort="latest" />
-
-    <section class="home-section">
-      <div class="sechead">
-        <div class="sechead__title">Recently updated references</div>
-        <div class="sechead__count" data-home-results-count>{recommended.length} items</div>
-      </div>
-      <div class="ref-grid" data-home-results>
-        {recommended.map((item) => <ReferenceCard item={item} />)}
-      </div>
-    </section>
+          <p>{axis.summary}</p>
+        </header>
+        <FilterBar sort="latest" />
+        <div class="browse__layout home-browse__layout">
+          <div data-home-category-sidebar={axis.id === 'categories' ? 'true' : undefined}>
+            <AxisSidebar title={axis.label} items={axis.sidebarItems} active="all" />
+          </div>
+          <section class="browse__results" aria-label={`${axis.label} results`}>
+            <div class="sechead">
+              <div class="sechead__title" data-home-results-title={axis.id}>{axis.label}</div>
+              <div class="sechead__count" data-home-results-count>{axis.items.length} items</div>
+            </div>
+            {axis.id === 'categories' && (
+              <div class="domain-entry-stack" data-domain-entry-stack>
+                {categoryDomainEntries.map((domain) => (
+                  <a
+                    class="domain-entry-banner"
+                    href={domain.href}
+                    data-domain-entry-banner={domain.slug}
+                    data-domain-entry-href={domain.href}
+                    hidden
+                  >
+                    <span class="domain-entry-banner__text">
+                      <strong>{domain.label}의 정책 · 실험 · 패턴</strong>
+                    </span>
+                    <span class="domain-entry-banner__meta">
+                      <span class="domain-entry-badges" data-domain-entry-badges>
+                        <span class="domain-entry-badge">Policies {domain.counts.policies}</span>
+                        <span class="domain-entry-badge">Experiments {domain.counts.experiments}</span>
+                        <span class="domain-entry-badge">Components {domain.counts.components}</span>
+                      </span>
+                      <Icon name="arrow-up-right" size={20} />
+                    </span>
+                  </a>
+                ))}
+              </div>
+            )}
+            {axis.items.length === 0 ? (
+              <div class="empty">
+                <div class="empty__title">표시할 항목이 없습니다</div>
+                <div class="empty__hint">콘텐츠 메타데이터가 추가되면 여기에 표시됩니다.</div>
+              </div>
+            ) : (
+              <div class="ref-grid" data-home-results>
+                {axis.items.map((item) => <ReferenceCard item={item} />)}
+              </div>
+            )}
+          </section>
+        </div>
+      </section>
+    ))}
   </main>
 </Layout>
 
 <script>
   function initHomeIA() {
-    const root = document.querySelector('[data-home-filter-root]') as HTMLElement | null;
+    const root = document.querySelector('[data-home-browse-root]') as HTMLElement | null;
     if (!root || root.dataset.bound) return;
     root.dataset.bound = '1';
 
-    const results = root.querySelector('[data-home-results]') as HTMLElement | null;
-    const count = root.querySelector('[data-home-results-count]') as HTMLElement | null;
-    if (!results) return;
-
-    const cards = Array.from(results.querySelectorAll<HTMLElement>('[data-reference-card]')).map((card, index) => ({
-      card,
-      index,
-      updated: Date.parse(card.dataset.updated || '') || 0,
-    }));
+    const axisButtons = Array.from(root.querySelectorAll<HTMLElement>('[data-home-axis-option]'));
+    const panels = Array.from(root.querySelectorAll<HTMLElement>('[data-home-axis-panel]')).map((panel) => {
+      const results = panel.querySelector('[data-home-results]') as HTMLElement | null;
+      const count = panel.querySelector('[data-home-results-count]') as HTMLElement | null;
+      const cards = Array.from(panel.querySelectorAll<HTMLElement>('[data-reference-card]')).map((card, index) => ({
+        card,
+        index,
+        updated: Date.parse(card.dataset.updated || '') || 0,
+      }));
+      return { panel, axis: panel.dataset.homeAxisPanel || 'categories', results, count, cards };
+    });
 
     const state = {
+      axis: new URLSearchParams(window.location.search).get('axis') || 'categories',
+      categoryDomain: new URLSearchParams(window.location.search).get('domain') || 'all',
       os: 'all',
       source: [] as string[],
       status: [] as string[],
       sort: 'latest',
     };
 
-    function matches(card: HTMLElement) {
+    function matches(card: HTMLElement, axis: string) {
+      if (axis === 'categories' && state.categoryDomain !== 'all' && card.dataset.domainSlug !== state.categoryDomain) return false;
       if (state.os !== 'all' && card.dataset.os !== state.os) return false;
       if (state.source.length > 0 && !state.source.includes(card.dataset.source || '')) return false;
       if (state.status.length > 0 && !state.status.includes(card.dataset.status || '')) return false;
@@ -97,19 +195,61 @@ const recommended = getAllBrowseCards('screens')
       return a.index - b.index;
     }
 
-    function render() {
-      const visible = cards.filter(({ card }) => matches(card)).sort(compare);
-      visible.forEach(({ card }) => {
-        card.hidden = false;
-        results.appendChild(card);
-      });
-      cards
-        .filter(({ card }) => !matches(card))
-        .forEach(({ card }) => {
-          card.hidden = true;
+    function categoryDomainLabel() {
+      if (state.categoryDomain === 'all') return 'Categories';
+      const activeLink = Array.from(root.querySelectorAll<HTMLElement>('[data-home-category-sidebar] .axis-side__item'))
+        .find((item) => {
+          const href = item.getAttribute('href') || '';
+          return href.match(/\/d\/([^/?#]+)/)?.[1] === state.categoryDomain;
         });
+      return activeLink?.querySelector('span:first-child')?.textContent?.trim() || 'Categories';
+    }
 
-      if (count) count.textContent = `${visible.length} items`;
+    function render() {
+      let activePanel = panels.find(({ axis }) => axis === state.axis) || panels[0];
+      if (!activePanel) return;
+
+      axisButtons.forEach((button) => {
+        const active = button.dataset.homeAxisOption === activePanel.axis;
+        button.classList.toggle('is-active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+
+      panels.forEach(({ panel }) => {
+        panel.hidden = panel !== activePanel.panel;
+      });
+
+      root.querySelectorAll<HTMLElement>('[data-home-results-title]').forEach((title) => {
+        const axis = title.dataset.homeResultsTitle || '';
+        title.textContent = axis === 'categories' ? categoryDomainLabel() : title.dataset.homeResultsTitle === 'ui-elements' ? 'UI Elements' : axis.charAt(0).toUpperCase() + axis.slice(1);
+      });
+
+      panels.forEach(({ results, count, cards }) => {
+        if (!results) return;
+        const panelAxis = (results.closest('[data-home-axis-panel]') as HTMLElement | null)?.dataset.homeAxisPanel || '';
+        const visible = cards.filter(({ card }) => matches(card, panelAxis)).sort(compare);
+        visible.forEach(({ card }) => {
+          card.hidden = false;
+          results.appendChild(card);
+        });
+        cards
+          .filter(({ card }) => !matches(card, panelAxis))
+          .forEach(({ card }) => {
+            card.hidden = true;
+          });
+
+        if (count) count.textContent = `${visible.length} items`;
+      });
+
+      root.querySelectorAll<HTMLElement>('[data-home-category-sidebar] .axis-side__item').forEach((item) => {
+        const href = item.getAttribute('href') || '';
+        const slug = href.match(/\/d\/([^/?#]+)/)?.[1] || 'all';
+        item.classList.toggle('is-active', activePanel.axis === 'categories' && slug === state.categoryDomain);
+      });
+
+      root.querySelectorAll<HTMLElement>('[data-domain-entry-banner]').forEach((banner) => {
+        banner.hidden = activePanel.axis !== 'categories' || state.categoryDomain === 'all' || banner.dataset.domainEntryBanner !== state.categoryDomain;
+      });
     }
 
     function updateFilterCount() {
@@ -128,15 +268,17 @@ const recommended = getAllBrowseCards('screens')
       if (!currentBadge) trigger.insertBefore(badge, trigger.lastElementChild);
     }
 
-    root.querySelector('.fbar__platform')?.addEventListener('click', (event) => {
-      const button = (event.target as HTMLElement).closest<HTMLElement>('[data-filter-key="os"]');
-      if (!button) return;
+    root.querySelectorAll('.fbar__platform').forEach((platform) => {
+      platform.addEventListener('click', (event) => {
+        const button = (event.target as HTMLElement).closest<HTMLElement>('[data-filter-key="os"]');
+        if (!button) return;
 
-      state.os = button.dataset.filterValue || 'all';
-      root.querySelectorAll<HTMLElement>('[data-filter-key="os"]').forEach((item) => {
-        item.classList.toggle('is-active', item === button);
+        state.os = button.dataset.filterValue || 'all';
+        root.querySelectorAll<HTMLElement>('[data-filter-key="os"]').forEach((item) => {
+          item.classList.toggle('is-active', item.dataset.filterValue === state.os);
+        });
+        render();
       });
-      render();
     });
 
     root.querySelectorAll<HTMLInputElement>('[data-filter-key="source"], [data-filter-key="status"]').forEach((checkbox) => {
@@ -152,17 +294,58 @@ const recommended = getAllBrowseCards('screens')
       });
     });
 
-    root.querySelector('.fbar__sortbox')?.addEventListener('click', (event) => {
-      const button = (event.target as HTMLElement).closest<HTMLElement>('.fbar__sort-option');
+    root.querySelectorAll('.fbar__sortbox').forEach((sortbox) => {
+      sortbox.addEventListener('click', (event) => {
+        const button = (event.target as HTMLElement).closest<HTMLElement>('.fbar__sort-option');
+        if (!button) return;
+
+        state.sort = button.dataset.sort || 'latest';
+        root.querySelectorAll<HTMLElement>('.fbar__sort-option').forEach((item) => {
+          item.classList.toggle('is-active', item.dataset.sort === state.sort);
+        });
+        root.querySelectorAll<HTMLElement>('[data-sort-label]').forEach((label) => {
+          label.textContent = button.textContent?.trim() || 'Latest';
+        });
+        (sortbox as HTMLDetailsElement).removeAttribute('open');
+        render();
+      });
+    });
+
+    root.addEventListener('click', (event) => {
+      const categoryLink = (event.target as HTMLElement).closest<HTMLElement>('[data-home-category-sidebar] .axis-side__item');
+      if (categoryLink) {
+        event.preventDefault();
+        const href = categoryLink.getAttribute('href') || '';
+        state.axis = 'categories';
+        state.categoryDomain = href.match(/\/d\/([^/?#]+)/)?.[1] || 'all';
+        const url = new URL(window.location.href);
+        url.searchParams.delete('axis');
+        if (state.categoryDomain === 'all') {
+          url.searchParams.delete('domain');
+        } else {
+          url.searchParams.set('domain', state.categoryDomain);
+        }
+        window.history.replaceState({}, '', url);
+        render();
+        return;
+      }
+
+      const button = (event.target as HTMLElement).closest<HTMLElement>('[data-home-axis-option]');
       if (!button) return;
 
-      state.sort = button.dataset.sort || 'latest';
-      root.querySelectorAll<HTMLElement>('.fbar__sort-option').forEach((item) => {
-        item.classList.toggle('is-active', item === button);
+      state.axis = button.dataset.homeAxisOption || 'categories';
+      if (state.axis !== 'categories') state.categoryDomain = 'all';
+      const url = new URL(window.location.href);
+      if (state.axis === 'categories') {
+        url.searchParams.delete('axis');
+      } else {
+        url.searchParams.set('axis', state.axis);
+        url.searchParams.delete('domain');
+      }
+      window.history.replaceState({}, '', url);
+      root.querySelectorAll<HTMLDetailsElement>('.browse-title-menu[open]').forEach((details) => {
+        details.removeAttribute('open');
       });
-      const label = root.querySelector('[data-sort-label]');
-      if (label) label.textContent = button.textContent?.trim() || 'Latest';
-      (root.querySelector('.fbar__sortbox') as HTMLDetailsElement | null)?.removeAttribute('open');
       render();
     });
 
