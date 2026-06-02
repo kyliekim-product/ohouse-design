@@ -1,0 +1,8 @@
+{
+  "name": "ohouse-design-plugin",
+  "version": "0.0.1",
+  "description": "오늘의집 Product Design 도메인용 Claude Code 플러그인/스킬 모음 (골격)",
+  "author": {
+    "name": "Ohouse Product Design"
+  }
+}
