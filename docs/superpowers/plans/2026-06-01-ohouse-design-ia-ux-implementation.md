@@ -775,7 +775,6 @@ Use this body inside `<Layout>`:
         <span class="home-hero__eyebrow">Ohouse Design Reference</span>
         <h1>Find screens, elements, flows, and domains in one place.</h1>
       </div>
-      <p>도메인 조직도가 아니라 실제 디자인 탐색 방식에 맞춰 화면 패턴, UI 요소, 플로우, 카테고리를 함께 탐색합니다.</p>
     </section>
 
     <section class="axis-grid" aria-label="Browse axes">
