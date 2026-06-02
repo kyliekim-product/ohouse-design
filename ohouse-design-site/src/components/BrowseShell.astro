@@ -3,8 +3,16 @@ import Layout from '../layouts/Layout.astro';
 import FilterBar from './FilterBar.astro';
 import AxisSidebar from './AxisSidebar.astro';
 import ReferenceCard from './ReferenceCard.astro';
+import { DISCOVERY_AXES } from '../lib/repo.js';
 
-const { title, eyebrow, summary, sidebarItems, items, active = 'all' } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const { title, eyebrow, summary, sidebarItems, items, active = 'all', activeAxis = '' } = Astro.props;
+const axisLinks = DISCOVERY_AXES
+  .filter((axis) => axis.id !== activeAxis)
+  .map((axis) => ({
+    ...axis,
+    href: `${base}${axis.href}`,
+  }));
 ---
 
 <Layout title={title}>
@@ -12,7 +20,25 @@ const { title, eyebrow, summary, sidebarItems, items, active = 'all' } = Astro.p
     <div class="wrap">
       <header class="browse__head">
         <span class="browse__eyebrow">{eyebrow}</span>
-        <h1>{title}</h1>
+        <div class="browse__title-row">
+          <details class="browse-title-menu">
+            <summary class="browse-title-link">
+              <span>{title}</span>
+              <span class="browse-title-link__arrow" aria-hidden="true">↗</span>
+            </summary>
+            <div class="browse-title-menu__panel">
+              {axisLinks.map((axis) => (
+                <a class="browse-title-menu__item" href={axis.href}>
+                  <span>
+                    <strong>{axis.label}</strong>
+                    <small>{axis.summary}</small>
+                  </span>
+                  <span aria-hidden="true">↗</span>
+                </a>
+              ))}
+            </div>
+          </details>
+        </div>
         <p>{summary}</p>
       </header>
       <FilterBar sort="latest" />

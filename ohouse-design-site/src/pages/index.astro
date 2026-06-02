@@ -81,15 +81,15 @@ const recommended = getAllBrowseCards('screens')
 
     const state = {
       os: 'all',
-      source: 'all',
-      status: 'all',
+      source: [] as string[],
+      status: [] as string[],
       sort: 'latest',
     };
 
     function matches(card: HTMLElement) {
       if (state.os !== 'all' && card.dataset.os !== state.os) return false;
-      if (state.source !== 'all' && card.dataset.source !== state.source) return false;
-      if (state.status !== 'all' && card.dataset.status !== state.status) return false;
+      if (state.source.length > 0 && !state.source.includes(card.dataset.source || '')) return false;
+      if (state.status.length > 0 && !state.status.includes(card.dataset.status || '')) return false;
       return true;
     }
 
@@ -113,6 +113,14 @@ const recommended = getAllBrowseCards('screens')
       if (count) count.textContent = `${visible.length} items`;
     }
 
+    function updateFilterCount() {
+      const selectedCount = state.source.length + state.status.length;
+      const badge = root.querySelector('[data-filter-count]') as HTMLElement | null;
+      if (!badge) return;
+      badge.hidden = selectedCount === 0;
+      badge.textContent = String(selectedCount);
+    }
+
     root.querySelector('.fbar__platform')?.addEventListener('click', (event) => {
       const button = (event.target as HTMLElement).closest<HTMLElement>('[data-filter-key="os"]');
       if (!button) return;
@@ -124,12 +132,15 @@ const recommended = getAllBrowseCards('screens')
       render();
     });
 
-    root.querySelectorAll<HTMLSelectElement>('.fbar__select').forEach((select) => {
-      select.addEventListener('change', () => {
-        const key = select.dataset.filterKey;
-        if (key === 'source' || key === 'status') {
-          state[key] = select.value;
-        }
+    root.querySelectorAll<HTMLInputElement>('[data-filter-key="source"], [data-filter-key="status"]').forEach((checkbox) => {
+      checkbox.addEventListener('change', () => {
+        const key = checkbox.dataset.filterKey;
+        if (key !== 'source' && key !== 'status') return;
+
+        state[key] = Array.from(root.querySelectorAll<HTMLInputElement>(`input[data-filter-key="${key}"]:checked`))
+          .map((input) => input.dataset.filterValue || '')
+          .filter(Boolean);
+        updateFilterCount();
         render();
       });
     });
@@ -145,6 +156,7 @@ const recommended = getAllBrowseCards('screens')
       render();
     });
 
+    updateFilterCount();
     render();
   }
 

@@ -4,8 +4,8 @@ import { OS_OPTIONS, SOURCE_OPTIONS, STATUS_OPTIONS } from '../lib/repo.js';
 const { sort = 'latest' } = Astro.props;
 
 const osOptions = [{ value: 'all', label: 'All OS' }, ...OS_OPTIONS];
-const sourceOptions = [{ value: 'all', label: 'All Sources' }, ...SOURCE_OPTIONS];
-const statusOptions = [{ value: 'all', label: 'All Status' }, ...STATUS_OPTIONS];
+const sourceOptions = SOURCE_OPTIONS;
+const statusOptions = STATUS_OPTIONS;
 
 const sorts = [
   { value: 'latest', label: 'Latest' },
@@ -24,15 +24,6 @@ const sorts = [
     ))}
   </div>
 
-  <div class="fbar__selects">
-    <select class="fbar__select" data-filter-key="source" aria-label="Source filter">
-      {sourceOptions.map((t) => <option value={t.value}>{t.label}</option>)}
-    </select>
-    <select class="fbar__select" data-filter-key="status" aria-label="Status filter">
-      {statusOptions.map((t) => <option value={t.value}>{t.label}</option>)}
-    </select>
-  </div>
-
   <div class="fbar__sort">
     {sorts.map((s) => (
       <button type="button" class={`fbar__sort-item${s.value === sort ? ' is-active' : ''}`} data-sort={s.value}>
@@ -40,4 +31,32 @@ const sorts = [
       </button>
     ))}
   </div>
+
+  <details class="fbar__filterbox">
+    <summary class="fbar__filter">
+      <span>Filter</span>
+      <span class="fbar__filter-count" data-filter-count hidden></span>
+      <span aria-hidden="true">⌄</span>
+    </summary>
+    <div class="fbar__filter-panel">
+      <fieldset class="fbar__filter-group">
+        <legend>Sources</legend>
+        {sourceOptions.map((t) => (
+          <label class="fbar__check">
+            <input type="checkbox" data-filter-key="source" data-filter-value={t.value} />
+            <span>{t.label}</span>
+          </label>
+        ))}
+      </fieldset>
+      <fieldset class="fbar__filter-group">
+        <legend>Status</legend>
+        {statusOptions.map((t) => (
+          <label class="fbar__check">
+            <input type="checkbox" data-filter-key="status" data-filter-value={t.value} />
+            <span>{t.label}</span>
+          </label>
+        ))}
+      </fieldset>
+    </div>
+  </details>
 </div>
