@@ -6,10 +6,37 @@ const { title, items = [], active = 'all' } = Astro.props;
   <div class="axis-side__title">{title}</div>
   <nav class="axis-side__nav" aria-label={`${title} navigation`}>
     {items.map((item) => (
-      <a class={`axis-side__item${item.slug === active ? ' is-active' : ''}`} href={item.href || `?item=${item.slug}`}>
-        <span>{item.label}</span>
-        <span>{item.count}</span>
-      </a>
+      item.groups ? (
+        <>
+          <a class={`axis-side__item${item.slug === active ? ' is-active' : ''}`} href={item.href || `?item=${item.slug}`}>
+            <span>{item.label}</span>
+            <span>{item.count}</span>
+          </a>
+          <div class="axis-side__groups">
+            {item.groups.map((group) => (
+              <section class="axis-side__group" aria-label={group.label}>
+                <div class="axis-side__group-title">{group.label}</div>
+                <div class="axis-side__group-items">
+                  {group.items.map((groupItem) => (
+                    <a
+                      class={`axis-side__item axis-side__item--nested${groupItem.slug === active ? ' is-active' : ''}`}
+                      href={groupItem.href || `?item=${groupItem.slug}`}
+                    >
+                      <span>{groupItem.label}</span>
+                      <span>{groupItem.count}</span>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        </>
+      ) : (
+        <a class={`axis-side__item${item.slug === active ? ' is-active' : ''}`} href={item.href || `?item=${item.slug}`}>
+          <span>{item.label}</span>
+          <span>{item.count}</span>
+        </a>
+      )
     ))}
   </nav>
 </aside>

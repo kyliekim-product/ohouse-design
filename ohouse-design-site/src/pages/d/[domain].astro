@@ -171,19 +171,30 @@ const typeLabel = (t) => (t === 'figma' ? 'Figma' : 'HTML');
         </div>
         {policies.length === 0 ? (
           <div class="empty">
-            <div class="empty__title">화면 정책이 아직 없습니다</div>
-            <div class="empty__hint">전사 원칙을 override 하는 화면 정책이 있으면 여기에.</div>
+            <div class="empty__title">연결된 track policy가 없습니다</div>
+            <div class="empty__hint">이 도메인에 매핑된 tracks 문서나 화면 정책이 있으면 여기에 표시됩니다.</div>
           </div>
         ) : (
-          <div class="lgrid">
+          <div class="policy-stack">
             {policies.map((p) => (
-              <div class="lcard">
-                <div class="lcard__head">
-                  <span class="lcard__title">{p.label}</span>
+              <article class="policy-doc">
+                <div class="policy-doc__meta">
+                  <span class="badge">{p.source === 'track' ? `track:${p.track}` : 'domain policy'}</span>
                   {p.overrides && <span class="badge badge--warn">overrides</span>}
+                  {p.owner && <span class="badge badge--accent">{p.owner}</span>}
+                  {p.sourcePath && <span class="policy-doc__path">{p.sourcePath}</span>}
                 </div>
-                {p.summary && <p class="lcard__summary">{p.summary}</p>}
-              </div>
+                {p.html ? (
+                  <div class="prose policy-doc__body" set:html={p.html} />
+                ) : (
+                  <>
+                    <div class="lcard__head">
+                      <span class="lcard__title">{p.label}</span>
+                    </div>
+                    {p.summary && <p class="lcard__summary">{p.summary}</p>}
+                  </>
+                )}
+              </article>
             ))}
           </div>
         )}

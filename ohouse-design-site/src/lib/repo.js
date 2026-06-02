@@ -24,6 +24,19 @@ function resolveRoot() {
 }
 const ROOT = resolveRoot();
 
+function resolveContextRoot() {
+  const candidates = [
+    process.env.OHOUSE_DESIGN_CONTEXT_ROOT,
+    resolve(import.meta.dirname, '../../../../ohouse-design-context'),
+    resolve(import.meta.dirname, '../../../ohouse-design-context'),
+  ].filter(Boolean);
+  for (const p of candidates) {
+    if (existsSync(join(p, 'tracks'))) return p;
+  }
+  return candidates[0];
+}
+const CONTEXT_ROOT = resolveContextRoot();
+
 function resolveSiteBase() {
   const baseFromArg = process.argv.find((arg) => arg.startsWith('--base='));
   const baseFromSplitArg = process.argv.includes('--base')
@@ -81,6 +94,23 @@ export const CATEGORIES = {
   'Life event': ['interior-life', 'package', 'membership', 'internet-rental', 'moving'],
   Core: ['search', 'content-detail', 'mypage', 'bookmark', 'all-page', 'room-3d'],
   Global: ['search-jp', 'home-jp', 'shopping-jp', 'content-jp', 'core-jp'],
+};
+
+const DOMAIN_TRACK_MAP = {
+  home: 'home',
+  'house-tour': 'contents',
+  'content-detail': 'contents',
+  'interior-life': 'contents',
+  shopping: 'commerce',
+  'shopping-home': 'commerce',
+  'product-detail': 'commerce',
+  cart: 'commerce',
+  package: 'commerce',
+  promotion: 'commerce',
+  'binary-home': 'commerce',
+  search: 'search',
+  mypage: 'mypage',
+  bookmark: 'mypage',
 };
 
 export const OS_OPTIONS = [
@@ -168,20 +198,30 @@ export function relTime(isoOrAi) {
 
 const lastModifiedCache = new Map();
 
-function lastModified(path) {
-  if (lastModifiedCache.has(path)) return lastModifiedCache.get(path);
+function lastModifiedFrom(root, path) {
+  const key = `${root}:${path}`;
+  if (lastModifiedCache.has(key)) return lastModifiedCache.get(key);
   try {
     const out = execSync(`git log -1 --format=%ai -- "${path}"`, {
-      cwd: ROOT,
+      cwd: root,
       encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
     }).trim();
     const value = out || null;
-    lastModifiedCache.set(path, value);
+    lastModifiedCache.set(key, value);
     return value;
   } catch {
-    lastModifiedCache.set(path, null);
+    lastModifiedCache.set(key, null);
     return null;
   }
+}
+
+function lastModified(path) {
+  return lastModifiedFrom(ROOT, path);
+}
+
+function lastModifiedContext(path) {
+  return lastModifiedFrom(CONTEXT_ROOT, path);
 }
 
 function parseMd(filePath) {
@@ -205,6 +245,50 @@ function listMd(dir) {
   if (!existsSync(dir)) return [];
   return readdirSync(dir)
     .filter((f) => f.endsWith('.md') && f !== 'INDEX.md' && f !== 'README.md');
+}
+
+function trackPolicyDoc(track, filePath, relPath, slug) {
+  const parsed = parseMd(filePath);
+  if (!parsed) return null;
+  const titleFromHeading = parsed.body.match(/^#\s+(.+)$/m)?.[1];
+  return {
+    slug,
+    label: parsed.title || titleFromHeading || slug,
+    summary: parsed['when-to-read'] || parsed.summary || null,
+    overrides: parsed.overrides || null,
+    owner: parsed.owner || null,
+    track,
+    source: 'track',
+    sourcePath: relPath,
+    html: marked.parse(parsed.body),
+    updated: lastModifiedContext(relPath),
+  };
+}
+
+function getTrackPoliciesForDomain(slug) {
+  const track = DOMAIN_TRACK_MAP[slug];
+  if (!track || !existsSync(join(CONTEXT_ROOT, 'tracks'))) return [];
+
+  const docs = [];
+  const trackIndexRel = `tracks/${track}.md`;
+  const trackIndex = trackPolicyDoc(
+    track,
+    join(CONTEXT_ROOT, trackIndexRel),
+    trackIndexRel,
+    track,
+  );
+  if (trackIndex) docs.push(trackIndex);
+
+  const policiesRel = `tracks/${track}/policies.md`;
+  const policiesDoc = trackPolicyDoc(
+    track,
+    join(CONTEXT_ROOT, policiesRel),
+    policiesRel,
+    `${track}-policies`,
+  );
+  if (policiesDoc) docs.push(policiesDoc);
+
+  return docs;
 }
 
 function fallbackOs(index) {
@@ -333,16 +417,20 @@ export function getDomainComponents(slug) {
 
 export function getDomainPolicies(slug) {
   const dir = join(ROOT, 'domains', slug, 'policies');
-  return listMd(dir).map((file) => {
+  const domainPolicies = listMd(dir).map((file) => {
     const parsed = parseMd(join(dir, file)) || {};
     return {
       slug: file.replace(/\.md$/, ''),
       label: parsed.title || file.replace(/\.md$/, ''),
       summary: parsed['when-to-read'] || parsed.summary || null,
       overrides: parsed.overrides || null,
+      source: 'domain',
+      sourcePath: `domains/${slug}/policies/${file}`,
+      html: parsed.body ? marked.parse(parsed.body) : null,
       updated: lastModified(`domains/${slug}/policies/${file}`),
     };
   });
+  return domainPolicies.concat(getTrackPoliciesForDomain(slug));
 }
 
 export function getDomainExperiments(slug) {
@@ -361,8 +449,21 @@ export function getDomainExperiments(slug) {
 
 export function getAxisSidebarItems(axis) {
   if (axis === 'categories') {
-    return [{ slug: 'all', label: 'All Categories', count: getAllDomains().length }]
-      .concat(getAllDomains().map((d) => ({ slug: d.slug, label: d.label, count: d.counts.screens })));
+    const domains = getAllDomains();
+    const domainBySlug = new Map(domains.map((domain) => [domain.slug, domain]));
+    const groups = Object.entries(CATEGORIES).map(([label, slugs]) => ({
+      label,
+      items: slugs.map((slug) => {
+        const domain = domainBySlug.get(slug);
+        return {
+          slug,
+          label: domain?.label || DOMAIN_LABELS[slug] || slug,
+          count: domain?.counts?.screens || 0,
+          href: withBase(`d/${slug}`),
+        };
+      }),
+    }));
+    return [{ slug: 'all', label: 'All Categories', count: domains.length, groups }];
   }
   if (axis === 'screens') {
     return [{ slug: 'all', label: 'All Screens', count: getAllBrowseCards('screens').length }]
