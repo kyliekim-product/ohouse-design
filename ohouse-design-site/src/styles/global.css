@@ -457,6 +457,22 @@ code, pre { font-family: var(--f-mono); font-size: 0.92em; }
 .grid[data-filter="html"]  .dcard[data-type="figma"]{display:none}
 .grid[data-filter="figma"] .dcard[data-type="html"]{display:none}
 
+.home-v2{padding-top:56px;padding-bottom:96px}
+.home-hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:40px;align-items:end;margin-bottom:28px}
+.home-hero__eyebrow{display:block;font-size:12px;font-weight:800;color:var(--c-text-soft);text-transform:uppercase;margin-bottom:10px}
+.home-hero h1{font-size:64px;line-height:.98;font-weight:850;letter-spacing:-0.04em;max-width:760px}
+.home-hero p{font-size:17px;color:var(--c-text-muted)}
+.axis-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:24px 0}
+.axis-card{min-height:176px;border:1px solid var(--c-border);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px;background:#fff;transition:background .16s ease,transform .16s ease}
+.axis-card:hover{background:var(--c-bg-soft);transform:translateY(-2px)}
+.axis-card__label{font-size:13px;font-weight:800;color:var(--c-accent)}
+.axis-card strong{font-size:19px;line-height:1.25}
+.axis-card__links{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.axis-card__links span{font-size:11px;font-weight:700;color:var(--c-text-muted);background:var(--c-bg-elev);border-radius:999px;padding:3px 8px}
+.home-section{margin-top:28px}
+@media (max-width:960px){.home-hero{grid-template-columns:1fr}.axis-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-hero h1{font-size:48px}}
+@media (max-width:560px){.axis-grid{grid-template-columns:1fr}.home-hero h1{font-size:40px}}
+
 .dcard{display:flex;flex-direction:column;gap:8px;transition:transform .2s ease;cursor:pointer}
 .dcard:hover{transform:translateY(-2px)}
 .dcard__canvas{position:relative;aspect-ratio:4/5;background:var(--c-bg-elev);border-radius:var(--r-card);

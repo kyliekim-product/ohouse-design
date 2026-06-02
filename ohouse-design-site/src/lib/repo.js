@@ -417,6 +417,7 @@ export function getAllBrowseCards(axis = 'screens') {
         flow: flow.label,
         thumb: screen.thumb,
         markers,
+        updated: screen.updated,
       });
     });
   });

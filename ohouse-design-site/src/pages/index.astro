@@ -1,99 +1,153 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import MenuColumn from '../components/MenuColumn.astro';
 import FilterBar from '../components/FilterBar.astro';
-import DomainCard from '../components/DomainCard.astro';
-import { getAllDomains, CATEGORIES } from '../lib/repo.js';
+import ReferenceCard from '../components/ReferenceCard.astro';
+import { DISCOVERY_AXES, getAllBrowseCards, getOverlayGroups } from '../lib/repo.js';
 
 const base = import.meta.env.BASE_URL;
-const domains = getAllDomains();
 
-// 5열 메뉴 — repo.js CATEGORIES(디자인 사이트 분류) 단일 소스에서 파생.
-const labelOf = new Map(domains.map((d) => [d.slug, d.label]));
-const menuColumns = Object.entries(CATEGORIES).map(([title, slugs]) => ({
-  title,
-  items: slugs.map((slug) => ({ label: labelOf.get(slug) || slug, href: `${base}d/${slug}` })),
-}));
+const axes = DISCOVERY_AXES.map((axis) => {
+  const groups = getOverlayGroups(axis.id);
+  const labelMap = new Map(groups.flatMap((group) => group.items.map((item) => [item.slug, item.label])));
+
+  return {
+    ...axis,
+    href: `${base}${axis.href}`,
+    featuredLabels: axis.featured.map((slug) => labelMap.get(slug) || slug),
+  };
+});
+
+const recommended = getAllBrowseCards('screens')
+  .slice()
+  .sort((a, b) => {
+    const aTime = a.updated ? new Date(a.updated).getTime() : 0;
+    const bTime = b.updated ? new Date(b.updated).getTime() : 0;
+    return bTime - aTime;
+  })
+  .slice(0, 12);
 ---
 
 <Layout title="Ohouse Design">
-  <div class="wrap home">
-    <!-- 5열 메가 메뉴 — repo.js CATEGORIES 에서 파생 -->
-    <section class="menu5">
-      {menuColumns.map((col) => (
-        <MenuColumn title={col.title} items={col.items} />
+  <main class="wrap home home-v2" data-home-filter-root>
+    <section class="home-hero">
+      <div>
+        <span class="home-hero__eyebrow">Ohouse Design Reference</span>
+        <h1>Find screens, elements, flows, and domains in one place.</h1>
+      </div>
+      <p>도메인 조직도가 아니라 실제 디자인 탐색 방식에 맞춰 화면 패턴, UI 요소, 플로우, 카테고리를 함께 탐색합니다.</p>
+    </section>
+
+    <section class="axis-grid" aria-label="Browse axes">
+      {axes.map((axis) => (
+        <a class="axis-card" href={axis.href}>
+          <span class="axis-card__label">{axis.label}</span>
+          <strong>{axis.summary}</strong>
+          <div class="axis-card__links">
+            {axis.featuredLabels.map((item) => <span>{item}</span>)}
+          </div>
+        </a>
       ))}
     </section>
 
-    <!-- 필터바 (All / HTML / Figma 토글 + 정렬 + Filter) -->
     <FilterBar sort="latest" />
 
-    <!-- MCP 연결 가이드 배너 -->
-    <a class="banner banner--guide" href="https://www.notion.so/ohouse-design-mcp" target="_blank" rel="noopener">
-      <span class="banner__pill">MCP</span>
-      <span class="banner__text">
-        <strong>Ohouse Design MCP</strong> 를 Claude / Cursor 에 연결해서 모든 도메인 · screen · policy 를 한 번에 검색하세요
-      </span>
-      <span class="banner__link">설치 가이드 보기 →</span>
-    </a>
-
-    <!-- 카드 그리드 (data-filter 로 type 필터링: all/html/figma) -->
-    <section class="grid" id="grid" data-filter="all">
-      {domains.map((d, i) => (
-        <DomainCard domain={d} index={i} />
-      ))}
+    <section class="home-section">
+      <div class="sechead">
+        <div class="sechead__title">Recently updated references</div>
+        <div class="sechead__count" data-home-results-count>{recommended.length} items</div>
+      </div>
+      <div class="ref-grid" data-home-results>
+        {recommended.map((item) => <ReferenceCard item={item} />)}
+      </div>
     </section>
-  </div>
+  </main>
 </Layout>
 
 <script>
-  function initHome() {
-    const grid = document.getElementById('grid');
-    if (!grid || (grid as HTMLElement).dataset.bound) return;
-    (grid as HTMLElement).dataset.bound = '1';
+  function initHomeIA() {
+    const root = document.querySelector('[data-home-filter-root]') as HTMLElement | null;
+    if (!root || root.dataset.bound) return;
+    root.dataset.bound = '1';
 
-    // 카드 클릭/엔터 → 도메인 페이지로 이동 (내부 링크/액션 버튼은 제외)
-    grid.querySelectorAll<HTMLElement>('.dcard').forEach((el) => {
-      const href = el.getAttribute('data-href');
-      if (!href) return;
-      el.addEventListener('click', (e) => {
-        const t = e.target as HTMLElement;
-        if (t.closest('a') || t.closest('.dcard__action')) return;
-        window.location.href = href;
+    const results = root.querySelector('[data-home-results]') as HTMLElement | null;
+    const count = root.querySelector('[data-home-results-count]') as HTMLElement | null;
+    if (!results) return;
+
+    const cards = Array.from(results.querySelectorAll<HTMLElement>('[data-reference-card]')).map((card, index) => ({
+      card,
+      index,
+      updated: Date.parse(card.dataset.updated || '') || 0,
+    }));
+
+    const state = {
+      os: 'all',
+      source: 'all',
+      status: 'all',
+      sort: 'latest',
+    };
+
+    function matches(card: HTMLElement) {
+      if (state.os !== 'all' && card.dataset.os !== state.os) return false;
+      if (state.source !== 'all' && card.dataset.source !== state.source) return false;
+      if (state.status !== 'all' && card.dataset.status !== state.status) return false;
+      return true;
+    }
+
+    function compare(a: { index: number; updated: number }, b: { index: number; updated: number }) {
+      if (state.sort === 'updated') return b.updated - a.updated || a.index - b.index;
+      return a.index - b.index;
+    }
+
+    function render() {
+      const visible = cards.filter(({ card }) => matches(card)).sort(compare);
+      visible.forEach(({ card }) => {
+        card.hidden = false;
+        results.appendChild(card);
       });
-      el.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          window.location.href = href;
+      cards
+        .filter(({ card }) => !matches(card))
+        .forEach(({ card }) => {
+          card.hidden = true;
+        });
+
+      if (count) count.textContent = `${visible.length} items`;
+    }
+
+    root.querySelector('.fbar__platform')?.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLElement>('[data-filter-key="os"]');
+      if (!button) return;
+
+      state.os = button.dataset.filterValue || 'all';
+      root.querySelectorAll<HTMLElement>('[data-filter-key="os"]').forEach((item) => {
+        item.classList.toggle('is-active', item === button);
+      });
+      render();
+    });
+
+    root.querySelectorAll<HTMLSelectElement>('.fbar__select').forEach((select) => {
+      select.addEventListener('change', () => {
+        const key = select.dataset.filterKey;
+        if (key === 'source' || key === 'status') {
+          state[key] = select.value;
         }
+        render();
       });
     });
 
-    // HTML / Figma 토글 → grid[data-filter] 변경 → CSS 로 필터링
-    const typeToggle = document.getElementById('typeToggle');
-    typeToggle?.addEventListener('click', (e) => {
-      const btn = (e.target as HTMLElement).closest('.fbar__pf') as HTMLElement | null;
-      if (!btn) return;
-      typeToggle.querySelectorAll('.fbar__pf').forEach((b) => b.classList.remove('is-active'));
-      btn.classList.add('is-active');
-      grid.setAttribute('data-filter', btn.dataset.type || 'all');
+    root.querySelector('.fbar__sort')?.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLElement>('[data-sort]');
+      if (!button) return;
+
+      state.sort = button.dataset.sort || 'latest';
+      root.querySelectorAll<HTMLElement>('[data-sort]').forEach((item) => {
+        item.classList.toggle('is-active', item === button);
+      });
+      render();
     });
 
-    // Figma Move (Copy Prompt 는 Layout 의 [data-copy-prompt] 핸들러가 처리)
-    grid.addEventListener('click', (e) => {
-      const btn = (e.target as HTMLElement).closest('.dcard__action--type') as HTMLElement | null;
-      if (!btn) return;
-      e.preventDefault();
-      e.stopPropagation();
-      const page = btn.dataset.page || '';
-      const toast = document.getElementById('toast');
-      if (toast) {
-        toast.textContent = `Figma 로 이동 · ${page} (실 사이트에서 Figma URL 열림)`;
-        toast.classList.add('show');
-        window.setTimeout(() => toast.classList.remove('show'), 1800);
-      }
-    });
+    render();
   }
-  initHome();
-  document.addEventListener('astro:page-load', initHome);
+
+  initHomeIA();
+  document.addEventListener('astro:page-load', initHomeIA);
 </script>

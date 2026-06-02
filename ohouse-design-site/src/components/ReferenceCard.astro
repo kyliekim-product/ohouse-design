@@ -7,7 +7,15 @@ const osLabel = String(item.os || '')
   .replace('web', 'Web');
 ---
 
-<a class="ref-card" href={item.href}>
+<a
+  class="ref-card"
+  href={item.href}
+  data-reference-card
+  data-os={item.os || ''}
+  data-source={item.source || ''}
+  data-status={item.status || ''}
+  data-updated={item.updated || ''}
+>
   <div class="ref-card__preview">
     {item.thumb ? <img src={item.thumb} alt={item.label} /> : <span>{item.label.slice(0, 1)}</span>}
   </div>
