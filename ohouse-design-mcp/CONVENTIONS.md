@@ -169,12 +169,30 @@ when-to-read: "유사 결정 근거 찾을 때"
 size: "~500 tokens"
 domain: cart
 period: 2026-02-01 ~ 2026-02-28
-variants: [default, empty]
+key_date: 2026-02-28                # 카드 "X일 전" 렌더용 (단일 날짜)
+key_date_type: launched             # started | launched | ended
+variants: [A (기존), B (변경)]
+winner: B                            # A | B | C | null (없거나 미정)
 result: win | loss | inconclusive
-insight: "주요 발견 1줄"
+summary: "한 줄로 무엇을 바꿨는지"   # 카드 요약 슬롯
+result_summary: "핵심 지표 한 줄"     # 카드 결과 슬롯
+insight: "주요 발견 1줄"             # 카드 인사이트 슬롯
+sources:                             # 자세히보기 링크
+  slack: <url> | null
+  notion: <url> | null
+  prd: <url> | null
+  figma: <url> | null
+  xpc: <url> | null
+team: Commerce                       # 카드 푸터용 (도메인 상위 팀)
 owner: Jenna
 ---
 ```
+
+**필드 그룹**:
+- **표준 (필수)**: `tier` · `when-to-read` · `size` · `domain` · `period` · `variants` · `result` · `insight` · `owner`
+- **카드 자동 렌더 확장 (권장)**: `key_date` · `key_date_type` · `winner` · `summary` · `result_summary` · `sources` · `team`
+
+확장 필드는 디자인 Atlas 카드 자동 렌더(요약·결과·인사이트 3섹션 + 뱃지·날짜·자세히보기 링크)를 위해 추가됨. 없어도 본문 휴리스틱 파싱으로 fallback 가능하지만, 명시하면 안정성↑.
 
 ---
 
