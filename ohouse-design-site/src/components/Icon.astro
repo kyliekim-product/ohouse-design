@@ -33,3 +33,19 @@ const attrs = {
     <path d="m12 5 7 7-7 7" />
   </svg>
 )}
+
+{name === 'sort' && (
+  <svg {...attrs}>
+    <path d="M7 7h10" />
+    <path d="M7 12h7" />
+    <path d="M7 17h4" />
+  </svg>
+)}
+
+{name === 'filter' && (
+  <svg {...attrs}>
+    <path d="M4 5h16" />
+    <path d="M7 12h10" />
+    <path d="M10 19h4" />
+  </svg>
+)}

@@ -1,10 +1,65 @@
 ---
 const { title, items = [], active = 'all' } = Astro.props;
+
+function findActiveLabel() {
+  for (const item of items) {
+    if (item.slug === active) return item.label;
+    if (!item.groups) continue;
+    for (const group of item.groups) {
+      const match = group.items?.find((groupItem) => groupItem.slug === active);
+      if (match) return `${group.label} · ${match.label}`;
+    }
+  }
+  return items[0]?.label || title;
+}
+
+const activeLabel = findActiveLabel();
 ---
 
 <aside class="axis-side">
-  <div class="axis-side__title">{title}</div>
-  <nav class="axis-side__nav" aria-label={`${title} navigation`}>
+  <details class="axis-side__details axis-side__details--mobile">
+    <summary class="axis-side__summary">
+      <span class="axis-side__current" data-axis-current>{activeLabel}</span>
+      <span class="axis-side__summary-icon" aria-hidden="true">⌄</span>
+    </summary>
+    <nav class="axis-side__nav axis-side__nav--mobile" aria-label={`${title} navigation`}>
+      {items.map((item) => (
+        item.groups ? (
+          <>
+            <a class={`axis-side__item${item.slug === active ? ' is-active' : ''}`} href={item.href || `?item=${item.slug}`}>
+              <span>{item.label}</span>
+              <span>{item.count}</span>
+            </a>
+            <div class="axis-side__groups">
+              {item.groups.map((group) => (
+                <section class="axis-side__group" aria-label={group.label}>
+                  <div class="axis-side__group-title">{group.label}</div>
+                  <div class="axis-side__group-items">
+                    {group.items.map((groupItem) => (
+                      <a
+                        class={`axis-side__item axis-side__item--nested${groupItem.slug === active ? ' is-active' : ''}`}
+                        href={groupItem.href || `?item=${groupItem.slug}`}
+                      >
+                        <span>{groupItem.label}</span>
+                        <span>{groupItem.count}</span>
+                      </a>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          </>
+        ) : (
+          <a class={`axis-side__item${item.slug === active ? ' is-active' : ''}`} href={item.href || `?item=${item.slug}`}>
+            <span>{item.label}</span>
+            <span>{item.count}</span>
+          </a>
+        )
+      ))}
+    </nav>
+  </details>
+
+  <nav class="axis-side__nav axis-side__nav--desktop" aria-label={`${title} navigation`}>
     {items.map((item) => (
       item.groups ? (
         <>

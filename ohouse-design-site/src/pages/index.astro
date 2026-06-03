@@ -70,48 +70,52 @@ const categoryDomainEntries = getAxisSidebarItems('categories')[0]?.groups
         data-home-axis-panel={axis.id}
         hidden={axis.id !== 'categories'}
       >
-        <header class="browse__head home-browse__head">
-          <span class="browse__eyebrow">{axis.eyebrow}</span>
-          <div class="browse__title-row">
-            <details class="browse-title-menu" data-close-on-outside>
-              <summary class="browse-title-link">
-                <span>{axis.label}</span>
-                <span class="browse-title-link__arrow" aria-hidden="true">
-                  <Icon name="arrow-up-right" size={26} />
-                </span>
-              </summary>
-              <div class="browse-title-menu__panel">
-                {browseAxes
-                  .filter((targetAxis) => targetAxis.id !== axis.id)
-                  .map((targetAxis) => (
-                    <button
-                      type="button"
-                      class="browse-title-menu__item"
-                      data-home-axis-option={targetAxis.id}
-                      aria-controls={`home-axis-${targetAxis.id}`}
-                      aria-pressed="false"
-                    >
-                      <span>
-                        <strong>{targetAxis.label}</strong>
-                        <small>{targetAxis.summary}</small>
-                      </span>
-                      <Icon name="arrow-up-right" size={20} />
-                    </button>
-                  ))}
-              </div>
-            </details>
-          </div>
-          <p>{axis.summary}</p>
-        </header>
-        <FilterBar sort="latest" />
+        <div class="home-browse__sticky">
+          <header class="browse__head home-browse__head">
+            <span class="browse__eyebrow">{axis.eyebrow}</span>
+            <div class="browse__title-row">
+              <details class="browse-title-menu" data-close-on-outside>
+                <summary class="browse-title-link">
+                  <span>{axis.label}</span>
+                  <span class="browse-title-link__arrow" aria-hidden="true">
+                    <Icon name="arrow-up-right" size={26} />
+                  </span>
+                </summary>
+                <div class="browse-title-menu__panel">
+                  {browseAxes
+                    .filter((targetAxis) => targetAxis.id !== axis.id)
+                    .map((targetAxis) => (
+                      <button
+                        type="button"
+                        class="browse-title-menu__item"
+                        data-home-axis-option={targetAxis.id}
+                        aria-controls={`home-axis-${targetAxis.id}`}
+                        aria-pressed="false"
+                      >
+                        <span>
+                          <strong>{targetAxis.label}</strong>
+                          <small>{targetAxis.summary}</small>
+                        </span>
+                        <Icon name="arrow-up-right" size={20} />
+                      </button>
+                    ))}
+                </div>
+              </details>
+            </div>
+            <p>{axis.summary}</p>
+          </header>
+          <FilterBar sort="latest" />
+        </div>
         <div class="browse__layout home-browse__layout">
           <div data-home-category-sidebar={axis.id === 'categories' ? 'true' : undefined}>
             <AxisSidebar title={axis.label} items={axis.sidebarItems} active="all" />
           </div>
           <section class="browse__results" aria-label={`${axis.label} results`}>
             <div class="sechead">
-              <div class="sechead__title" data-home-results-title={axis.id}>{axis.label}</div>
-              <div class="sechead__count" data-home-results-count>{axis.items.length} items</div>
+              <div class="sechead__title">
+                <span data-home-results-title={axis.id}>{axis.label}</span>
+                <span class="sechead__count" data-home-results-count>{axis.items.length}</span>
+              </div>
             </div>
             {axis.id === 'categories' && (
               <div class="domain-entry-stack" data-domain-entry-stack>
@@ -128,9 +132,9 @@ const categoryDomainEntries = getAxisSidebarItems('categories')[0]?.groups
                     </span>
                     <span class="domain-entry-banner__meta">
                       <span class="domain-entry-badges" data-domain-entry-badges>
-                        <span class="domain-entry-badge">Policies {domain.counts.policies}</span>
-                        <span class="domain-entry-badge">Experiments {domain.counts.experiments}</span>
-                        <span class="domain-entry-badge">Components {domain.counts.components}</span>
+                        <span class="domain-entry-badge">Policies <span>{domain.counts.policies}</span></span>
+                        <span class="domain-entry-badge">Experiments <span>{domain.counts.experiments}</span></span>
+                        <span class="domain-entry-badge">Components <span>{domain.counts.components}</span></span>
                       </span>
                       <Icon name="arrow-up-right" size={20} />
                     </span>
@@ -181,6 +185,12 @@ const categoryDomainEntries = getAxisSidebarItems('categories')[0]?.groups
       status: [] as string[],
       sort: 'latest',
     };
+    const axisLabels = {
+      categories: 'Categories',
+      screens: 'Patterns',
+      'ui-elements': 'UI Elements',
+      flows: 'Flows',
+    };
 
     function matches(card: HTMLElement, axis: string) {
       if (axis === 'categories' && state.categoryDomain !== 'all' && card.dataset.domainSlug !== state.categoryDomain) return false;
@@ -205,6 +215,19 @@ const categoryDomainEntries = getAxisSidebarItems('categories')[0]?.groups
       return activeLink?.querySelector('span:first-child')?.textContent?.trim() || 'Categories';
     }
 
+    function categoryAccordionLabel() {
+      if (state.categoryDomain === 'all') return 'All Categories';
+      const activeLink = Array.from(root.querySelectorAll<HTMLElement>('[data-home-category-sidebar] .axis-side__item'))
+        .find((item) => {
+          const href = item.getAttribute('href') || '';
+          return href.match(/\/d\/([^/?#]+)/)?.[1] === state.categoryDomain;
+        });
+      if (!activeLink) return categoryDomainLabel();
+      const label = activeLink.querySelector('span:first-child')?.textContent?.trim() || categoryDomainLabel();
+      const group = activeLink.closest('.axis-side__group')?.querySelector('.axis-side__group-title')?.textContent?.trim();
+      return group ? `${group} · ${label}` : label;
+    }
+
     function render() {
       let activePanel = panels.find(({ axis }) => axis === state.axis) || panels[0];
       if (!activePanel) return;
@@ -221,7 +244,7 @@ const categoryDomainEntries = getAxisSidebarItems('categories')[0]?.groups
 
       root.querySelectorAll<HTMLElement>('[data-home-results-title]').forEach((title) => {
         const axis = title.dataset.homeResultsTitle || '';
-        title.textContent = axis === 'categories' ? categoryDomainLabel() : title.dataset.homeResultsTitle === 'ui-elements' ? 'UI Elements' : axis.charAt(0).toUpperCase() + axis.slice(1);
+        title.textContent = axis === 'categories' ? categoryDomainLabel() : axisLabels[axis] || axis;
       });
 
       panels.forEach(({ results, count, cards }) => {
@@ -238,13 +261,17 @@ const categoryDomainEntries = getAxisSidebarItems('categories')[0]?.groups
             card.hidden = true;
           });
 
-        if (count) count.textContent = `${visible.length} items`;
+        if (count) count.textContent = String(visible.length);
       });
 
       root.querySelectorAll<HTMLElement>('[data-home-category-sidebar] .axis-side__item').forEach((item) => {
         const href = item.getAttribute('href') || '';
         const slug = href.match(/\/d\/([^/?#]+)/)?.[1] || 'all';
         item.classList.toggle('is-active', activePanel.axis === 'categories' && slug === state.categoryDomain);
+      });
+
+      root.querySelectorAll<HTMLElement>('[data-home-category-sidebar] [data-axis-current]').forEach((current) => {
+        current.textContent = categoryAccordionLabel();
       });
 
       root.querySelectorAll<HTMLElement>('[data-domain-entry-banner]').forEach((banner) => {
@@ -311,6 +338,10 @@ const categoryDomainEntries = getAxisSidebarItems('categories')[0]?.groups
       });
     });
 
+    function closeMobileSidebarMenu(target: HTMLElement | null) {
+      target?.closest<HTMLDetailsElement>('.axis-side__details--mobile[open]')?.removeAttribute('open');
+    }
+
     root.addEventListener('click', (event) => {
       const categoryLink = (event.target as HTMLElement).closest<HTMLElement>('[data-home-category-sidebar] .axis-side__item');
       if (categoryLink) {
@@ -326,6 +357,7 @@ const categoryDomainEntries = getAxisSidebarItems('categories')[0]?.groups
           url.searchParams.set('domain', state.categoryDomain);
         }
         window.history.replaceState({}, '', url);
+        closeMobileSidebarMenu(categoryLink);
         render();
         return;
       }

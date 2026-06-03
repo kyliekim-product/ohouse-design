@@ -49,6 +49,30 @@ function testDomainPoliciesReadMappedTrackMarkdown() {
   assert.match(policiesSubdoc.html, /Contents Track · Policies/);
 }
 
+function testDomainPoliciesExposeGroupedSections() {
+  const policies = getDomainPolicies('content-detail');
+  const policiesSubdoc = policies.find((policy) => policy.slug === 'contents-policies');
+  assert.ok(policiesSubdoc, 'content-detail should include contents policy subdoc');
+
+  assert.ok(Array.isArray(policiesSubdoc.sections), 'policy docs should expose parsed sections');
+  assert.ok(policiesSubdoc.sections.length > 0, 'policy docs should expose at least one section');
+
+  const reportSection = policiesSubdoc.sections.find((section) => section.title.includes('신고·차단'));
+  assert.ok(reportSection, 'report/block policy should be parsed as a section');
+  assert.equal(reportSection.category, 'platform');
+  assert.match(reportSection.summary, /스펙 원본|24년 1월 이후 변경 적용 완료/);
+
+  const aiSection = policiesSubdoc.sections.find((section) => section.title.includes('AI 생성 콘텐츠'));
+  assert.ok(aiSection, 'AI generated content policy should be parsed as a section');
+  assert.equal(aiSection.category, 'rules');
+
+  const openQuestions = policiesSubdoc.sections.filter((section) => section.category === 'open-questions');
+  assert.ok(
+    openQuestions.some((section) => section.title.includes('미확정')),
+    'unconfirmed policy sections should be grouped as open questions',
+  );
+}
+
 function testScreenComponentUsageReadsReadmeMarkers() {
   const usage = getScreenComponentUsage('house-tour', 'content-tab');
 
@@ -95,6 +119,7 @@ function testDomainComponentOverviewSeparatesOwnedAndUsed() {
 testCategoriesSidebarUsesDomainGroups();
 testCategoryBrowseCardsUseDomainScreens();
 testDomainPoliciesReadMappedTrackMarkdown();
+testDomainPoliciesExposeGroupedSections();
 testScreenComponentUsageReadsReadmeMarkers();
 testDomainComponentOverviewSeparatesOwnedAndUsed();
 

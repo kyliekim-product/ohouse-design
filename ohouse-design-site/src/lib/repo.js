@@ -137,7 +137,7 @@ export const STATUS_OPTIONS = [
 
 export const DISCOVERY_AXES = [
   { id: 'categories', label: 'Categories', href: 'categories', summary: '오늘의집 도메인 기준으로 화면과 정책, 실험, 컴포넌트 자산을 탐색합니다.', featured: ['home', 'shopping', 'content-detail', 'mypage', 'search'] },
-  { id: 'screens', label: 'Screens', href: 'screens', summary: '도메인을 넘어서 재사용 가능한 UX 화면 패턴을 탐색합니다.', featured: ['onboarding', 'product-detail', 'search-result', 'checkout', 'profile'] },
+  { id: 'screens', label: 'Patterns', href: 'screens', summary: '도메인을 넘어서 재사용 가능한 UX 화면 패턴을 탐색합니다.', featured: ['onboarding', 'product-detail', 'search-result', 'checkout', 'profile'] },
   { id: 'ui-elements', label: 'UI Elements', href: 'ui-elements', summary: 'ODS 컴포넌트와 제품 UI 요소의 활용 사례를 탐색합니다.', featured: ['cards', 'navigation', 'bottom-sheet', 'form', 'carousel'] },
   { id: 'flows', label: 'Flows', href: 'flows', summary: '여러 화면으로 이어지는 사용자 여정과 플로우를 탐색합니다.', featured: ['signup', 'login', 'purchase', 'bookmark', 'share'] },
 ];
@@ -242,6 +242,93 @@ function parseYaml(filePath) {
   }
 }
 
+const POLICY_SECTION_GROUPS = [
+  { id: 'rules', label: 'Rules' },
+  { id: 'states', label: 'States' },
+  { id: 'platform', label: 'Platform' },
+  { id: 'open-questions', label: 'Open Questions' },
+  { id: 'sources', label: 'Sources' },
+  { id: 'track-context', label: 'Track Context' },
+];
+
+export const POLICY_GROUP_LABELS = Object.fromEntries(POLICY_SECTION_GROUPS.map((group) => [group.id, group.label]));
+
+function plainTextFromMarkdown(markdown) {
+  return String(markdown || '')
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, ' ')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/[#>*_`|[\]-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function summarizeMarkdown(markdown, maxLength = 150) {
+  const text = plainTextFromMarkdown(markdown);
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength).trim()}...`;
+}
+
+function splitMarkdownSections(body) {
+  const lines = String(body || '').split(/\r?\n/);
+  const sections = [];
+  let current = null;
+
+  for (const line of lines) {
+    const heading = line.match(/^##\s+(.+?)\s*$/);
+    if (heading) {
+      if (current) sections.push(current);
+      current = { title: heading[1].trim(), body: '' };
+      continue;
+    }
+    if (current) current.body += `${line}\n`;
+  }
+
+  if (current) sections.push(current);
+  return sections.filter((section) => section.title || section.body.trim());
+}
+
+function classifyPolicySection({ title, body, policyKind }) {
+  const normalizedTitle = String(title || '').toLowerCase();
+  const haystack = `${title}\n${body}`.toLowerCase();
+
+  if (/변경 이력|권위 있는 참조|주요 참조|참조|출처|source/.test(normalizedTitle)) return 'sources';
+  if (policyKind === 'track-context') return 'track-context';
+  if (/미확정|확인 필요|tbd|todo|예정/.test(normalizedTitle) || /정책 확인 필요|작업 시 확인 필수/.test(haystack)) return 'open-questions';
+  if (/ios|android|web|mobile web|플랫폼|platform/.test(haystack)) return 'platform';
+  if (/상태|empty|error|hidden|blocked|숨김|비공개|블라인드|미노출/.test(haystack)) return 'states';
+  if (/정책|처리|권한|조건|제약|주의사항|llm|원칙|구매 조건|할인|로직/.test(haystack)) return 'rules';
+  return 'rules';
+}
+
+function metadataDate(value) {
+  if (!value) return null;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString().slice(0, 10);
+  return String(value);
+}
+
+function buildPolicySections(body, policyKind) {
+  const sections = splitMarkdownSections(body);
+  return sections.map((section, index) => {
+    const category = classifyPolicySection({ ...section, policyKind });
+    return {
+      id: `${category}-${index}`,
+      title: section.title,
+      category,
+      categoryLabel: POLICY_GROUP_LABELS[category] || category,
+      summary: summarizeMarkdown(section.body),
+      html: marked.parse(section.body),
+    };
+  });
+}
+
+function policyKindFromSource(relPath, source) {
+  if (source === 'domain') return 'domain-policy';
+  if (/^tracks\/[^/]+\/policies\.md$/.test(relPath)) return 'track-policy';
+  if (/^tracks\/[^/]+\.md$/.test(relPath)) return 'track-context';
+  return 'track-policy';
+}
+
 function listDirs(dir) {
   if (!existsSync(dir)) return [];
   return readdirSync(dir)
@@ -262,16 +349,21 @@ function trackPolicyDoc(track, filePath, relPath, slug) {
   const parsed = parseMd(filePath);
   if (!parsed) return null;
   const titleFromHeading = parsed.body.match(/^#\s+(.+)$/m)?.[1];
+  const policyKind = policyKindFromSource(relPath, 'track');
   return {
     slug,
     label: parsed.title || titleFromHeading || slug,
     summary: parsed['when-to-read'] || parsed.summary || null,
     overrides: parsed.overrides || null,
     owner: parsed.owner || null,
+    policyAuthority: parsed.policy_authority || null,
+    lastVerified: metadataDate(parsed.last_verified),
     track,
     source: 'track',
+    policyKind,
     sourcePath: relPath,
     html: marked.parse(parsed.body),
+    sections: buildPolicySections(parsed.body, policyKind),
     updated: lastModifiedContext(relPath),
   };
 }
@@ -403,6 +495,8 @@ export function getDomainScreens(slug) {
       slug: s,
       label: readme.title || s,
       summary: readme.summary || null,
+      variant: readme.variant || s,
+      status: readme.status || null,
       thumb: thumb ? withBase(`api/asset?path=${encodeURIComponent(thumb.replace(ROOT + '/', ''))}`) : null,
       prototype: prototypeHtml ? prototypeHtml.replace(ROOT + '/', '') : null,
       markers,
@@ -528,15 +622,22 @@ export function getDomainPolicies(slug) {
   const dir = join(ROOT, 'domains', slug, 'policies');
   const domainPolicies = listMd(dir).map((file) => {
     const parsed = parseMd(join(dir, file)) || {};
+    const sourcePath = `domains/${slug}/policies/${file}`;
+    const policyKind = policyKindFromSource(sourcePath, 'domain');
     return {
       slug: file.replace(/\.md$/, ''),
       label: parsed.title || file.replace(/\.md$/, ''),
       summary: parsed['when-to-read'] || parsed.summary || null,
       overrides: parsed.overrides || null,
+      owner: parsed.owner || null,
+      policyAuthority: parsed.policy_authority || null,
+      lastVerified: metadataDate(parsed.last_verified),
       source: 'domain',
-      sourcePath: `domains/${slug}/policies/${file}`,
+      policyKind,
+      sourcePath,
       html: parsed.body ? marked.parse(parsed.body) : null,
-      updated: lastModified(`domains/${slug}/policies/${file}`),
+      sections: parsed.body ? buildPolicySections(parsed.body, policyKind) : [],
+      updated: lastModified(sourcePath),
     };
   });
   return domainPolicies.concat(getTrackPoliciesForDomain(slug));
@@ -575,7 +676,7 @@ export function getAxisSidebarItems(axis) {
     return [{ slug: 'all', label: 'All Categories', count: domains.length, groups }];
   }
   if (axis === 'screens') {
-    return [{ slug: 'all', label: 'All Screens', count: getAllBrowseCards('screens').length }]
+    return [{ slug: 'all', label: 'All Patterns', count: getAllBrowseCards('screens').length }]
       .concat(SCREEN_PATTERNS.map((p) => ({ slug: p.slug, label: p.label, count: p.countHint })));
   }
   if (axis === 'ui-elements') {
@@ -672,6 +773,9 @@ export function getScreen(domainSlug, screenSlug) {
     domain: domainSlug,
     slug: screenSlug,
     label: readme.title || screenSlug,
+    variant: readme.variant || screenSlug,
+    status: readme.status || null,
+    owner: readme.owner || null,
     body: readme.body || '',
     markers,
     thumb: thumb ? withBase(`api/asset?path=${encodeURIComponent(thumb.replace(ROOT + '/', ''))}`) : null,

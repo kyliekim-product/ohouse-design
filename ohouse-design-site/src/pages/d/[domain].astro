@@ -7,6 +7,7 @@ import {
   getDomainComponentOverview,
   getDomainPolicies,
   getDomainExperiments,
+  POLICY_GROUP_LABELS,
   buildPrompt,
   relTime,
 } from '../../lib/repo.js';
@@ -26,6 +27,35 @@ const usedComponents = componentOverview.used;
 const ownedComponents = componentOverview.owned;
 const policies = getDomainPolicies(slug);
 const experiments = getDomainExperiments(slug);
+const policyGroupOrder = ['rules', 'states', 'platform', 'open-questions', 'track-context', 'sources'];
+const policySections = policies.flatMap((policy) => (
+  (policy.sections || []).map((section, sectionIndex) => ({
+    ...section,
+    policy,
+    modalId: `policy-detail-${policy.slug}-${section.id}-${sectionIndex}`.replace(/[^a-z0-9_-]/gi, '-'),
+  }))
+));
+const policyGroups = policyGroupOrder
+  .map((id) => ({
+    id,
+    label: POLICY_GROUP_LABELS[id] || id,
+    sections: policySections.filter((section) => section.category === id),
+  }))
+  .filter((group) => group.sections.length > 0);
+const primaryPolicyGroup = policyGroups[0]?.id || 'rules';
+const policyOwners = Array.from(new Set(policies.flatMap((policy) => [policy.policyAuthority, policy.owner]).filter(Boolean)));
+const policyTracks = Array.from(new Set(policies.map((policy) => policy.track).filter(Boolean)));
+const policyLastVerified = policies.map((policy) => policy.lastVerified).filter(Boolean).sort().at(-1);
+const openQuestionCount = policyGroups.find((group) => group.id === 'open-questions')?.sections.length || 0;
+const platformRuleCount = policyGroups.find((group) => group.id === 'platform')?.sections.length || 0;
+const policyKindLabel = (kind) => ({
+  'domain-policy': 'domain policy',
+  'track-policy': 'track policy',
+  'track-context': 'track context',
+}[kind] || kind);
+const policySourceLabel = (policy) => (
+  policy.source === 'track' ? `track:${policy.track}` : 'domain policy'
+);
 
 const screensTyped = screens.map((s, i) => ({ ...s, type: i % 2 === 0 ? 'html' : 'figma' }));
 const htmlCount = screensTyped.filter((s) => s.type === 'html').length;
@@ -35,7 +65,7 @@ const typeLabel = (t) => (t === 'figma' ? 'Figma' : 'HTML');
 const tabs = [
   { id: 'policies', label: 'Policies', count: policies.length },
   { id: 'experiments', label: 'Experiments', count: experiments.length },
-  { id: 'components', label: 'Components', count: ownedComponents.length },
+  { id: 'components', label: 'Patterns', count: ownedComponents.length },
   { id: 'screens', label: 'Screens', count: screens.length },
 ];
 ---
@@ -129,7 +159,7 @@ const tabs = [
       <!-- Components -->
       <div class="dpanel" data-panel="components" hidden>
         <div class="sechead">
-          <div class="sechead__title">Components</div>
+          <div class="sechead__title">Patterns</div>
           <div class="sechead__count">{usedComponents.length} used · {ownedComponents.length} owned</div>
         </div>
         {usedComponents.length === 0 && ownedComponents.length === 0 ? (
@@ -197,34 +227,107 @@ const tabs = [
       <div class="dpanel" data-panel="policies">
         <div class="sechead">
           <div class="sechead__title">Policies</div>
-          <div class="sechead__count">{policies.length} policies</div>
         </div>
-        {policies.length === 0 ? (
+        {policies.length === 0 || policySections.length === 0 ? (
           <div class="empty">
             <div class="empty__title">연결된 track policy가 없습니다</div>
             <div class="empty__hint">이 도메인에 매핑된 tracks 문서나 화면 정책이 있으면 여기에 표시됩니다.</div>
           </div>
         ) : (
-          <div class="policy-stack">
-            {policies.map((p) => (
-              <article class="policy-doc">
-                <div class="policy-doc__meta">
-                  <span class="badge">{p.source === 'track' ? `track:${p.track}` : 'domain policy'}</span>
-                  {p.overrides && <span class="badge badge--warn">overrides</span>}
-                  {p.owner && <span class="badge badge--accent">{p.owner}</span>}
-                  {p.sourcePath && <span class="policy-doc__path">{p.sourcePath}</span>}
+          <div class="policy-dashboard">
+            <section class="policy-summary" aria-label="policy summary">
+              <div class="policy-summary__main">
+                <span class="policy-summary__eyebrow">Policy coverage</span>
+                <strong>{policyTracks.length > 0 ? policyTracks.join(', ') : domain.label}</strong>
+              </div>
+              <div class="policy-summary__stats">
+                <div>
+                  <span>{policies.length}</span>
+                  <small>sources</small>
                 </div>
-                {p.html ? (
-                  <div class="prose policy-doc__body" set:html={p.html} />
-                ) : (
-                  <>
-                    <div class="lcard__head">
-                      <span class="lcard__title">{p.label}</span>
-                    </div>
-                    {p.summary && <p class="lcard__summary">{p.summary}</p>}
-                  </>
-                )}
-              </article>
+                <div>
+                  <span>{openQuestionCount}</span>
+                  <small>open questions</small>
+                </div>
+                <div>
+                  <span>{platformRuleCount}</span>
+                  <small>platform rules</small>
+                </div>
+              </div>
+              <div class="policy-summary__meta">
+                {policyOwners.length > 0 && <span>Owner: {policyOwners.join(' / ')}</span>}
+                {policyLastVerified && <span>Last verified: {policyLastVerified}</span>}
+              </div>
+            </section>
+
+            <details class="policy-sources">
+              <summary>Source documents</summary>
+              <div class="policy-source-list">
+                {policies.map((policy) => (
+                  <div class="policy-source-item">
+                    <strong>{policy.label}</strong>
+                    <span>{policyKindLabel(policy.policyKind || policy.source)}</span>
+                    {policy.sourcePath && <code>{policy.sourcePath}</code>}
+                  </div>
+                ))}
+              </div>
+            </details>
+
+            <nav class="policy-subtabs" aria-label="policy section tabs" id="policy-subtabs">
+              {policyGroups.map((group) => (
+                <a
+                  class={`policy-subtab${group.id === primaryPolicyGroup ? ' is-active' : ''}`}
+                  href={`${base}d/${slug}?tab=policies&policy=${group.id}`}
+                  data-policy-tab={group.id}
+                >
+                  {group.label} <span>{group.sections.length}</span>
+                </a>
+              ))}
+            </nav>
+
+            {policyGroups.map((group) => (
+              <section class="policy-subpanel" data-policy-panel={group.id} hidden={group.id !== primaryPolicyGroup}>
+                <div class="policy-grid">
+                  {group.sections.map((section) => (
+                    <article
+                      class={`policy-card policy-card--${group.id}`}
+                      tabindex="0"
+                      role="button"
+                      aria-label={`Open policy detail for ${section.title}`}
+                      data-policy-modal-open={section.modalId}
+                      data-policy-title={section.title}
+                      data-policy-category={section.categoryLabel}
+                      data-policy-source={policySourceLabel(section.policy)}
+                      data-policy-path={section.policy.sourcePath || ''}
+                      data-policy-owner={[section.policy.owner, section.policy.policyAuthority].filter(Boolean).join(' / ')}
+                    >
+                      <div class="policy-card__head">
+                        <div>
+                          <span class="policy-card__kicker">{policySourceLabel(section.policy)}</span>
+                          <h3>{section.title}</h3>
+                        </div>
+                        <div class="policy-card__head-right">
+                          <span class="badge">{section.categoryLabel}</span>
+                          <span class="policy-card__chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <polyline points="9 6 15 12 9 18"></polyline>
+                            </svg>
+                          </span>
+                        </div>
+                      </div>
+                      {section.summary && <p class="policy-card__summary">{section.summary}</p>}
+                      <template id={section.modalId}>
+                        <div class="prose policy-modal__body" set:html={section.html} />
+                      </template>
+                      <div class="policy-card__foot">
+                        {section.policy.owner && <span>{section.policy.owner}</span>}
+                        {section.policy.policyAuthority && <span>{section.policy.policyAuthority}</span>}
+                        {section.policy.sourcePath && <span class="policy-doc__path">{section.policy.sourcePath}</span>}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </section>
             ))}
           </div>
         )}
@@ -258,6 +361,32 @@ const tabs = [
       </div>
     </div>
   </section>
+
+  <div id="policy-modal" class="policy-modal" role="dialog" aria-modal="true" aria-hidden="true" hidden>
+    <button type="button" class="policy-modal__backdrop" data-policy-modal-close aria-label="Close policy detail"></button>
+    <article class="policy-modal__panel" aria-labelledby="policy-modal-title">
+      <header class="policy-modal__head">
+        <div class="policy-modal__titleblock">
+          <div class="policy-modal__meta">
+            <span class="badge" data-policy-modal-category></span>
+            <span data-policy-modal-source></span>
+          </div>
+          <h2 id="policy-modal-title"></h2>
+          <div class="policy-modal__submeta">
+            <span data-policy-modal-owner></span>
+            <code data-policy-modal-path></code>
+          </div>
+        </div>
+        <button type="button" class="policy-modal__close" data-policy-modal-close aria-label="Close policy detail">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </header>
+      <div class="policy-modal__content" data-policy-modal-content></div>
+    </article>
+  </div>
 </Layout>
 
 <script>
@@ -322,4 +451,103 @@ const tabs = [
   }
   initComponentTabs();
   document.addEventListener('astro:page-load', initComponentTabs);
+
+  function initPolicyTabs() {
+    const tabsNav = document.getElementById('policy-subtabs');
+    if (!tabsNav || (tabsNav as HTMLElement).dataset.bound) return;
+    (tabsNav as HTMLElement).dataset.bound = '1';
+
+    const panels = Array.from(document.querySelectorAll<HTMLElement>('.policy-subpanel'));
+    const links = Array.from(tabsNav.querySelectorAll<HTMLElement>('.policy-subtab'));
+
+    function activate(id: string) {
+      const fallback = links[0]?.dataset.policyTab || 'rules';
+      const next = links.some((link) => link.dataset.policyTab === id) ? id : fallback;
+      links.forEach((l) => l.classList.toggle('is-active', l.dataset.policyTab === next));
+      panels.forEach((p) => { p.hidden = p.dataset.policyPanel !== next; });
+    }
+
+    const initial = new URLSearchParams(window.location.search).get('policy') || links[0]?.dataset.policyTab || 'rules';
+    activate(initial);
+
+    tabsNav.addEventListener('click', (e) => {
+      const link = (e.target as HTMLElement).closest('.policy-subtab') as HTMLElement | null;
+      if (!link) return;
+      e.preventDefault();
+      const id = link.dataset.policyTab || 'rules';
+      activate(id);
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', 'policies');
+      url.searchParams.set('policy', id);
+      window.history.replaceState({}, '', url);
+    });
+  }
+  initPolicyTabs();
+  document.addEventListener('astro:page-load', initPolicyTabs);
+
+  function initPolicyModal() {
+    const modal = document.getElementById('policy-modal');
+    if (!modal || (modal as HTMLElement).dataset.bound) return;
+    (modal as HTMLElement).dataset.bound = '1';
+
+    const title = modal.querySelector<HTMLElement>('#policy-modal-title');
+    const category = modal.querySelector<HTMLElement>('[data-policy-modal-category]');
+    const source = modal.querySelector<HTMLElement>('[data-policy-modal-source]');
+    const owner = modal.querySelector<HTMLElement>('[data-policy-modal-owner]');
+    const path = modal.querySelector<HTMLElement>('[data-policy-modal-path]');
+    const content = modal.querySelector<HTMLElement>('[data-policy-modal-content]');
+    const closeButtons = Array.from(modal.querySelectorAll<HTMLElement>('[data-policy-modal-close]'));
+
+    function setText(el: HTMLElement | null, value: string | null) {
+      if (!el) return;
+      el.textContent = value || '';
+      el.hidden = !value;
+    }
+
+    function closeModal() {
+      modal.hidden = true;
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      if (content) content.innerHTML = '';
+    }
+
+    function openModal(button: HTMLElement) {
+      const templateId = button.dataset.policyModalOpen || '';
+      const template = document.getElementById(templateId) as HTMLTemplateElement | null;
+      if (!template || !content) return;
+
+      setText(title, button.dataset.policyTitle || 'Policy detail');
+      setText(category, button.dataset.policyCategory || '');
+      setText(source, button.dataset.policySource || '');
+      setText(owner, button.dataset.policyOwner || '');
+      setText(path, button.dataset.policyPath || '');
+      content.innerHTML = template.innerHTML;
+      modal.hidden = false;
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      modal.querySelector<HTMLElement>('[data-policy-modal-close]')?.focus();
+    }
+
+    document.addEventListener('click', (event) => {
+      const trigger = (event.target as HTMLElement).closest('[data-policy-modal-open]') as HTMLElement | null;
+      if (!trigger) return;
+      event.preventDefault();
+      openModal(trigger);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      const target = event.target as HTMLElement | null;
+      if (!target?.closest('[data-policy-modal-open]')) return;
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      openModal(target.closest('[data-policy-modal-open]') as HTMLElement);
+    });
+
+    closeButtons.forEach((button) => button.addEventListener('click', closeModal));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !modal.hidden) closeModal();
+    });
+  }
+  initPolicyModal();
+  document.addEventListener('astro:page-load', initPolicyModal);
 </script>

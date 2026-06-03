@@ -1,6 +1,7 @@
 ---
 import Layout from '../../../../layouts/Layout.astro';
 import {
+  CATEGORIES,
   getAllDomains,
   getDomain,
   getDomainScreens,
@@ -30,18 +31,23 @@ if (!domain || !screen) return Astro.redirect(`${base}d/${dSlug}`);
 
 const prompt = buildPrompt({ kind: 'screen', domain: dSlug, screen: sSlug, markers: screen.markers });
 const componentUsage = getScreenComponentUsage(dSlug, sSlug);
+const categoryLabel = Object.entries(CATEGORIES).find(([, slugs]) => slugs.includes(dSlug))?.[0] || null;
+const statusLabel = screen.status
+  ? String(screen.status).split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+  : null;
+const foundInItems = [
+  categoryLabel,
+  domain.label,
+  statusLabel,
+  screen.variant,
+  screen.markers.length > 0 ? `+${screen.markers.length} markers` : null,
+].filter(Boolean);
 ---
 
 <Layout title={`${screen.label} · ${domain.label}`}>
-  <section class="shead">
-    <div class="wrap">
-      <nav class="crumb">
-        <a href={base}>Domains</a> <span>›</span>
-        <a href={`${base}d/${dSlug}`}>{domain.label}</a> <span>›</span>
-        <span>{screen.label}</span>
-      </nav>
-
-      <div class="shead__main">
+  <section class="screen-detail">
+    <div class="screen-detail__main wrap">
+      <aside class="screen-detail__preview">
         <div class="shead__thumb">
           {screen.thumb ? (
             <button
@@ -66,27 +72,37 @@ const componentUsage = getScreenComponentUsage(dSlug, sSlug);
             </div>
           )}
         </div>
+      </aside>
 
+      <main class="screen-detail__scroll">
+        <section class="shead">
         <div class="shead__info">
           <h1>{screen.label}</h1>
           {screen.updated && (
             <p class="shead__time">Last updated · {relTime(screen.updated)}</p>
           )}
 
+          <div class="screen-found" aria-label="screen metadata">
+            <span class="screen-found__label">Found in</span>
+            <div class="screen-found__chips">
+              {foundInItems.map((item) => (
+                <span class="screen-found__chip">{item}</span>
+              ))}
+            </div>
+          </div>
+
           <div class="shead__actions">
             <button type="button" class="btn-primary" data-copy-prompt={prompt}>
               ⟳ Copy prompt
+            </button>
+            <button type="button" class="btn-secondary btn-secondary--stroke" data-prompt-preview-open aria-controls="prompt-preview-modal">
+              Preview
             </button>
             {screen.prototype && (
               <a class="btn-secondary" href={`https://github.com/bucketplace/product-design/blob/main/${screen.prototype}`} target="_blank" rel="noopener">
                 Prototype source ↗
               </a>
             )}
-          </div>
-
-          <div class="prompt-preview prompt-preview--inline">
-            <h3>Copy prompt 미리보기</h3>
-            <pre class="prompt-box">{prompt}</pre>
           </div>
 
           {screen.markers.length > 0 && (
@@ -102,69 +118,97 @@ const componentUsage = getScreenComponentUsage(dSlug, sSlug);
             </div>
           )}
         </div>
-      </div>
+        </section>
+
+        <section class="screen-usage">
+          <div class="screen-usage__main">
+            <div class="screen-usage__content">
+              <div class="sechead">
+                <div class="sechead__title">Components</div>
+                <div class="sechead__count">{componentUsage.ods.length} ODS · {componentUsage.domain.length} domain/track</div>
+              </div>
+
+              <nav class="screen-usage__tabs dtabs" aria-label="screen component tabs" id="screen-component-tabs">
+                <div class="screen-usage__tabs-inner dtabs__inner">
+                  <a class="dtab is-active" href={`${base}d/${dSlug}/s/${sSlug}?component=ods`} data-screen-component-tab="ods">
+                    ODS Components <span class="dtab__count">{componentUsage.ods.length}</span>
+                  </a>
+                  <a class="dtab" href={`${base}d/${dSlug}/s/${sSlug}?component=domain`} data-screen-component-tab="domain">
+                    Domain / Track Components <span class="dtab__count">{componentUsage.domain.length}</span>
+                  </a>
+                </div>
+              </nav>
+
+              <div class="screen-usage__body">
+                <div class="screen-component-panel" data-screen-component-panel="ods">
+                  {componentUsage.ods.length > 0 ? (
+                    <div class="screen-component-list">
+                      {componentUsage.ods.map((component) => (
+                        <div class="screen-component-card">
+                          <div class="screen-component-card__head">
+                            <span>{component.label}</span>
+                            <span class="badge badge--accent">ODS</span>
+                          </div>
+                          <p>linked_yaml_components</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div class="empty">
+                      <div class="empty__title">ODS 컴포넌트가 없습니다</div>
+                    </div>
+                  )}
+                </div>
+
+                <div class="screen-component-panel" data-screen-component-panel="domain" hidden>
+                  {componentUsage.domain.length > 0 ? (
+                    <div class="screen-component-list">
+                      {componentUsage.domain.map((component) => (
+                        <div class="screen-component-card">
+                          <div class="screen-component-card__head">
+                            <span>{component.label}</span>
+                            <span class="badge badge--accent">{component.ownerDomain}</span>
+                          </div>
+                          {component.summary && <p>{component.summary}</p>}
+                          <div class="screen-component-card__meta">
+                            <span>{component.type}</span>
+                            {component.status && <span>{component.status}</span>}
+                            {component.sourcePath && <span>{component.sourcePath}</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div class="empty">
+                      <div class="empty__title">Domain / Track 컴포넌트가 없습니다</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   </section>
 
-  <section class="screen-usage">
-    <nav class="dtabs" aria-label="screen component tabs" id="screen-component-tabs">
-      <div class="wrap dtabs__inner">
-        <a class="dtab is-active" href={`${base}d/${dSlug}/s/${sSlug}?component=ods`} data-screen-component-tab="ods">
-          ODS Components <span class="dtab__count">{componentUsage.ods.length}</span>
-        </a>
-        <a class="dtab" href={`${base}d/${dSlug}/s/${sSlug}?component=domain`} data-screen-component-tab="domain">
-          Domain / Track Components <span class="dtab__count">{componentUsage.domain.length}</span>
-        </a>
+  <div id="prompt-preview-modal" class="prompt-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="prompt-preview-title">
+    <button type="button" class="prompt-modal__backdrop" data-prompt-preview-close aria-label="Prompt preview 닫기"></button>
+    <div class="prompt-modal__sheet">
+      <div class="prompt-modal__head">
+        <div>
+          <p class="prompt-modal__eyebrow">Copy prompt</p>
+          <h2 id="prompt-preview-title">Prompt preview</h2>
+        </div>
+        <button type="button" class="prompt-modal__close" data-prompt-preview-close aria-label="닫기">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
-    </nav>
-
-    <div class="wrap screen-usage__body">
-      <div class="screen-component-panel" data-screen-component-panel="ods">
-        {componentUsage.ods.length > 0 ? (
-          <div class="screen-component-list">
-            {componentUsage.ods.map((component) => (
-              <div class="screen-component-card">
-                <div class="screen-component-card__head">
-                  <span>{component.label}</span>
-                  <span class="badge badge--accent">ODS</span>
-                </div>
-                <p>linked_yaml_components</p>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div class="empty">
-            <div class="empty__title">ODS 컴포넌트가 없습니다</div>
-          </div>
-        )}
-      </div>
-
-      <div class="screen-component-panel" data-screen-component-panel="domain" hidden>
-        {componentUsage.domain.length > 0 ? (
-          <div class="screen-component-list">
-            {componentUsage.domain.map((component) => (
-              <div class="screen-component-card">
-                <div class="screen-component-card__head">
-                  <span>{component.label}</span>
-                  <span class="badge badge--accent">{component.ownerDomain}</span>
-                </div>
-                {component.summary && <p>{component.summary}</p>}
-                <div class="screen-component-card__meta">
-                  <span>{component.type}</span>
-                  {component.status && <span>{component.status}</span>}
-                  {component.sourcePath && <span>{component.sourcePath}</span>}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div class="empty">
-            <div class="empty__title">Domain / Track 컴포넌트가 없습니다</div>
-          </div>
-        )}
-      </div>
+      <pre class="prompt-box prompt-box--modal">{prompt}</pre>
     </div>
-  </section>
+  </div>
 
   <script>
     function initScreenComponentTabs() {
@@ -196,22 +240,90 @@ const componentUsage = getScreenComponentUsage(dSlug, sSlug);
     }
     initScreenComponentTabs();
     document.addEventListener('astro:page-load', initScreenComponentTabs);
+
+    function initPromptPreviewModal() {
+      const modal = document.getElementById('prompt-preview-modal');
+      const openButton = document.querySelector<HTMLElement>('[data-prompt-preview-open]');
+      if (!modal || !openButton || modal.dataset.bound) return;
+      modal.dataset.bound = '1';
+      const closeButtons = Array.from(modal.querySelectorAll<HTMLElement>('[data-prompt-preview-close]'));
+
+      function openModal() {
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeModal() {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        openButton.focus();
+      }
+
+      openButton.addEventListener('click', openModal);
+      closeButtons.forEach((button) => button.addEventListener('click', closeModal));
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+      });
+    }
+    initPromptPreviewModal();
+    document.addEventListener('astro:page-load', initPromptPreviewModal);
   </script>
 </Layout>
 
 <style>
-  .shead { padding: 48px 0 32px; }
-  .crumb { font-size: 13px; color: var(--c-text-soft); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .crumb a { color: var(--c-text-muted); }
-  .crumb a:hover { color: var(--c-text); }
-
-  .shead__main {
-    margin-top: 28px;
+  .screen-detail {
+    height: calc(100vh - 64px);
+    overflow: hidden;
+  }
+  .screen-detail__main {
+    height: 100%;
     display: grid; grid-template-columns: 360px 1fr; gap: 48px;
     align-items: start;
   }
-  @media (max-width: 720px) {
-    .shead__main { grid-template-columns: 1fr; gap: 24px; }
+  .screen-detail__preview {
+    height: 100%;
+    min-width: 0;
+    overflow: hidden;
+    padding: 48px 0 32px;
+  }
+  .screen-detail__scroll {
+    height: 100%;
+    min-width: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 48px 0 96px;
+    scrollbar-gutter: stable;
+  }
+  .shead { padding: 0 0 48px; }
+  .screen-found {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--c-text-muted);
+  }
+  .screen-found__label { color: var(--c-text-muted); }
+  .screen-found__chips {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .screen-found__chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: var(--c-bg-elev);
+    color: var(--c-text);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
   }
 
   .shead__thumb {
@@ -275,14 +387,12 @@ const componentUsage = getScreenComponentUsage(dSlug, sSlug);
     transition: background .15s;
   }
   .btn-secondary:hover { background: var(--c-bg-elev); }
+  .btn-secondary--stroke { background: #fff; }
 
   .shead__markers { margin-top: 32px; }
   .shead__markers-label { font-size: 12px; font-weight: 500; color: var(--c-text-soft); margin-bottom: 10px; }
   .shead__markers-list { display: flex; flex-wrap: wrap; gap: 6px; }
 
-  .prompt-preview { padding: 32px 0 40px; }
-  .prompt-preview--inline { padding: 20px 0 0; }
-  .prompt-preview h3 { font-size: 12px; font-weight: 500; color: var(--c-text-soft); margin-bottom: 12px; }
   .prompt-box {
     background: var(--c-bg-elev);
     border-radius: var(--r-card);
@@ -292,8 +402,77 @@ const componentUsage = getScreenComponentUsage(dSlug, sSlug);
     color: var(--c-text);
     font-family: var(--f-mono);
   }
+  .prompt-box--modal {
+    max-height: min(58vh, 560px);
+    overflow: auto;
+  }
+  .prompt-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .prompt-modal.is-open { display: flex; }
+  .prompt-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background: rgba(0,0,0,.36);
+  }
+  .prompt-modal__sheet {
+    position: relative;
+    width: min(760px, 100%);
+    max-height: calc(100vh - 48px);
+    overflow: hidden;
+    border-radius: 24px;
+    background: #fff;
+    box-shadow: 0 24px 80px rgba(0,0,0,.18);
+    padding: 24px;
+  }
+  .prompt-modal__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .prompt-modal__eyebrow {
+    font-size: 12px;
+    font-weight: 650;
+    color: var(--c-text-soft);
+    margin-bottom: 6px;
+  }
+  .prompt-modal__head h2 {
+    font-size: 20px;
+    font-weight: 750;
+    color: var(--c-text);
+  }
+  .prompt-modal__close {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--c-border);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--c-text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-  .screen-usage { padding: 0 0 96px; }
+  .screen-usage { padding: 0; }
+  .screen-usage__main { min-width: 0; }
+  .screen-usage__content { min-width: 0; }
+  .screen-usage__tabs {
+    position: static; top: auto; z-index: auto;
+    margin-bottom: 0;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .screen-usage__tabs-inner { padding: 0; }
   .screen-usage__body { padding-top: 32px; }
   .screen-component-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
   .screen-component-card {
@@ -306,5 +485,40 @@ const componentUsage = getScreenComponentUsage(dSlug, sSlug);
   .screen-component-card__meta {
     display: flex; flex-wrap: wrap; gap: 8px;
     font-size: 11px; color: var(--c-text-soft); font-family: var(--f-mono);
+  }
+  @media (max-width: 720px) {
+    .screen-detail {
+      height: auto;
+      overflow: visible;
+    }
+    .screen-detail__main {
+      height: auto;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    .screen-detail__preview {
+      height: auto;
+      overflow: visible;
+      padding: 32px 0 0;
+    }
+    .screen-detail__scroll {
+      height: auto;
+      overflow: visible;
+      overscroll-behavior: auto;
+      padding: 0 0 72px;
+    }
+    .shead { padding: 0 0 40px; }
+    .shead__thumb { position: static; top: auto; }
+    .prompt-modal {
+      align-items: flex-end;
+      padding: 0;
+    }
+    .prompt-modal__sheet {
+      width: 100%;
+      max-height: 86vh;
+      border-radius: 24px 24px 0 0;
+      padding: 20px;
+    }
+    .prompt-box--modal { max-height: 58vh; }
   }
 </style>
