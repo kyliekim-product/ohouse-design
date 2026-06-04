@@ -9,6 +9,9 @@
     "build": "npm run validate:ods-previews && astro build",
     "preview": "astro preview",
     "astro": "astro",
+    "bootstrap:context": "node scripts/ensure-context.mjs",
+    "predev": "npm run bootstrap:context",
+    "prebuild": "npm run bootstrap:context",
     "validate:ods-previews": "node scripts/validate-ods-previews.mjs",
     "validate:repo-metadata-cache": "node scripts/validate-repo-metadata-cache.mjs"
   },
