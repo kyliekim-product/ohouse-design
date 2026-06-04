@@ -31,7 +31,17 @@ const identityBadges = [item.domain, item.pattern].filter(Boolean);
       </div>
     )}
     <div class="ref-card__phone">
-      {item.thumb ? (
+      {item.previewHtml ? (
+        <iframe
+          class="ref-card__frame"
+          srcdoc={item.previewHtml}
+          sandbox=""
+          loading="lazy"
+          tabindex="-1"
+          aria-hidden="true"
+          title={item.label}
+        />
+      ) : item.thumb ? (
         <img class="ref-card__shot" src={item.thumb} alt={item.label} loading="lazy" />
       ) : (
         <div class="ref-card__placeholder" aria-hidden="true">
@@ -52,3 +62,13 @@ const identityBadges = [item.domain, item.pattern].filter(Boolean);
     </div>
   </div>
 </a>
+
+<style>
+  .ref-card__frame {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #fff;
+    pointer-events: none;
+  }
+</style>
