@@ -242,6 +242,18 @@ function parseYaml(filePath) {
   }
 }
 
+export function isSelfContainedHtml(html) {
+  const text = String(html || '');
+  if (!text.trim()) return false;
+  // 외부 스크립트 참조 (예: <script src="/src/main.tsx">)
+  if (/<script\b[^>]*\bsrc\s*=/i.test(text)) return false;
+  // 번들러 진입점 (예: <script type="module">)
+  if (/<script\b[^>]*\btype\s*=\s*["']module["']/i.test(text)) return false;
+  // 외부 스타일시트 (예: <link rel="stylesheet" href="/a.css">)
+  if (/<link\b[^>]*\brel\s*=\s*["']stylesheet["'][^>]*\bhref\s*=/i.test(text)) return false;
+  return true;
+}
+
 const POLICY_SECTION_GROUPS = [
   { id: 'rules', label: 'Rules' },
   { id: 'states', label: 'States' },
