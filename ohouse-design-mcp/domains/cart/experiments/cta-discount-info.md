@@ -3,8 +3,8 @@ tier: 5
 when-to-read: "유사 결정 근거 찾을 때"
 size: "~500 tokens"
 domain: cart
-period: 2026-03 ~ 2026-04-29
-key_date: 2026-04-29
+period: 2026-04-20 ~ 2026-05-15
+key_date: 2026-05-15
 key_date_type: launched
 variants: [A (기존 CTA), B (할인 정보·결제 예정금액 노출)]
 winner: B
@@ -17,7 +17,7 @@ sources:
   notion: https://www.notion.so/279a597878a080089a31dc9a20c40a18
   prd: https://docs.google.com/document/d/15SMaZM16-B4YfeB3cHBcC61Y66FmVmpLL25XN2AypdI/edit
   figma: https://www.figma.com/design/JZDE8DeiYUislHI9HB1zUX
-  xpc: null
+  xpc: https://xpc.dailyhou.se/experiments/2124
 team: Commerce
 owner: Jenna
 ---
