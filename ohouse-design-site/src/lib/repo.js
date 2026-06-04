@@ -249,8 +249,10 @@ export function isSelfContainedHtml(html) {
   if (/<script\b[^>]*\bsrc\s*=/i.test(text)) return false;
   // 번들러 진입점 (예: <script type="module">)
   if (/<script\b[^>]*\btype\s*=\s*["']module["']/i.test(text)) return false;
-  // 외부 스타일시트 (예: <link rel="stylesheet" href="/a.css">)
-  if (/<link\b[^>]*\brel\s*=\s*["']stylesheet["'][^>]*\bhref\s*=/i.test(text)) return false;
+  // 외부 스타일시트 (예: <link rel="stylesheet" href="/a.css">) — 속성 순서 무관
+  for (const tag of text.match(/<link\b[^>]*>/gi) || []) {
+    if (/\brel\s*=\s*["']stylesheet["']/i.test(tag) && /\bhref\s*=/i.test(tag)) return false;
+  }
   return true;
 }
 

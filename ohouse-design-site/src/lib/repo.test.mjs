@@ -31,3 +31,8 @@ test('isSelfContainedHtml: inline script(외부 참조 없음)는 true', () => {
   const html = '<html><body><script>console.log(1)</script></body></html>';
   assert.equal(isSelfContainedHtml(html), true);
 });
+
+test('isSelfContainedHtml: href가 rel보다 앞서도 외부 stylesheet면 false', () => {
+  const html = '<html><head><link href="/a.css" rel="stylesheet" /></head><body></body></html>';
+  assert.equal(isSelfContainedHtml(html), false);
+});
