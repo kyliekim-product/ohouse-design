@@ -335,6 +335,7 @@ const foundInItems = [
   }
 
   .shead__thumb {
+    position: relative;
     aspect-ratio: 9 / 16;
     background: var(--c-bg-elev);
     border-radius: var(--r-card);
@@ -375,11 +376,11 @@ const foundInItems = [
   .shead__placeholder span:first-child { font-size: 18px; font-weight: 600; color: var(--c-text-muted); }
   .shead__placeholder-hint { font-size: 11px; }
   .shead__frame {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
-    min-height: 320px;
     border: 0;
-    border-radius: var(--r-md);
     background: #fff;
   }
 
