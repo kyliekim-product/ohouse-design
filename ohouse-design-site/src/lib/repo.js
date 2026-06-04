@@ -748,6 +748,7 @@ export function getAllBrowseCards(axis = 'screens') {
         element: element.label,
         flow: flow.label,
         thumb: screen.thumb,
+        previewHtml: screen.previewHtml,
         markers,
         updated: screen.updated,
       });
