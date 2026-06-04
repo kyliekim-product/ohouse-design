@@ -111,3 +111,21 @@ test('resolveScreenPreviewHtml: 후보 파일 없으면 null', () => {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('resolveScreenPreviewHtml: frontmatter ref가 self-contained 아니면 로컬로 폴백', () => {
+  const ctx = mkdtempSync(join(tmpdir(), 'ctx-'));
+  const screen = mkdtempSync(join(tmpdir(), 'screen-'));
+  try {
+    writeFileSync(join(ctx, 'bad.html'), EXTERNAL_HTML);
+    writeFileSync(join(screen, 'prototype.html'), SELF_HTML);
+    const out = resolveScreenPreviewHtml({
+      screenDir: screen,
+      frontmatter: { prototype_html: 'bad.html' },
+      contextRoot: ctx,
+    });
+    assert.equal(out, SELF_HTML);
+  } finally {
+    rmSync(ctx, { recursive: true, force: true });
+    rmSync(screen, { recursive: true, force: true });
+  }
+});
