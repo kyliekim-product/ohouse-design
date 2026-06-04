@@ -30,6 +30,8 @@ function resolveContextRoot() {
     process.env.OHOUSE_DESIGN_CONTEXT_ROOT,
     resolve(import.meta.dirname, '../../../../ohouse-design-context'),
     resolve(import.meta.dirname, '../../../ohouse-design-context'),
+    // ensure-context.mjs 가 채우는 관리 캐시 (env·형제 폴더가 없을 때)
+    resolve(import.meta.dirname, '../../.context/ohouse-design-context'),
   ].filter(Boolean);
   for (const p of candidates) {
     if (existsSync(join(p, 'tracks'))) return p;
