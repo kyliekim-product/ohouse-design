@@ -256,6 +256,21 @@ export function isSelfContainedHtml(html) {
   return true;
 }
 
+export function resolveScreenPreviewHtml({ screenDir, frontmatter, contextRoot }) {
+  const candidates = [];
+  const ref = frontmatter && frontmatter.prototype_html;
+  if (ref) candidates.push(join(contextRoot, String(ref)));
+  candidates.push(join(screenDir, 'prototype.html'));
+  candidates.push(join(screenDir, 'prototype.htm'));
+
+  for (const candidate of candidates) {
+    if (!existsSync(candidate)) continue;
+    const html = safeRead(candidate);
+    if (html && isSelfContainedHtml(html)) return html;
+  }
+  return null;
+}
+
 const POLICY_SECTION_GROUPS = [
   { id: 'rules', label: 'Rules' },
   { id: 'states', label: 'States' },
