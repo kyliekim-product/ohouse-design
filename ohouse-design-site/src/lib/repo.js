@@ -528,6 +528,11 @@ export function getDomainScreens(slug) {
       status: readme.status || null,
       thumb: thumb ? withBase(`api/asset?path=${encodeURIComponent(thumb.replace(ROOT + '/', ''))}`) : null,
       prototype: prototypeHtml ? prototypeHtml.replace(ROOT + '/', '') : null,
+      previewHtml: resolveScreenPreviewHtml({
+        screenDir: join(screensDir, s),
+        frontmatter: readme,
+        contextRoot: CONTEXT_ROOT,
+      }),
       markers,
       updated: lastModified(`domains/${slug}/screens/${s}`),
     };
@@ -809,6 +814,11 @@ export function getScreen(domainSlug, screenSlug) {
     markers,
     thumb: thumb ? withBase(`api/asset?path=${encodeURIComponent(thumb.replace(ROOT + '/', ''))}`) : null,
     prototype: prototypePath ? prototypePath.replace(ROOT + '/', '') : null,
+    previewHtml: resolveScreenPreviewHtml({
+      screenDir: dir,
+      frontmatter: readme,
+      contextRoot: CONTEXT_ROOT,
+    }),
     updated: lastModified(`domains/${domainSlug}/screens/${screenSlug}`),
   };
 }
