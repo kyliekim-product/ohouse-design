@@ -153,12 +153,12 @@ const foundInItems = [
             <div class="screen-usage__content">
               <nav class="screen-info-tabs dtabs" aria-label="screen info tabs" id="screen-info-tabs">
                 <div class="dtabs__inner">
-                  {screen.prototypeMetaHtml && (
+                  {screen.historyHtml && (
                     <a class="dtab is-active" href={`${base}d/${dSlug}/s/${sSlug}?info=screen-info`} data-screen-info-tab="screen-info">
                       Screen Info
                     </a>
                   )}
-                  <a class={`dtab${screen.prototypeMetaHtml ? '' : ' is-active'}`} href={`${base}d/${dSlug}/s/${sSlug}?info=ods`} data-screen-info-tab="ods">
+                  <a class={`dtab${screen.historyHtml ? '' : ' is-active'}`} href={`${base}d/${dSlug}/s/${sSlug}?info=ods`} data-screen-info-tab="ods">
                     ODS Components <span class="dtab__count">{componentUsage.ods.length}</span>
                   </a>
                   <a class="dtab" href={`${base}d/${dSlug}/s/${sSlug}?info=domain`} data-screen-info-tab="domain">
@@ -168,20 +168,13 @@ const foundInItems = [
               </nav>
 
               <div class="screen-info-body">
-                {screen.prototypeMetaHtml && (
+                {screen.historyHtml && (
                   <div class="screen-info-panel" data-screen-info-panel="screen-info">
-                    {screen.prototypeUrl && (
-                      <div class="stage-live-row" aria-label="단계별 라이브">
-                        {[['1', '1차'], ['2', '2차'], ['3a', '3a 초안'], ['3b', '3b 디벨롭']].map(([id, label]) => (
-                          <button type="button" class="stage-live-link" data-stage-live={id}>{label}</button>
-                        ))}
-                      </div>
-                    )}
-                    <div class="screen-spec__body" set:html={screen.prototypeMetaHtml} />
+                    <div class="screen-spec__body" set:html={screen.historyHtml} />
                   </div>
                 )}
 
-                <div class="screen-info-panel" data-screen-info-panel="ods" hidden={!!screen.prototypeMetaHtml}>
+                <div class="screen-info-panel" data-screen-info-panel="ods" hidden={!!screen.historyHtml}>
                   {componentUsage.ods.length > 0 ? (
                     <div class="screen-component-list">
                       {componentUsage.ods.map((component) => (
@@ -313,27 +306,6 @@ const foundInItems = [
     initPromptPreviewModal();
     document.addEventListener('astro:page-load', initPromptPreviewModal);
 
-    function initStageLiveLinks() {
-      const frame = document.querySelector<HTMLIFrameElement>('[data-live-frame]');
-      const base = frame?.getAttribute('data-src');
-      if (!frame || !base) return;
-      document.querySelectorAll<HTMLElement>('[data-stage-live]').forEach((btn) => {
-        if (btn.dataset.bound) return;
-        btn.dataset.bound = '1';
-        btn.addEventListener('click', () => {
-          const sep = base.includes('?') ? '&' : '?';
-          frame.setAttribute('src', `${base}${sep}stage=${btn.dataset.stageLive}`);
-          document.querySelectorAll('[data-stage-live]').forEach((b) => b.classList.toggle('is-active', b === btn));
-          frame.removeAttribute('hidden');
-          const thumb = frame.closest('.shead__thumb') as HTMLElement | null;
-          if (thumb) thumb.style.position = 'relative';
-          const toggle = document.querySelector('[data-live-toggle]');
-          if (toggle) { toggle.setAttribute('aria-pressed', 'true'); toggle.textContent = '■ 정적 프리뷰로 돌아가기'; }
-        });
-      });
-    }
-    initStageLiveLinks();
-    document.addEventListener('astro:page-load', initStageLiveLinks);
   </script>
 </Layout>
 
@@ -629,14 +601,6 @@ const foundInItems = [
     .prompt-box--modal { max-height: 58vh; }
   }
 
-  .stage-live-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 20px; }
-  .stage-live-link {
-    border: 1px solid var(--c-border); background: var(--c-bg-elev); color: var(--c-text-muted);
-    border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer;
-    transition: background .15s, color .15s, border-color .15s;
-  }
-  .stage-live-link:hover { background: var(--c-bg-elev-2); color: var(--c-text); }
-  .stage-live-link.is-active { background: var(--c-text); color: var(--c-bg); border-color: var(--c-text); }
 </style>
 
 <script>
@@ -655,14 +619,12 @@ const foundInItems = [
         if (thumb) thumb.style.position = 'relative';
         btn.setAttribute('aria-pressed', 'true');
         btn.textContent = '■ 정적 프리뷰로 돌아가기';
-        document.querySelectorAll('[data-stage-live]').forEach((b) => b.classList.remove('is-active'));
       } else {
         frame.setAttribute('hidden', '');
         if (thumb) thumb.style.position = '';
         btn.setAttribute('aria-pressed', 'false');
         btn.textContent = '▶ Live 프리뷰 보기';
         frame.removeAttribute('src');
-        document.querySelectorAll('[data-stage-live]').forEach((b) => b.classList.remove('is-active'));
       }
     });
   });
