@@ -172,7 +172,6 @@ const foundInItems = [
                   <div class="screen-info-panel" data-screen-info-panel="screen-info">
                     {screen.prototypeUrl && (
                       <div class="stage-live-row" aria-label="단계별 라이브">
-                        <span class="stage-live-row__label">단계별 라이브</span>
                         {[['1', '1차'], ['2', '2차'], ['3a', '3a 초안'], ['3b', '3b 디벨롭']].map(([id, label]) => (
                           <button type="button" class="stage-live-link" data-stage-live={id}>{label}</button>
                         ))}
@@ -631,14 +630,13 @@ const foundInItems = [
   }
 
   .stage-live-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 20px; }
-  .stage-live-row__label { font-size: 12px; font-weight: 600; color: var(--c-text-soft); margin-right: 4px; }
   .stage-live-link {
     border: 1px solid var(--c-border); background: var(--c-bg-elev); color: var(--c-text-muted);
     border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer;
-    transition: background .15s, color .15s;
+    transition: background .15s, color .15s, border-color .15s;
   }
   .stage-live-link:hover { background: var(--c-bg-elev-2); color: var(--c-text); }
-  .stage-live-link.is-active { background: var(--c-bg-elev-2); color: var(--c-text); border-color: var(--c-text); }
+  .stage-live-link.is-active { background: var(--c-text); color: var(--c-bg); border-color: var(--c-text); }
 </style>
 
 <script>

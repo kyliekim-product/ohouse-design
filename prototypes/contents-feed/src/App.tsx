@@ -2090,9 +2090,9 @@ function renderTopNav(stage: Stage): JSX.Element {
   );
 }
 
-// 사이트 self-host 프리뷰: StageSelector는 라이브 시안 전환용으로 복원되었다.
-// StageMeta(제작 이력)는 사이트 상세페이지 우측 컬럼(prototype-meta.md)에서
-// 문서로 보여주므로 이 컴포넌트에서는 생략한다.
+// 사이트 self-host 프리뷰: 단계(1/2/3a/3b)는 ?stage= URL 파라미터로만 결정한다.
+// 사이트 상세페이지의 '단계별 라이브' 버튼이 iframe 을 ?stage=X 로 리로드하므로
+// 프리뷰 안의 StageSelector(전환 칩)·StageMeta(제작 이력)는 노출하지 않는다.
 const STAGES: Stage[] = ['1', '2', '3a', '3b'];
 
 function initialStage(): Stage {
@@ -2101,16 +2101,9 @@ function initialStage(): Stage {
 }
 
 export function App(): JSX.Element {
-  const [stage, setStage] = useState<Stage>(initialStage);
-  const onChange = (s: Stage) => {
-    setStage(s);
-    const url = new URL(window.location.href);
-    url.searchParams.set('stage', s);
-    window.history.replaceState({}, '', url);
-  };
+  const stage = initialStage();
   return (
     <ScreenShell topNavigation={renderTopNav(stage)}>
-      <StageSelector active={stage} onChange={onChange} />
       {stage === '1' && <Stage1Content />}
       {stage === '2' && <Stage2Content />}
       {stage === '3a' && <Stage3aContent />}
