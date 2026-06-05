@@ -2090,13 +2090,31 @@ function renderTopNav(stage: Stage): JSX.Element {
   );
 }
 
+// 사이트 self-host 프리뷰: StageSelector는 라이브 시안 전환용으로 복원되었다.
+// StageMeta(제작 이력)는 사이트 상세페이지 우측 컬럼(prototype-meta.md)에서
+// 문서로 보여주므로 이 컴포넌트에서는 생략한다.
+const STAGES: Stage[] = ['1', '2', '3a', '3b'];
+
+function initialStage(): Stage {
+  const p = new URLSearchParams(window.location.search).get('stage');
+  return (STAGES as string[]).includes(p ?? '') ? (p as Stage) : '3b';
+}
+
 export function App(): JSX.Element {
-  // 사이트 self-host 프리뷰: 시안 전환 탭(StageSelector)·제작 메타(StageMeta)는
-  // 화면에서 제거하고 최종 3b 피드만 렌더한다. 제작 이력 메타는 사이트 상세페이지
-  // 우측 컬럼(prototype-meta.md)에서 문서로 보여준다.
+  const [stage, setStage] = useState<Stage>(initialStage);
+  const onChange = (s: Stage) => {
+    setStage(s);
+    const url = new URL(window.location.href);
+    url.searchParams.set('stage', s);
+    window.history.replaceState({}, '', url);
+  };
   return (
-    <ScreenShell topNavigation={renderTopNav('3b')}>
-      <Stage3bContent />
+    <ScreenShell topNavigation={renderTopNav(stage)}>
+      <StageSelector active={stage} onChange={onChange} />
+      {stage === '1' && <Stage1Content />}
+      {stage === '2' && <Stage2Content />}
+      {stage === '3a' && <Stage3aContent />}
+      {stage === '3b' && <Stage3bContent />}
     </ScreenShell>
   );
 }
