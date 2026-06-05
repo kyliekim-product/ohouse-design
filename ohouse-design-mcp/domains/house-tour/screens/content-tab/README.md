@@ -8,7 +8,7 @@ status: production
 current_version: "26Q1 Migration"
 released: 2026-03-30
 owner: Deeer
-linked_yaml_components: [ContentsLandscapeCard, ContentsPortraitCard]
+linked_yaml_components: [Tab, Chip, Thumbnail, ScrapButton, Dialog]
 prototype_app: prototypes/contents-feed/index.html
 last_verified: 2026-04-22
 ---
