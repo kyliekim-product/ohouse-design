@@ -93,7 +93,7 @@ const foundInItems = [
         {screen.prototypeUrl && (
           <div class="preview-live-controls">
             <button type="button" class="btn-secondary" data-live-toggle aria-pressed="false">
-              ▶ Live 프리뷰 보기
+              ▶ Live 프리뷰
             </button>
             <a class="btn-secondary btn-secondary--stroke" href={screen.prototypeUrl} target="_blank" rel="noopener">
               ↗ 새 탭에서 열기
@@ -631,12 +631,12 @@ const foundInItems = [
         frame.removeAttribute('hidden');
         if (thumb) thumb.style.position = 'relative';
         btn.setAttribute('aria-pressed', 'true');
-        btn.textContent = '■ 정적 프리뷰로 돌아가기';
+        btn.textContent = '■ 정적 프리뷰';
       } else {
         frame.setAttribute('hidden', '');
         if (thumb) thumb.style.position = '';
         btn.setAttribute('aria-pressed', 'false');
-        btn.textContent = '▶ Live 프리뷰 보기';
+        btn.textContent = '▶ Live 프리뷰';
         frame.removeAttribute('src');
       }
     });
