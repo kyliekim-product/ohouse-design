@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>htmlviaTrueSource Bookmarklet — 설치</title>
+<style>
+  :root {
+    --foreground: #141414;
+    --foregroundWeak: #828C94;
+    --backgroundBrand: #00A1FF;
+    --background: #FFFFFF;
+    --backgroundWeak: #F6F7FA;
+    --border: #E0E0E0;
+    --accentRed: #FD3D4A;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Pretendard Variable', -apple-system, sans-serif;
+    letter-spacing: -0.3px;
+    color: var(--foreground);
+    background: var(--backgroundWeak);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 40px 16px 60px;
+  }
+  main {
+    max-width: 720px;
+    width: 100%;
+    background: var(--background);
+    border-radius: 16px;
+    padding: 32px 40px;
+    box-shadow: 0 0 24px rgba(0,0,0,0.06);
+  }
+  h1 { font-size: 28px; line-height: 38px; margin: 0 0 8px; }
+  .subtitle { color: var(--foregroundWeak); font-size: 15px; margin: 0 0 32px; }
+  h2 { font-size: 20px; line-height: 28px; margin: 32px 0 12px; }
+  h3 { font-size: 16px; line-height: 22px; margin: 20px 0 8px; }
+  p { font-size: 15px; line-height: 24px; margin: 8px 0; }
+  ol, ul { font-size: 15px; line-height: 24px; padding-left: 24px; }
+  li { margin: 4px 0; }
+  code {
+    background: var(--backgroundWeak);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .drag-box {
+    background: linear-gradient(135deg, var(--backgroundBrand) 0%, #0091EB 100%);
+    color: white;
+    padding: 32px;
+    border-radius: 12px;
+    text-align: center;
+    margin: 24px 0;
+  }
+  .drag-link {
+    display: inline-block;
+    background: white;
+    color: var(--backgroundBrand);
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: grab;
+    user-select: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .drag-link:active { cursor: grabbing; }
+  .drag-hint { margin-top: 12px; font-size: 14px; opacity: 0.9; }
+  .step {
+    border-left: 3px solid var(--backgroundBrand);
+    padding: 8px 16px;
+    margin: 12px 0;
+    background: var(--backgroundWeak);
+    border-radius: 0 8px 8px 0;
+  }
+  .warning {
+    background: #FFF4E5;
+    border-left: 3px solid #FF8800;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+  }
+  .copy-block {
+    background: #141414;
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    word-break: break-all;
+    max-height: 160px;
+    overflow-y: auto;
+    margin: 8px 0;
+  }
+  details {
+    margin: 16px 0;
+    padding: 12px 16px;
+    background: var(--backgroundWeak);
+    border-radius: 8px;
+  }
+  summary { cursor: pointer; font-weight: 600; }
+  details[open] summary { margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>📋 htmlviaTrueSource Bookmarklet</h1>
+  <p class="subtitle">아무 HTML 페이지에서나 클릭 한 번으로 prototype 생성을 위한 데이터를 추출합니다.</p>
+
+  <div class="drag-box">
+    <a class="drag-link" id="bookmarklet" draggable="true">📋 추출하기</a>
+    <div class="drag-hint">⬆️ 이 버튼을 Chrome 북마크바로 드래그하세요</div>
+  </div>
+
+  <h2>설치 방법</h2>
+
+  <div class="step">
+    <strong>Step 1.</strong> Chrome 북마크바를 켜세요 (<code>⌘+Shift+B</code>)
+  </div>
+  <div class="step">
+    <strong>Step 2.</strong> 위의 "📋 추출하기" 버튼을 북마크바로 드래그하세요
+  </div>
+  <div class="step">
+    <strong>Step 3.</strong> (선택) 북마클릿 이름을 알아보기 쉽게 변경 (예: "🧪 Prototype 추출")
+  </div>
+
+  <h2>사용 방법</h2>
+
+  <ol>
+    <li>분석하려는 페이지를 Chrome으로 열기</li>
+    <li>북마크바의 <strong>📋 추출하기</strong> 클릭</li>
+    <li>페이지가 자동으로 스크롤되며 lazy-loaded 이미지가 로드됨 (1-2초)</li>
+    <li>완료 alert 표시 + <code>extraction-{slug}.json</code> 파일이 Downloads로 다운로드됨</li>
+    <li>Claude Code 세션에서 다음 명령:
+      <div class="copy-block">"북마클릿 추출 데이터로 {slug} 프로토타입 만들어줘"</div>
+    </li>
+    <li>Claude Code가 JSON을 읽고 spec.md → prototype.html → QA까지 자동 실행</li>
+  </ol>
+
+  <div class="warning">
+    <strong>주의:</strong> 로그인 페이지 등 인증이 필요한 페이지도 본 브라우저의 세션이 살아있는 상태에서 클릭하면 데이터 추출 가능합니다 (Playwright는 별도 세션이라 인증 필요한 페이지를 캡처할 수 없습니다).
+  </div>
+
+  <h2>설치 검증 (Playwright 자동)</h2>
+
+  <p>전체 설치가 정상인지 확인하려면 Claude Code 새 세션에서:</p>
+  <div class="copy-block">"랜딩 프로토타입 설치 검증해줘"</div>
+  <p>Playwright가 자동으로 5단계 점검을 실행합니다 — 사전 조건 · 추출 API 호출(무인증+키) · worked example 렌더 · 인터랙션 동작 · 북마클릿 추출 로직. 새 머신·재설치 후 1회 권장.</p>
+
+  <h2>추출 API 키 (선택)</h2>
+
+  <p>URL 모드(모드 A)에서 추출 API를 호출할 때 키 없이도 <strong>20 RPM</strong>으로 동작합니다. 자주 사용한다면 무료 키(500 RPM + 1천만 토큰)를 발급받아 등록하면 빠릅니다.</p>
+
+  <p>자동 셋업:</p>
+  <div class="copy-block">bash ~/.claude/skills/htmlviaTrueSource/setup-jina.sh</div>
+
+  <p>위 명령은 다음을 처리합니다:</p>
+  <ul>
+    <li>API 대시보드 자동 오픈</li>
+    <li>키 입력 (입력 숨김)</li>
+    <li>macOS는 Keychain, Linux/WSL은 <code>~/.env.jina</code>에 저장</li>
+    <li>shell rc(<code>.zshrc</code>/<code>.bashrc</code>)에 자동 로드 라인 추가 (옵션)</li>
+    <li>키 동작 smoke test</li>
+  </ul>
+
+  <h2>추출되는 데이터</h2>
+
+  <ul>
+    <li><strong>토큰</strong>: 사용된 색상·배경·폰트사이즈·weight·radius·letter-spacing·font-family</li>
+    <li><strong>이미지</strong>: <code>&lt;img&gt;</code> + <code>background-image</code> + srcset (CDN URL 그대로)</li>
+    <li><strong>구조</strong>: H1/H2/H3, section text+높이, 버튼 텍스트+aria-label</li>
+    <li><strong>임베디드 데이터</strong>: <code>__NEXT_DATA__</code>, Apollo/Redux state, JSON scripts, ld+json</li>
+    <li><strong>메타</strong>: URL, title, viewport, captured_at, pageHeight</li>
+  </ul>
+
+  <h2>제한사항</h2>
+
+  <ul>
+    <li>iframe 안 컨텐츠는 추출 불가 (브라우저 same-origin 정책)</li>
+    <li>Canvas/WebGL 렌더링 콘텐츠 추출 불가</li>
+    <li>Shadow DOM은 부분적으로만 추출됨</li>
+    <li>로그인 페이지 등에 단발성 토큰이 포함된 경우 JSON에 그대로 들어갈 수 있음 — 공유 전 확인</li>
+  </ul>
+
+  <details>
+    <summary>북마클릿 코드 직접 보기 / 복사</summary>
+    <p>북마크바 드래그 대신 직접 새 북마크 생성 후 URL 필드에 붙여넣어도 됩니다:</p>
+    <div class="copy-block" id="code-source">로딩 중...</div>
+    <p><small><a href="extractor.js" target="_blank">📄 readable JS source (extractor.js)</a></small></p>
+  </details>
+
+  <details>
+    <summary>워크플로우 다이어그램</summary>
+    <pre style="background:#fff; padding:16px; overflow-x:auto;">
+[Chrome 페이지]
+    │
+    ├─► 북마클릿 클릭
+    │    │
+    │    ├─ auto-scroll (lazy load)
+    │    ├─ tokens / structure / images / data 추출
+    │    └─ extraction-{slug}.json 다운로드
+    │
+[Claude Code]
+    │
+    │  "북마클릿 추출 데이터로 {slug} 프로토타입 만들어줘"
+    │
+    ├─► JSON 읽기
+    ├─► spec.md 생성 (토큰·구조)
+    ├─► assets.json 생성 (이미지 URL)
+    ├─► data.json 생성 (embedded data)
+    ├─► prototype.html 생성 (self-contained)
+    └─► QA 자동 실행 (Playwright + 비교 + qa.md)
+    </pre>
+  </details>
+</main>
+
+<script>
+// 페이지 로드 시 bookmarklet.url 읽어서 a href에 적용
+fetch('bookmarklet.url')
+  .then(r => r.text())
+  .then(url => {
+    const a = document.getElementById('bookmarklet');
+    a.href = url;
+    document.getElementById('code-source').textContent = url;
+  })
+  .catch(err => {
+    document.getElementById('code-source').textContent = '⚠ bookmarklet.url 파일이 같은 폴더에 있어야 합니다.\n에러: ' + err.message;
+  });
+</script>
+</body>
+</html>
