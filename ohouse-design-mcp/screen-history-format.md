@@ -1,8 +1,6 @@
 ---
 tier: 3
 when-to-read: "스크린 상세페이지에 실험/디벨롭 히스토리(화면+설명)를 넣고 싶을 때"
-audience: human
-owner: Deeer
 ---
 
 # 스크린 실험/디벨롭 히스토리 작성 가이드
