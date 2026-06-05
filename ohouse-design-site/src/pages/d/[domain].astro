@@ -28,6 +28,7 @@ const usedComponents = componentOverview.used;
 const ownedComponents = componentOverview.owned;
 const policies = getDomainPolicies(slug);
 const experiments = getDomainExperiments(slug);
+const expCounts = experiments.reduce((acc, e) => { acc[e.status] = (acc[e.status] || 0) + 1; return acc; }, {});
 const policyGroupOrder = ['principles', 'operational', 'exceptions', 'decisions', 'open-questions', 'sources'];
 const policySections = policies.flatMap((policy) => (
   (policy.sections || []).map((section, sectionIndex) => ({
@@ -348,6 +349,14 @@ const tabs = [
             <div class="empty__hint">A/B · 사용성 테스트 결과를 누적하면 자산이 됩니다.</div>
           </div>
         ) : (
+          <>
+          <div class="exp-filter" id="exp-filter" role="group" aria-label="실험 상태 필터">
+            <button type="button" class="exp-chip is-active" data-exp-filter="all">전체 <span class="exp-chip__n">{experiments.length}</span></button>
+            {expCounts.running > 0 && <button type="button" class="exp-chip" data-exp-filter="running">진행 중 <span class="exp-chip__n">{expCounts.running}</span></button>}
+            {expCounts.win > 0 && <button type="button" class="exp-chip" data-exp-filter="win">Win <span class="exp-chip__n">{expCounts.win}</span></button>}
+            {expCounts.loss > 0 && <button type="button" class="exp-chip" data-exp-filter="loss">Loss <span class="exp-chip__n">{expCounts.loss}</span></button>}
+            {expCounts.inconclusive > 0 && <button type="button" class="exp-chip" data-exp-filter="inconclusive">Inconclusive <span class="exp-chip__n">{expCounts.inconclusive}</span></button>}
+          </div>
           <div class="exp-grid">
             {experiments.map((e) => (
               <article class="exp-card" data-status={e.status}>
@@ -419,6 +428,7 @@ const tabs = [
               </article>
             ))}
           </div>
+          </>
         )}
       </div>
     </div>
@@ -656,9 +666,31 @@ const tabs = [
   }
   initExperimentModal();
   document.addEventListener('astro:page-load', initExperimentModal);
+
+  function initExperimentFilter() {
+    const bar = document.getElementById('exp-filter');
+    if (!bar || (bar as HTMLElement).dataset.bound) return;
+    (bar as HTMLElement).dataset.bound = '1';
+    const chips = Array.from(bar.querySelectorAll<HTMLElement>('.exp-chip'));
+    const cards = Array.from(document.querySelectorAll<HTMLElement>('.exp-card'));
+    bar.addEventListener('click', (event) => {
+      const chip = (event.target as HTMLElement).closest<HTMLElement>('.exp-chip');
+      if (!chip) return;
+      const value = chip.dataset.expFilter || 'all';
+      chips.forEach((c) => c.classList.toggle('is-active', c === chip));
+      cards.forEach((card) => { card.hidden = !(value === 'all' || card.dataset.status === value); });
+    });
+  }
+  initExperimentFilter();
+  document.addEventListener('astro:page-load', initExperimentFilter);
 </script>
 
 <style>
+  .exp-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .exp-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border: 1px solid var(--c-border); border-radius: 999px; background: var(--c-bg); color: var(--c-text-muted); font-size: 13px; font-weight: 600; cursor: pointer; }
+  .exp-chip:hover { background: var(--c-bg-elev); }
+  .exp-chip.is-active { background: var(--c-text); color: var(--c-bg); border-color: var(--c-text); }
+  .exp-chip__n { font-size: 11px; opacity: .8; }
   .exp-grid { display: grid; gap: 16px; }
   .exp-card { border: 1px solid var(--c-border); border-radius: 16px; padding: 20px; background: var(--c-bg); }
   .exp-card__head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
