@@ -58,3 +58,17 @@ site/
 각 screen / component 카드의 [⟳ Copy prompt] 버튼 → 미리 빌드된 prompt 가 클립보드에 복사 → Claude / ChatGPT 에 붙여넣기.
 
 prompt 형식은 `_meta/plans/2026-05-vision-site.md` §5.2 참조.
+
+## Content source (ohouse-design-context)
+
+이 사이트는 빌드/실행 시 별도 private 레포
+[`Ohouse-product-design/ohouse-design-context`](https://github.com/Ohouse-product-design/ohouse-design-context)
+의 콘텐츠를 읽는다. `npm run dev`/`npm run build`는 시작 전에 `scripts/ensure-context.mjs`를
+자동 실행해 콘텐츠를 확보한다:
+
+1. `OHOUSE_DESIGN_CONTEXT_ROOT` 가 설정돼 있으면 그 경로를 사용한다(오프라인/커스텀).
+2. 형제 폴더 `../ohouse-design-context` 가 있으면 그대로 사용한다(콘텐츠 작성자).
+3. 둘 다 없으면 `.context/` 캐시에 최신 `main` 을 clone/pull 한다.
+
+따라서 **Ohouse-product-design org 접근 권한과 git 인증**이 필요하다. 인증이 없으면
+빌드는 명확한 에러로 중단된다. (CI/Pages 에서 돌리려면 별도 deploy token/SSH key 주입이 필요하다.)
