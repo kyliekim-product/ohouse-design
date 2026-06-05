@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "npm run validate:ods-previews && astro build",
+    "build": "npm run validate:ods-previews && npm run snapshot:prototypes && astro build",
     "preview": "astro preview",
+    "snapshot:prototypes": "node scripts/snapshot-prototypes.mjs",
     "astro": "astro",
     "bootstrap:context": "node scripts/ensure-context.mjs",
     "predev": "npm run bootstrap:context",
