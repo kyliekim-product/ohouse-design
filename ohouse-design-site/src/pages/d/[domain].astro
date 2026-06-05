@@ -351,8 +351,8 @@ const tabs = [
             {experiments.map((e) => (
               <article class="exp-card">
                 <div class="exp-card__head">
-                  <span class={`badge ${e.result === 'win' ? 'badge--success' : e.result === 'loss' ? 'badge--fail' : e.result === 'running' ? 'badge--accent' : ''}`}>
-                    {e.result === 'running' ? '진행 중' : e.result === 'win' ? 'Win' : e.result === 'loss' ? 'Loss' : 'Inconclusive'}
+                  <span class={`badge ${e.keyDateType === 'started' ? 'badge--accent' : e.result === 'win' ? 'badge--success' : e.result === 'loss' ? 'badge--fail' : ''}`}>
+                    {e.keyDateType === 'started' ? '진행 중' : e.result === 'win' ? 'Win' : e.result === 'loss' ? 'Loss' : 'Inconclusive'}
                   </span>
                   <h3 class="exp-card__title">{e.label}</h3>
                   {e.keyDate && (
