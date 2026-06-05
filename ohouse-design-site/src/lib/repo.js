@@ -7,6 +7,7 @@ import { execSync } from 'child_process';
 import matter from 'gray-matter';
 import { marked } from 'marked';
 import yaml from 'js-yaml';
+import { getOdsComponents } from './ods-content.js';
 
 // 사이트는 ohouse-design-site/ 에 살고, 콘텐츠는 Claude_Study 의 SSOT 에서 읽는다.
 // 폴더 이름이 'product-design' 또는 'product design' (스페이스) 둘 다 허용.
@@ -54,6 +55,17 @@ const BASE = resolveSiteBase().replace(/\/+$/, '') + '/';
 // base + 경로 결합 (중복 슬래시 방지). path 는 'thumbnails/...' 처럼 슬래시 없이 시작.
 function withBase(path) {
   return BASE + String(path).replace(/^\/+/, '');
+}
+
+// linked_yaml_components 이름을 ODS 카탈로그(slug/title)와 정규화 비교해 ODS slug 로 해석. 미매칭 null.
+export function resolveOdsSlug(name, catalog) {
+  const norm = (s) => String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
+  const target = norm(name);
+  if (!target) return null;
+  for (const c of catalog) {
+    if (norm(c.slug) === target || norm(c.title) === target) return c.slug;
+  }
+  return null;
 }
 
 // history.md 의 상대경로 이미지(<img src="./x.png">)를 public/screen-history 서빙 경로로 치환.
