@@ -700,6 +700,27 @@ export function getScreenComponentUsage(domainSlug, screenSlug) {
   return { ods, domain: dedupeComponents(domain) };
 }
 
+// 주어진 ODS slug 를 linked_yaml_components 로 사용하는 모든 스크린 목록(역인덱스).
+export function getOdsComponentScreens(odsSlug) {
+  const catalog = getOdsComponents();
+  const out = [];
+  for (const domain of getAllDomains()) {
+    for (const screen of getDomainScreens(domain.slug)) {
+      const readme = parseMd(join(ROOT, 'domains', domain.slug, 'screens', screen.slug, 'README.md'));
+      const names = readme?.linked_yaml_components || [];
+      if (names.some((n) => resolveOdsSlug(n, catalog) === odsSlug)) {
+        out.push({
+          domain: domain.slug,
+          slug: screen.slug,
+          label: screen.label,
+          href: withBase(`d/${domain.slug}/s/${screen.slug}`),
+        });
+      }
+    }
+  }
+  return out;
+}
+
 export function getDomainComponentOverview(slug) {
   const owned = getDomainComponents(slug);
   const used = getDomainScreens(slug)
