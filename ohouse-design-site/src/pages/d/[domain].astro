@@ -27,7 +27,7 @@ const usedComponents = componentOverview.used;
 const ownedComponents = componentOverview.owned;
 const policies = getDomainPolicies(slug);
 const experiments = getDomainExperiments(slug);
-const policyGroupOrder = ['rules', 'states', 'platform', 'open-questions', 'track-context', 'sources'];
+const policyGroupOrder = ['principles', 'operational', 'exceptions', 'decisions', 'open-questions', 'sources'];
 const policySections = policies.flatMap((policy) => (
   (policy.sections || []).map((section, sectionIndex) => ({
     ...section,
@@ -42,12 +42,12 @@ const policyGroups = policyGroupOrder
     sections: policySections.filter((section) => section.category === id),
   }))
   .filter((group) => group.sections.length > 0);
-const primaryPolicyGroup = policyGroups[0]?.id || 'rules';
+const primaryPolicyGroup = policyGroups[0]?.id || 'principles';
 const policyOwners = Array.from(new Set(policies.flatMap((policy) => [policy.policyAuthority, policy.owner]).filter(Boolean)));
 const policyTracks = Array.from(new Set(policies.map((policy) => policy.track).filter(Boolean)));
 const policyLastVerified = policies.map((policy) => policy.lastVerified).filter(Boolean).sort().at(-1);
 const openQuestionCount = policyGroups.find((group) => group.id === 'open-questions')?.sections.length || 0;
-const platformRuleCount = policyGroups.find((group) => group.id === 'platform')?.sections.length || 0;
+const principleCount = policyGroups.find((group) => group.id === 'principles')?.sections.length || 0;
 const policyKindLabel = (kind) => ({
   'domain-policy': 'domain policy',
   'track-policy': 'track policy',
@@ -63,9 +63,9 @@ const figmaCount = screensTyped.length - htmlCount;
 const typeLabel = (t) => (t === 'figma' ? 'Figma' : 'HTML');
 
 const tabs = [
-  { id: 'policies', label: 'Policies', count: policies.length },
+  { id: 'policies', label: 'Track Design Context', count: policies.length },
   { id: 'experiments', label: 'Experiments', count: experiments.length },
-  { id: 'components', label: 'Patterns', count: ownedComponents.length },
+  { id: 'components', label: 'Track Components', count: ownedComponents.length },
   { id: 'screens', label: 'Screens', count: screens.length },
 ];
 ---
@@ -159,8 +159,8 @@ const tabs = [
       <!-- Components -->
       <div class="dpanel" data-panel="components" hidden>
         <div class="sechead">
-          <div class="sechead__title">Patterns</div>
-          <div class="sechead__count">{usedComponents.length} used · {ownedComponents.length} owned</div>
+          <div class="sechead__title">Track Components</div>
+          <div class="sechead__count">{ownedComponents.length} owned · {usedComponents.length} in use</div>
         </div>
         {usedComponents.length === 0 && ownedComponents.length === 0 ? (
           <div class="empty">
@@ -170,20 +170,39 @@ const tabs = [
         ) : (
           <div>
             <nav class="component-subtabs" aria-label="component tabs" id="component-subtabs">
-              {usedComponents.length > 0 && (
-                <a class="component-subtab is-active" href={`${base}d/${slug}?tab=components&component=used`} data-component-tab="used">
-                  Used in this domain <span>{usedComponents.length}</span>
+              {ownedComponents.length > 0 && (
+                <a class="component-subtab is-active" href={`${base}d/${slug}?tab=components&component=owned`} data-component-tab="owned">
+                  Owned <span>{ownedComponents.length}</span>
                 </a>
               )}
-              {ownedComponents.length > 0 && (
-                <a class={`component-subtab${usedComponents.length === 0 ? ' is-active' : ''}`} href={`${base}d/${slug}?tab=components&component=owned`} data-component-tab="owned">
-                  Owned by this domain <span>{ownedComponents.length}</span>
+              {usedComponents.length > 0 && (
+                <a class={`component-subtab${ownedComponents.length === 0 ? ' is-active' : ''}`} href={`${base}d/${slug}?tab=components&component=used`} data-component-tab="used">
+                  In use <span>{usedComponents.length}</span>
                 </a>
               )}
             </nav>
 
+            {ownedComponents.length > 0 && (
+              <div class="component-subpanel" data-component-panel="owned">
+                <p class="component-subpanel__desc">이 도메인이 직접 정의하고 소유한 컴포넌트입니다.</p>
+                <div class="lgrid">
+                  {ownedComponents.map((c) => (
+                    <div class="lcard">
+                      <div class="lcard__head">
+                        <span class="lcard__title">{c.label}</span>
+                        <span class="badge badge--accent">{c.type}</span>
+                      </div>
+                      {c.summary && <p class="lcard__summary">{c.summary}</p>}
+                      {c.updated && <div class="lcard__foot"><span>{relTime(c.updated)}</span></div>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {usedComponents.length > 0 && (
-              <div class="component-subpanel" data-component-panel="used">
+              <div class="component-subpanel" data-component-panel="used" hidden={ownedComponents.length > 0}>
+                <p class="component-subpanel__desc">다른 도메인이 소유하지만, 이 도메인 화면에서 사용 중인 컴포넌트입니다.</p>
                 <div class="lgrid">
                   {usedComponents.map((c) => (
                     <div class="lcard">
@@ -202,23 +221,6 @@ const tabs = [
                 </div>
               </div>
             )}
-
-            {ownedComponents.length > 0 && (
-              <div class="component-subpanel" data-component-panel="owned" hidden={usedComponents.length > 0}>
-                <div class="lgrid">
-                  {ownedComponents.map((c) => (
-                    <div class="lcard">
-                      <div class="lcard__head">
-                        <span class="lcard__title">{c.label}</span>
-                        <span class="badge badge--accent">{c.type}</span>
-                      </div>
-                      {c.summary && <p class="lcard__summary">{c.summary}</p>}
-                      {c.updated && <div class="lcard__foot"><span>{relTime(c.updated)}</span></div>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
@@ -226,18 +228,18 @@ const tabs = [
       <!-- Policies -->
       <div class="dpanel" data-panel="policies">
         <div class="sechead">
-          <div class="sechead__title">Policies</div>
+          <div class="sechead__title">Track Design Context</div>
         </div>
         {policies.length === 0 || policySections.length === 0 ? (
           <div class="empty">
-            <div class="empty__title">연결된 track policy가 없습니다</div>
-            <div class="empty__hint">이 도메인에 매핑된 tracks 문서나 화면 정책이 있으면 여기에 표시됩니다.</div>
+            <div class="empty__title">아직 정리된 트랙 디자인 맥락이 없습니다</div>
+            <div class="empty__hint">이 트랙을 설계할 때 이해해야 하는 운영 맥락·디자인 원칙·예외 케이스·의사결정 배경이 정리되면 여기에 표시됩니다.</div>
           </div>
         ) : (
           <div class="policy-dashboard">
-            <section class="policy-summary" aria-label="policy summary">
+            <section class="policy-summary" aria-label="track design context summary">
               <div class="policy-summary__main">
-                <span class="policy-summary__eyebrow">Policy coverage</span>
+                <span class="policy-summary__eyebrow">Context coverage</span>
                 <strong>{policyTracks.length > 0 ? policyTracks.join(', ') : domain.label}</strong>
               </div>
               <div class="policy-summary__stats">
@@ -246,12 +248,12 @@ const tabs = [
                   <small>sources</small>
                 </div>
                 <div>
-                  <span>{openQuestionCount}</span>
-                  <small>open questions</small>
+                  <span>{principleCount}</span>
+                  <small>디자인 원칙</small>
                 </div>
                 <div>
-                  <span>{platformRuleCount}</span>
-                  <small>platform rules</small>
+                  <span>{openQuestionCount}</span>
+                  <small>확인 필요</small>
                 </div>
               </div>
               <div class="policy-summary__meta">
@@ -434,14 +436,14 @@ const tabs = [
       panels.forEach((p) => { p.hidden = p.dataset.componentPanel !== id; });
     }
 
-    const initial = new URLSearchParams(window.location.search).get('component') || links[0]?.dataset.componentTab || 'used';
+    const initial = new URLSearchParams(window.location.search).get('component') || links[0]?.dataset.componentTab || 'owned';
     activate(initial);
 
     tabsNav.addEventListener('click', (e) => {
       const link = (e.target as HTMLElement).closest('.component-subtab') as HTMLElement | null;
       if (!link) return;
       e.preventDefault();
-      const id = link.dataset.componentTab || 'used';
+      const id = link.dataset.componentTab || 'owned';
       activate(id);
       const url = new URL(window.location.href);
       url.searchParams.set('tab', 'components');
@@ -461,20 +463,20 @@ const tabs = [
     const links = Array.from(tabsNav.querySelectorAll<HTMLElement>('.policy-subtab'));
 
     function activate(id: string) {
-      const fallback = links[0]?.dataset.policyTab || 'rules';
+      const fallback = links[0]?.dataset.policyTab || 'principles';
       const next = links.some((link) => link.dataset.policyTab === id) ? id : fallback;
       links.forEach((l) => l.classList.toggle('is-active', l.dataset.policyTab === next));
       panels.forEach((p) => { p.hidden = p.dataset.policyPanel !== next; });
     }
 
-    const initial = new URLSearchParams(window.location.search).get('policy') || links[0]?.dataset.policyTab || 'rules';
+    const initial = new URLSearchParams(window.location.search).get('policy') || links[0]?.dataset.policyTab || 'principles';
     activate(initial);
 
     tabsNav.addEventListener('click', (e) => {
       const link = (e.target as HTMLElement).closest('.policy-subtab') as HTMLElement | null;
       if (!link) return;
       e.preventDefault();
-      const id = link.dataset.policyTab || 'rules';
+      const id = link.dataset.policyTab || 'principles';
       activate(id);
       const url = new URL(window.location.href);
       url.searchParams.set('tab', 'policies');

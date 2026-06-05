@@ -274,12 +274,12 @@ export function resolveScreenPreviewHtml({ screenDir, frontmatter, contextRoot }
 }
 
 const POLICY_SECTION_GROUPS = [
-  { id: 'rules', label: 'Rules' },
-  { id: 'states', label: 'States' },
-  { id: 'platform', label: 'Platform' },
-  { id: 'open-questions', label: 'Open Questions' },
-  { id: 'sources', label: 'Sources' },
-  { id: 'track-context', label: 'Track Context' },
+  { id: 'principles', label: '디자인 원칙' },
+  { id: 'operational', label: '운영 맥락' },
+  { id: 'exceptions', label: '예외 케이스' },
+  { id: 'decisions', label: '의사결정 배경' },
+  { id: 'open-questions', label: '확인 필요' },
+  { id: 'sources', label: '참조' },
 ];
 
 export const POLICY_GROUP_LABELS = Object.fromEntries(POLICY_SECTION_GROUPS.map((group) => [group.id, group.label]));
@@ -319,17 +319,27 @@ function splitMarkdownSections(body) {
   return sections.filter((section) => section.title || section.body.trim());
 }
 
-function classifyPolicySection({ title, body, policyKind }) {
-  const normalizedTitle = String(title || '').toLowerCase();
+// Track Design Context — 트랙을 설계할 때 이해해야 하는 맥락 기준으로 섹션을 재분류.
+// 운영 정책 원문이 아니라 "디자인에 영향을 주는 맥락"으로 보고 제목 위주로 분류한다.
+function classifyPolicySection({ title, body }) {
+  const t = String(title || '').toLowerCase();
   const haystack = `${title}\n${body}`.toLowerCase();
 
-  if (/변경 이력|권위 있는 참조|주요 참조|참조|출처|source/.test(normalizedTitle)) return 'sources';
-  if (policyKind === 'track-context') return 'track-context';
-  if (/미확정|확인 필요|tbd|todo|예정/.test(normalizedTitle) || /정책 확인 필요|작업 시 확인 필수/.test(haystack)) return 'open-questions';
-  if (/ios|android|web|mobile web|플랫폼|platform/.test(haystack)) return 'platform';
-  if (/상태|empty|error|hidden|blocked|숨김|비공개|블라인드|미노출/.test(haystack)) return 'states';
-  if (/정책|처리|권한|조건|제약|주의사항|llm|원칙|구매 조건|할인|로직/.test(haystack)) return 'rules';
-  return 'rules';
+  // 제목 기반 분류를 우선한다 (본문 마커보다 우선).
+  // 확인 필요 — 미확정·확인 마커 (제목)
+  if (/미확정|확인 필요|확인 예정|문의 예정|tbd|todo/.test(t)) return 'open-questions';
+  // 의사결정 배경 — 이력·결정·회고
+  if (/변경 이력|의사결정|결정 배경|회고|learnings|changelog|history/.test(t)) return 'decisions';
+  // 참조 — 출처·담당자·라우팅
+  if (/참조|출처|레퍼런스|reference|source|담당자|문의처|하위 문서|라우팅|채널|링크/.test(t)) return 'sources';
+  // 예외 케이스 — 상태·제약·주의사항
+  if (/예외|상태|제약|주의사항|주의|엣지|edge|exception|숨김|블라인드|미노출/.test(t) || /empty|error|hidden|blocked/.test(haystack)) return 'exceptions';
+  // 디자인 원칙 — 정체성·원칙·인터랙션·컴포넌트
+  if (/디자인 원칙|원칙|정체성|범위|인터랙션|interaction|principle|컴포넌트|variant|지면/.test(t)) return 'principles';
+  // 확인 필요 — 제목엔 없지만 본문에 명시적 확인 마커가 있는 경우
+  if (/정책 확인 필요|작업 시 확인 필수/.test(haystack)) return 'open-questions';
+  // 기본값 — 운영 맥락 (운영 정책 성격의 섹션)
+  return 'operational';
 }
 
 function metadataDate(value) {

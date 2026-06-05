@@ -413,6 +413,7 @@ code, pre { font-family: var(--f-mono); font-size: 0.92em; }
 .component-subtab{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;font-size:13px;font-weight:700;color:var(--c-text-muted)}
 .component-subtab.is-active,.component-subtab:hover{background:#fff;color:var(--c-text)}
 .component-subtab span{font-size:11px;color:var(--c-text-soft);font-variant-numeric:tabular-nums}
+.component-subpanel__desc{margin:0 0 14px;font-size:13px;color:var(--c-text-muted);line-height:1.5}
 
 /* ── Empty state ── */
 .empty{padding:64px 32px;border:1px dashed var(--c-border);border-radius:var(--r-card);
