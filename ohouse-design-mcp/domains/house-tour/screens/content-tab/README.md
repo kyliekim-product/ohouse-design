@@ -9,10 +9,12 @@ current_version: "26Q1 Migration"
 released: 2026-03-30
 owner: Deeer
 linked_yaml_components: [ContentsLandscapeCard, ContentsPortraitCard]
-prototype_html: tracks/contents/_pilot-load-test/result/attempt-1.html
 prototype_app: prototypes/contents-feed/index.html
 last_verified: 2026-04-22
 ---
+
+<!-- 정적 프리뷰 thumbnail.webp 는 라이브(prototype_app)에서 자동 생성됨(scripts/snapshot-prototypes.mjs).
+     프로토타입 소스 변경 시: prototypes/contents-feed 에서 vite build → 사이트 build 순으로 갱신. -->
 
 # Screen · 집구경 탭 (Content Tab)
 
