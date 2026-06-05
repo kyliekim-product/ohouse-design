@@ -678,12 +678,18 @@ export function getScreenComponentUsage(domainSlug, screenSlug) {
   const readme = parseMd(join(dir, 'README.md'));
   if (!readme) return { ods: [], domain: [] };
 
-  const ods = (readme.linked_yaml_components || []).map((name) => ({
-    slug: name,
-    label: name,
-    type: 'ods',
-    source: 'linked_yaml_components',
-  }));
+  const odsCatalog = getOdsComponents();
+  const ods = (readme.linked_yaml_components || []).map((name) => {
+    const odsSlug = resolveOdsSlug(name, odsCatalog);
+    return {
+      slug: name,
+      label: name,
+      type: 'ods',
+      source: 'linked_yaml_components',
+      odsSlug,
+      href: odsSlug ? withBase(`ods/components/${odsSlug}`) : null,
+    };
+  });
 
   const domain = extractMarkers(readme.body)
     .filter((marker) => marker.kind === 'domain-component')
