@@ -713,6 +713,8 @@ export function getOdsComponentScreens(odsSlug) {
           domain: domain.slug,
           slug: screen.slug,
           label: screen.label,
+          domainLabel: domain.label,
+          thumb: screenThumbUrl(domain.slug, screen.slug),
           href: withBase(`d/${domain.slug}/s/${screen.slug}`),
         });
       }
