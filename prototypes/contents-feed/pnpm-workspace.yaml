@@ -1,0 +1,3 @@
+allowBuilds:
+  '@bucketplace/design-system': false
+  esbuild: false

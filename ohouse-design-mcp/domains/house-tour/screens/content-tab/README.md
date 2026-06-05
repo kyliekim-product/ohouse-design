@@ -10,7 +10,7 @@ released: 2026-03-30
 owner: Deeer
 linked_yaml_components: [ContentsLandscapeCard, ContentsPortraitCard]
 prototype_html: tracks/contents/_pilot-load-test/result/attempt-1.html
-prototype_url: https://deeer-glitch.github.io/ohouse-design-pilot-sandbox/
+prototype_app: prototypes/contents-feed/index.html
 last_verified: 2026-04-22
 ---
 
