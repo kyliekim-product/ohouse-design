@@ -85,7 +85,6 @@ const foundInItems = [
               data-live-frame
               data-src={screen.prototypeUrl}
               sandbox="allow-scripts allow-same-origin"
-              loading="lazy"
               title={`${screen.label} live 프로토타입`}
               hidden
             />
@@ -584,17 +583,20 @@ const foundInItems = [
     const aside = btn.closest('.screen-detail__preview');
     const frame = aside && aside.querySelector('[data-live-frame]');
     if (!frame) return;
+    const thumb = frame.closest('.shead__thumb');
     btn.addEventListener('click', () => {
       const isHidden = frame.hasAttribute('hidden');
       if (isHidden) {
-        if (!frame.getAttribute('src')) {
+        if (frame.dataset.src && !frame.getAttribute('src')) {
           frame.setAttribute('src', frame.dataset.src);
         }
         frame.removeAttribute('hidden');
+        if (thumb) thumb.style.position = 'relative';
         btn.setAttribute('aria-pressed', 'true');
         btn.textContent = '■ 정적 프리뷰로 돌아가기';
       } else {
         frame.setAttribute('hidden', '');
+        if (thumb) thumb.style.position = '';
         btn.setAttribute('aria-pressed', 'false');
         btn.textContent = '▶ Live 프리뷰 보기';
       }
