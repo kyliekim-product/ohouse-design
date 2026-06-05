@@ -44,7 +44,7 @@ const TARGETS = [
 
 // ── 무의존 정적 서버 (ES module/상대 asset이 http로 로드돼야 함; file:// 불가) ──
 function startStaticServer(root) {
-  return new Promise((res) => {
+  return new Promise((res, rej) => {
     const server = http.createServer(async (req, resp) => {
       try {
         const urlPath = decodeURIComponent(req.url.split('?')[0]);
@@ -57,6 +57,7 @@ function startStaticServer(root) {
         resp.writeHead(404); resp.end('not found');
       }
     });
+    server.once('error', rej);
     server.listen(0, '127.0.0.1', () => {
       const { port } = server.address();
       res({ origin: `http://127.0.0.1:${port}`, close: () => new Promise((r) => server.close(r)) });
@@ -69,27 +70,42 @@ let _cdpId = 0;
 function cdpSend(ws, method, params = {}, sessionId) {
   return new Promise((res, rej) => {
     const id = ++_cdpId;
-    const onMsg = (ev) => {
-      const data = JSON.parse(ev.data);
-      if (data.id !== id) return;
+    const cleanup = () => {
       ws.removeEventListener('message', onMsg);
+      ws.removeEventListener('close', onClose);
+    };
+    const onMsg = (ev) => {
+      let data;
+      try { data = JSON.parse(ev.data); } catch { return; }
+      if (data.id !== id) return;
+      cleanup();
       data.error ? rej(new Error(`${method}: ${data.error.message}`)) : res(data.result);
     };
+    const onClose = () => { cleanup(); rej(new Error(`ws closed waiting for ${method}`)); };
     ws.addEventListener('message', onMsg);
+    ws.addEventListener('close', onClose);
     ws.send(JSON.stringify(sessionId ? { id, method, params, sessionId } : { id, method, params }));
   });
 }
 
 function waitForEvent(ws, method, sessionId, timeoutMs) {
   return new Promise((res, rej) => {
-    const timer = setTimeout(() => { ws.removeEventListener('message', onMsg); rej(new Error(`timeout: ${method}`)); }, timeoutMs);
+    const cleanup = () => {
+      clearTimeout(timer);
+      ws.removeEventListener('message', onMsg);
+      ws.removeEventListener('close', onClose);
+    };
+    const timer = setTimeout(() => { cleanup(); rej(new Error(`timeout: ${method}`)); }, timeoutMs);
     const onMsg = (ev) => {
-      const data = JSON.parse(ev.data);
+      let data;
+      try { data = JSON.parse(ev.data); } catch { return; }
       if (data.method !== method) return;
       if (sessionId && data.sessionId !== sessionId) return;
-      clearTimeout(timer); ws.removeEventListener('message', onMsg); res(data.params);
+      cleanup(); res(data.params);
     };
+    const onClose = () => { cleanup(); rej(new Error(`ws closed waiting for event ${method}`)); };
     ws.addEventListener('message', onMsg);
+    ws.addEventListener('close', onClose);
   });
 }
 
@@ -122,9 +138,15 @@ async function launchChrome(chromePath) {
     '--no-first-run', '--no-default-browser-check', '--disable-gpu',
     `--user-data-dir=${userDataDir}`, 'about:blank',
   ], { stdio: ['ignore', 'ignore', 'ignore'] });
-  const port = await waitForPortFile(join(userDataDir, 'DevToolsActivePort'), 10000);
-  const version = await (await fetch(`http://127.0.0.1:${port}/json/version`)).json();
-  return { proc, userDataDir, browserWsUrl: version.webSocketDebuggerUrl };
+  try {
+    const port = await waitForPortFile(join(userDataDir, 'DevToolsActivePort'), 10000);
+    const version = await (await fetch(`http://127.0.0.1:${port}/json/version`)).json();
+    return { proc, userDataDir, browserWsUrl: version.webSocketDebuggerUrl };
+  } catch (e) {
+    proc.kill();
+    await rm(userDataDir, { recursive: true, force: true }).catch(() => {});
+    throw e;
+  }
 }
 
 async function captureTarget(browserWsUrl, origin, target) {
@@ -146,7 +168,7 @@ async function captureTarget(browserWsUrl, origin, target) {
       clip: { x: 0, y: 0, width: target.viewport.width, height: target.viewport.height, scale: target.viewport.deviceScaleFactor },
       captureBeyondViewport: true,
     }, sessionId);
-    await cdpSend(ws, 'Target.closeTarget', { targetId }, sessionId).catch(() => {});
+    await cdpSend(ws, 'Target.closeTarget', { targetId }).catch(() => {});
     return Buffer.from(data, 'base64');
   } finally {
     ws.close();
