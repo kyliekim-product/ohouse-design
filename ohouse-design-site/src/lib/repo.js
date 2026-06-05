@@ -841,6 +841,7 @@ export function getScreen(domainSlug, screenSlug) {
       frontmatter: readme,
       contextRoot: CONTEXT_ROOT,
     }),
+    prototypeUrl: isValidPrototypeUrl(readme.prototype_url) ? readme.prototype_url : null,
     updated: lastModified(`domains/${domainSlug}/screens/${screenSlug}`),
   };
 }
