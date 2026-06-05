@@ -56,6 +56,16 @@ function withBase(path) {
   return BASE + String(path).replace(/^\/+/, '');
 }
 
+// history.md 의 상대경로 이미지(<img src="./x.png">)를 public/screen-history 서빙 경로로 치환.
+// 외부(http/protocol-relative)·절대(/)·data URL 은 그대로 둔다.
+export function rewriteHistoryImages(html, domainSlug, screenSlug) {
+  return String(html).replace(/(<img\b[^>]*?\bsrc=")([^"]+)(")/g, (m, pre, src, post) => {
+    if (/^(https?:)?\/\//.test(src) || src.startsWith('/') || src.startsWith('data:')) return m;
+    const basename = src.replace(/^\.\//, '').split('/').pop();
+    return pre + withBase(`screen-history/${domainSlug}/${screenSlug}/${basename}`) + post;
+  });
+}
+
 // 사이트 정적 자산 루트 (ohouse-design-site/public). static 빌드에선 여기 있는 파일만 URL 로 서빙됨.
 const SITE_PUBLIC = resolve(import.meta.dirname, '../../public');
 
@@ -831,7 +841,7 @@ export function getScreen(domainSlug, screenSlug) {
     .find((p) => existsSync(p));
   const protoContent = prototypePath ? safeRead(prototypePath) : null;
   const markers = protoContent ? extractMarkers(protoContent) : [];
-  const metaDoc = parseMd(join(dir, 'prototype-meta.md'));
+  const historyDoc = parseMd(join(dir, 'history.md'));
 
   return {
     domain: domainSlug,
@@ -854,7 +864,7 @@ export function getScreen(domainSlug, screenSlug) {
       : (typeof readme.prototype_app === 'string' && readme.prototype_app.trim()
           ? withBase(readme.prototype_app)
           : null),
-    prototypeMetaHtml: metaDoc?.body ? marked.parse(metaDoc.body) : null,
+    historyHtml: historyDoc?.body ? rewriteHistoryImages(marked.parse(historyDoc.body), domainSlug, screenSlug) : null,
     updated: lastModified(`domains/${domainSlug}/screens/${screenSlug}`),
   };
 }
