@@ -22,6 +22,10 @@ const CHROME_CANDIDATES = [
   process.env.CHROME_PATH,
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
   '/Applications/Chromium.app/Contents/MacOS/Chromium',
+  '/usr/bin/google-chrome',
+  '/usr/bin/google-chrome-stable',
+  '/usr/bin/chromium-browser',
+  '/usr/bin/chromium',
 ].filter(Boolean);
 
 export function resolveChromeBinary(candidates = CHROME_CANDIDATES, existsFn = existsSync) {
@@ -50,11 +54,12 @@ function startStaticServer(root) {
         const urlPath = decodeURIComponent(req.url.split('?')[0]);
         let filePath = join(root, urlPath);
         if (filePath.endsWith('/') || filePath.endsWith('\\')) filePath = join(filePath, 'index.html');
+        if (!resolve(filePath).startsWith(resolve(root))) { resp.writeHead(403, { 'connection': 'close' }); resp.end('forbidden'); return; }
         const data = await readFile(filePath);
-        resp.writeHead(200, { 'content-type': contentTypeFor(filePath) });
+        resp.writeHead(200, { 'content-type': contentTypeFor(filePath), 'connection': 'close' });
         resp.end(data);
       } catch {
-        resp.writeHead(404); resp.end('not found');
+        resp.writeHead(404, { 'connection': 'close' }); resp.end('not found');
       }
     });
     server.once('error', rej);
@@ -140,7 +145,7 @@ async function launchChrome(chromePath) {
   ], { stdio: ['ignore', 'ignore', 'ignore'] });
   try {
     const port = await waitForPortFile(join(userDataDir, 'DevToolsActivePort'), 10000);
-    const version = await (await fetch(`http://127.0.0.1:${port}/json/version`)).json();
+    const version = await (await fetch(`http://127.0.0.1:${port}/json/version`, { signal: AbortSignal.timeout(5000) })).json();
     return { proc, userDataDir, browserWsUrl: version.webSocketDebuggerUrl };
   } catch (e) {
     proc.kill();
@@ -205,4 +210,6 @@ export async function main() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main();
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((e) => { console.warn(`[snapshot] 예기치 못한 오류: ${e.message} — 기존 thumbnail 유지`); });
+}
