@@ -51,9 +51,22 @@ function resolveSiteBase() {
 // base path (사내 /deploy, preview sub-path 대응). 항상 끝에 '/' 가 오도록 정규화.
 const BASE = resolveSiteBase().replace(/\/+$/, '') + '/';
 
-// base + 경로 결합 (중복 슬래시 방지). path 는 보통 'api/asset?...' 처럼 슬래시 없이 시작.
+// base + 경로 결합 (중복 슬래시 방지). path 는 'thumbnails/...' 처럼 슬래시 없이 시작.
 function withBase(path) {
   return BASE + String(path).replace(/^\/+/, '');
+}
+
+// 사이트 정적 자산 루트 (ohouse-design-site/public). static 빌드에선 여기 있는 파일만 URL 로 서빙됨.
+const SITE_PUBLIC = resolve(import.meta.dirname, '../../public');
+
+// 스크린 썸네일 URL. SSOT(ohouse-design-mcp) 안의 파일은 static 사이트에서 서빙되지 않으므로,
+// 썸네일은 public/thumbnails/<domain>/<screen>.<ext> 에 두고 직접 경로로 참조한다.
+export function screenThumbUrl(domainSlug, screenSlug, { publicDir = SITE_PUBLIC, existsFn = existsSync } = {}) {
+  for (const ext of ['png', 'webp', 'jpg']) {
+    const rel = `thumbnails/${domainSlug}/${screenSlug}.${ext}`;
+    if (existsFn(join(publicDir, rel))) return withBase(rel);
+  }
+  return null;
 }
 
 const DOMAIN_LABELS = {
@@ -532,9 +545,6 @@ export function getDomainScreens(slug) {
   const screensDir = join(ROOT, 'domains', slug, 'screens');
   return listDirs(screensDir).map((s) => {
     const readme = parseMd(join(screensDir, s, 'README.md')) || {};
-    const thumb = ['thumbnail.png', 'thumbnail.webp', 'thumbnail.jpg']
-      .map((f) => join(screensDir, s, f))
-      .find((p) => existsSync(p));
     const prototypeHtml = ['prototype.html', 'prototype.tsx', 'prototype.htm']
       .map((f) => join(screensDir, s, f))
       .find((p) => existsSync(p));
@@ -547,7 +557,7 @@ export function getDomainScreens(slug) {
       summary: readme.summary || null,
       variant: readme.variant || s,
       status: readme.status || null,
-      thumb: thumb ? withBase(`api/asset?path=${encodeURIComponent(thumb.replace(ROOT + '/', ''))}`) : null,
+      thumb: screenThumbUrl(slug, s),
       prototype: prototypeHtml ? prototypeHtml.replace(ROOT + '/', '') : null,
       previewHtml: resolveScreenPreviewHtml({
         screenDir: join(screensDir, s),
@@ -821,9 +831,6 @@ export function getScreen(domainSlug, screenSlug) {
     .find((p) => existsSync(p));
   const protoContent = prototypePath ? safeRead(prototypePath) : null;
   const markers = protoContent ? extractMarkers(protoContent) : [];
-  const thumb = ['thumbnail.png', 'thumbnail.webp']
-    .map((f) => join(dir, f))
-    .find((p) => existsSync(p));
   const metaDoc = parseMd(join(dir, 'prototype-meta.md'));
 
   return {
@@ -835,7 +842,7 @@ export function getScreen(domainSlug, screenSlug) {
     owner: readme.owner || null,
     body: readme.body || '',
     markers,
-    thumb: thumb ? withBase(`api/asset?path=${encodeURIComponent(thumb.replace(ROOT + '/', ''))}`) : null,
+    thumb: screenThumbUrl(domainSlug, screenSlug),
     prototype: prototypePath ? prototypePath.replace(ROOT + '/', '') : null,
     previewHtml: resolveScreenPreviewHtml({
       screenDir: dir,

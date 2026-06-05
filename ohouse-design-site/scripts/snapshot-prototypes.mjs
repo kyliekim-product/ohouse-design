@@ -35,13 +35,14 @@ export function resolveChromeBinary(candidates = CHROME_CANDIDATES, existsFn = e
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SITE_ROOT = resolve(__dirname, '..');        // ohouse-design-site
 const PUBLIC_DIR = join(SITE_ROOT, 'public');
-const REPO_ROOT = resolve(SITE_ROOT, '..');        // ohouse-design
 
 // 캡처 대상. app은 public/ 기준 경로, out은 절대 경로.
+// out은 site public/thumbnails/<domain>/<screen>.webp — static 빌드에서 URL 로 직접 서빙되는 위치
+// (getScreen.screenThumbUrl 이 같은 규칙으로 참조). SSOT(ohouse-design-mcp) 안에 두면 서빙 안 됨.
 const TARGETS = [
   {
     app: 'prototypes/contents-feed/index.html',
-    out: join(REPO_ROOT, 'ohouse-design-mcp/domains/house-tour/screens/content-tab/thumbnail.webp'),
+    out: join(SITE_ROOT, 'public/thumbnails/house-tour/content-tab.webp'),
     viewport: { width: 390, height: 694, deviceScaleFactor: 2 }, // ≈ 9:16 (thumb 박스와 일치)
   },
 ];
