@@ -151,24 +151,30 @@ const foundInItems = [
         <section class="screen-usage">
           <div class="screen-usage__main">
             <div class="screen-usage__content">
-              <div class="sechead">
-                <div class="sechead__title">Components</div>
-                <div class="sechead__count">{componentUsage.ods.length} ODS · {componentUsage.domain.length} domain/track</div>
-              </div>
-
-              <nav class="screen-usage__tabs dtabs" aria-label="screen component tabs" id="screen-component-tabs">
-                <div class="screen-usage__tabs-inner dtabs__inner">
-                  <a class="dtab is-active" href={`${base}d/${dSlug}/s/${sSlug}?component=ods`} data-screen-component-tab="ods">
+              <nav class="screen-info-tabs dtabs" aria-label="screen info tabs" id="screen-info-tabs">
+                <div class="dtabs__inner">
+                  {screen.prototypeMetaHtml && (
+                    <a class="dtab is-active" href={`${base}d/${dSlug}/s/${sSlug}?info=screen-info`} data-screen-info-tab="screen-info">
+                      Screen Info
+                    </a>
+                  )}
+                  <a class={`dtab${screen.prototypeMetaHtml ? '' : ' is-active'}`} href={`${base}d/${dSlug}/s/${sSlug}?info=ods`} data-screen-info-tab="ods">
                     ODS Components <span class="dtab__count">{componentUsage.ods.length}</span>
                   </a>
-                  <a class="dtab" href={`${base}d/${dSlug}/s/${sSlug}?component=domain`} data-screen-component-tab="domain">
+                  <a class="dtab" href={`${base}d/${dSlug}/s/${sSlug}?info=domain`} data-screen-info-tab="domain">
                     Domain / Track Components <span class="dtab__count">{componentUsage.domain.length}</span>
                   </a>
                 </div>
               </nav>
 
-              <div class="screen-usage__body">
-                <div class="screen-component-panel" data-screen-component-panel="ods">
+              <div class="screen-info-body">
+                {screen.prototypeMetaHtml && (
+                  <div class="screen-info-panel" data-screen-info-panel="screen-info">
+                    <div class="screen-spec__body" set:html={screen.prototypeMetaHtml} />
+                  </div>
+                )}
+
+                <div class="screen-info-panel" data-screen-info-panel="ods" hidden={!!screen.prototypeMetaHtml}>
                   {componentUsage.ods.length > 0 ? (
                     <div class="screen-component-list">
                       {componentUsage.ods.map((component) => (
@@ -188,7 +194,7 @@ const foundInItems = [
                   )}
                 </div>
 
-                <div class="screen-component-panel" data-screen-component-panel="domain" hidden>
+                <div class="screen-info-panel" data-screen-info-panel="domain" hidden>
                   {componentUsage.domain.length > 0 ? (
                     <div class="screen-component-list">
                       {componentUsage.domain.map((component) => (
@@ -216,15 +222,6 @@ const foundInItems = [
             </div>
           </div>
         </section>
-
-        {screen.prototypeMetaHtml && (
-          <section class="screen-spec">
-            <div class="sechead">
-              <div class="sechead__title">프로토타입 제작 메타</div>
-            </div>
-            <div class="screen-spec__body" set:html={screen.prototypeMetaHtml} />
-          </section>
-        )}
       </main>
     </div>
   </section>
@@ -248,35 +245,37 @@ const foundInItems = [
   </div>
 
   <script>
-    function initScreenComponentTabs() {
-      const tabsNav = document.getElementById('screen-component-tabs');
+    function initScreenInfoTabs() {
+      const tabsNav = document.getElementById('screen-info-tabs');
       if (!tabsNav || (tabsNav as HTMLElement).dataset.bound) return;
       (tabsNav as HTMLElement).dataset.bound = '1';
 
-      const panels = Array.from(document.querySelectorAll<HTMLElement>('.screen-component-panel'));
+      const panels = Array.from(document.querySelectorAll<HTMLElement>('.screen-info-panel'));
       const links = Array.from(tabsNav.querySelectorAll<HTMLElement>('.dtab'));
 
       function activate(id: string) {
-        links.forEach((l) => l.classList.toggle('is-active', l.dataset.screenComponentTab === id));
-        panels.forEach((p) => { p.hidden = p.dataset.screenComponentPanel !== id; });
+        links.forEach((l) => l.classList.toggle('is-active', l.dataset.screenInfoTab === id));
+        panels.forEach((p) => { p.hidden = p.dataset.screenInfoPanel !== id; });
       }
 
-      const initial = new URLSearchParams(window.location.search).get('component') || links[0]?.dataset.screenComponentTab || 'ods';
+      const fromUrl = new URLSearchParams(window.location.search).get('info');
+      const valid = links.map((l) => l.dataset.screenInfoTab);
+      const initial = (fromUrl && valid.includes(fromUrl)) ? fromUrl : (links[0]?.dataset.screenInfoTab || 'ods');
       activate(initial);
 
       tabsNav.addEventListener('click', (e) => {
         const link = (e.target as HTMLElement).closest('.dtab') as HTMLElement | null;
         if (!link) return;
         e.preventDefault();
-        const id = link.dataset.screenComponentTab || 'ods';
+        const id = link.dataset.screenInfoTab || 'ods';
         activate(id);
         const url = new URL(window.location.href);
-        url.searchParams.set('component', id);
+        url.searchParams.set('info', id);
         window.history.replaceState({}, '', url);
       });
     }
-    initScreenComponentTabs();
-    document.addEventListener('astro:page-load', initScreenComponentTabs);
+    initScreenInfoTabs();
+    document.addEventListener('astro:page-load', initScreenInfoTabs);
 
     function initPromptPreviewModal() {
       const modal = document.getElementById('prompt-preview-modal');
@@ -322,7 +321,7 @@ const foundInItems = [
   .screen-detail__preview {
     height: 100%;
     min-width: 0;
-    overflow: hidden;
+    overflow: visible;
     padding: 48px 0 32px;
   }
   .screen-detail__scroll {
@@ -369,6 +368,7 @@ const foundInItems = [
     background: var(--c-bg-elev);
     border-radius: var(--r-card);
     overflow: hidden;
+    box-shadow: var(--sh-lg);
   }
   .shead__thumb-trigger {
     position: relative;
@@ -431,7 +431,10 @@ const foundInItems = [
     flex-wrap: wrap;
   }
 
-  .screen-spec { margin-top: 48px; }
+  .screen-info-tabs { margin-top: 8px; }
+  .screen-info-body { padding-top: 32px; }
+  .screen-info-panel[hidden] { display: none; }
+  .screen-info-panel .screen-spec__body { margin-top: 0; }
   .screen-spec__body { margin-top: 16px; font-size: 14px; line-height: 1.7; color: var(--c-text-muted); }
   .screen-spec__body :global(h1) { font-size: 18px; font-weight: 700; color: var(--c-text); margin: 0 0 8px; letter-spacing: -0.01em; }
   .screen-spec__body :global(h3) { font-size: 14px; font-weight: 600; color: var(--c-text); margin: 20px 0 6px; }
