@@ -79,7 +79,28 @@ const foundInItems = [
               <span class="shead__placeholder-hint">prototype.html / thumbnail 미준비</span>
             </div>
           )}
+          {screen.prototypeUrl && (
+            <iframe
+              class="shead__live"
+              data-live-frame
+              data-src={screen.prototypeUrl}
+              sandbox="allow-scripts allow-same-origin"
+              loading="lazy"
+              title={`${screen.label} live 프로토타입`}
+              hidden
+            />
+          )}
         </div>
+        {screen.prototypeUrl && (
+          <div class="preview-live-controls">
+            <button type="button" class="btn-secondary" data-live-toggle aria-pressed="false">
+              ▶ Live 프리뷰 보기
+            </button>
+            <a class="btn-secondary btn-secondary--stroke" href={screen.prototypeUrl} target="_blank" rel="noopener">
+              ↗ 새 탭에서 열기
+            </a>
+          </div>
+        )}
       </aside>
 
       <main class="screen-detail__scroll">
@@ -383,6 +404,24 @@ const foundInItems = [
     border: 0;
     background: #fff;
   }
+  .shead__live {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #fff;
+    z-index: 2;
+  }
+  .shead__live[hidden] {
+    display: none;
+  }
+  .preview-live-controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
 
   .shead__info h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; }
   .shead__time { margin-top: 6px; font-size: 13px; color: var(--c-text-soft); }
@@ -539,3 +578,26 @@ const foundInItems = [
     .prompt-box--modal { max-height: 58vh; }
   }
 </style>
+
+<script>
+  document.querySelectorAll('[data-live-toggle]').forEach((btn) => {
+    const aside = btn.closest('.screen-detail__preview');
+    const frame = aside && aside.querySelector('[data-live-frame]');
+    if (!frame) return;
+    btn.addEventListener('click', () => {
+      const isHidden = frame.hasAttribute('hidden');
+      if (isHidden) {
+        if (!frame.getAttribute('src')) {
+          frame.setAttribute('src', frame.dataset.src);
+        }
+        frame.removeAttribute('hidden');
+        btn.setAttribute('aria-pressed', 'true');
+        btn.textContent = '■ 정적 프리뷰로 돌아가기';
+      } else {
+        frame.setAttribute('hidden', '');
+        btn.setAttribute('aria-pressed', 'false');
+        btn.textContent = '▶ Live 프리뷰 보기';
+      }
+    });
+  });
+</script>
