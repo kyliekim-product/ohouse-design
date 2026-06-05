@@ -273,6 +273,15 @@ export function resolveScreenPreviewHtml({ screenDir, frontmatter, contextRoot }
   return null;
 }
 
+export function isValidPrototypeUrl(value) {
+  if (typeof value !== 'string' || !value.trim()) return false;
+  try {
+    return new URL(value).protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 const POLICY_SECTION_GROUPS = [
   { id: 'principles', label: '디자인 원칙' },
   { id: 'operational', label: '운영 맥락' },

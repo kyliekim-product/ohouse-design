@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { isSelfContainedHtml, resolveScreenPreviewHtml } from './repo.js';
+import { isSelfContainedHtml, resolveScreenPreviewHtml, isValidPrototypeUrl } from './repo.js';
 
 test('isSelfContainedHtml: inline style만 있으면 true', () => {
   const html = '<!doctype html><html><head><style>.a{color:red}</style></head><body><div class="a">x</div></body></html>';
@@ -128,4 +128,27 @@ test('resolveScreenPreviewHtml: frontmatter ref가 self-contained 아니면 로�
     rmSync(ctx, { recursive: true, force: true });
     rmSync(screen, { recursive: true, force: true });
   }
+});
+
+test('isValidPrototypeUrl: https URL이면 true', () => {
+  assert.equal(isValidPrototypeUrl('https://deeer-glitch.github.io/ohouse-design-pilot-sandbox/'), true);
+});
+
+test('isValidPrototypeUrl: http URL이면 false', () => {
+  assert.equal(isValidPrototypeUrl('http://example.com/'), false);
+});
+
+test('isValidPrototypeUrl: 비문자열이면 false', () => {
+  assert.equal(isValidPrototypeUrl(null), false);
+  assert.equal(isValidPrototypeUrl(undefined), false);
+  assert.equal(isValidPrototypeUrl(123), false);
+});
+
+test('isValidPrototypeUrl: 빈/공백 문자열이면 false', () => {
+  assert.equal(isValidPrototypeUrl(''), false);
+  assert.equal(isValidPrototypeUrl('   '), false);
+});
+
+test('isValidPrototypeUrl: URL 파싱 불가 문자열이면 false', () => {
+  assert.equal(isValidPrototypeUrl('not a url'), false);
 });
