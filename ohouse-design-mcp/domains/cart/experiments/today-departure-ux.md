@@ -6,7 +6,9 @@ domain: cart
 period: 2026-05-26 ~
 key_date: 2026-05-26
 key_date_type: started
-variants: [A (기존 "오늘출발 마감 {date} 발송 예정" 부정 문구), B (PDP와 동일한 "지금 주문시 {date} 출발" 긍정 문구 + info 아이콘)]
+variants:
+  - 'A (기존 "오늘출발 마감 {date} 발송 예정" 부정 문구)'
+  - 'B (PDP와 동일한 "지금 주문시 {date} 출발" 긍정 문구 + info 아이콘)'
 winner: null
 result: inconclusive
 summary: "장바구니 오늘출발 마감 시 부정적 문구를 PDP와 동일한 긍정적 발송 예정일 안내로 통일하고, info 아이콘으로 오늘출발 서비스 툴팁 제공."

@@ -759,18 +759,52 @@ export function getDomainPolicies(slug) {
   return domainPolicies.concat(getTrackPoliciesForDomain(slug));
 }
 
+function mapExperiment(domainSlug, file, linkedFrom) {
+  const parsed = parseMd(join(ROOT, 'domains', domainSlug, 'experiments', file)) || {};
+  const sources = parsed.sources || {};
+  return {
+    slug: file.replace(/\.md$/, ''),
+    label: parsed.title || file.replace(/\.md$/, ''),
+    summary: parsed.summary || null,
+    result: parsed.result || 'inconclusive',
+    resultSummary: parsed.result_summary || null,
+    insight: parsed.insight || null,
+    period: parsed.period || null,
+    keyDate: metadataDate(parsed.key_date),
+    keyDateType: parsed.key_date_type || null,
+    variants: Array.isArray(parsed.variants) ? parsed.variants : [],
+    winner: parsed.winner || null,
+    team: parsed.team || null,
+    owner: parsed.owner || null,
+    sources: {
+      xpc: sources.xpc || null,
+      slack: sources.slack || null,
+      notion: sources.notion || null,
+      prd: sources.prd || null,
+      figma: sources.figma || null,
+    },
+    bodyHtml: parsed.body ? marked.parse(parsed.body) : null,
+    updated: lastModified(`domains/${domainSlug}/experiments/${file}`),
+    linkedFrom: linkedFrom || null,
+  };
+}
+
 export function getDomainExperiments(slug) {
-  const dir = join(ROOT, 'domains', slug, 'experiments');
-  return listMd(dir).map((file) => {
-    const parsed = parseMd(join(dir, file)) || {};
-    return {
-      slug: file.replace(/\.md$/, ''),
-      label: parsed.title || file.replace(/\.md$/, ''),
-      summary: parsed.summary || null,
-      result: parsed.result || 'inconclusive', // win / loss / inconclusive
-      updated: lastModified(`domains/${slug}/experiments/${file}`),
-    };
-  });
+  const all = [];
+  for (const file of listMd(join(ROOT, 'domains', slug, 'experiments'))) {
+    if (file === 'INDEX.md') continue;
+    all.push(mapExperiment(slug, file, null));
+  }
+  for (const domain of getAllDomains()) {
+    if (domain.slug === slug) continue;
+    for (const file of listMd(join(ROOT, 'domains', domain.slug, 'experiments'))) {
+      if (file === 'INDEX.md') continue;
+      const fm = parseMd(join(ROOT, 'domains', domain.slug, 'experiments', file));
+      const linked = fm && Array.isArray(fm.linked_domains) ? fm.linked_domains : [];
+      if (linked.includes(slug)) all.push(mapExperiment(domain.slug, file, domain.label));
+    }
+  }
+  return all.sort((a, b) => String(b.keyDate || b.updated || '').localeCompare(String(a.keyDate || a.updated || '')));
 }
 
 export function getAxisSidebarItems(axis) {
