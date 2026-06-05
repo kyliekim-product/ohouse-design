@@ -824,6 +824,7 @@ export function getScreen(domainSlug, screenSlug) {
   const thumb = ['thumbnail.png', 'thumbnail.webp']
     .map((f) => join(dir, f))
     .find((p) => existsSync(p));
+  const metaDoc = parseMd(join(dir, 'prototype-meta.md'));
 
   return {
     domain: domainSlug,
@@ -841,7 +842,12 @@ export function getScreen(domainSlug, screenSlug) {
       frontmatter: readme,
       contextRoot: CONTEXT_ROOT,
     }),
-    prototypeUrl: isValidPrototypeUrl(readme.prototype_url) ? readme.prototype_url : null,
+    prototypeUrl: isValidPrototypeUrl(readme.prototype_url)
+      ? readme.prototype_url
+      : (typeof readme.prototype_app === 'string' && readme.prototype_app.trim()
+          ? withBase(readme.prototype_app)
+          : null),
+    prototypeMetaHtml: metaDoc?.body ? marked.parse(metaDoc.body) : null,
     updated: lastModified(`domains/${domainSlug}/screens/${screenSlug}`),
   };
 }
