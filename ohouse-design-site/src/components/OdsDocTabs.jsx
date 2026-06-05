@@ -60,7 +60,7 @@ export default function OdsDocTabs({ guideHtml, specHtml, screens }) {
                       <a key={`${s.domain}/${s.slug}`} className="ods-screen-card" href={s.href}>
                         <span className="ods-screen-card__thumb">
                           {s.thumb ? (
-                            <img src={s.thumb} alt={s.label} loading="lazy" />
+                            <img src={s.thumb} alt="" loading="lazy" />
                           ) : (
                             <span className="ods-screen-card__ph">{s.label}</span>
                           )}
