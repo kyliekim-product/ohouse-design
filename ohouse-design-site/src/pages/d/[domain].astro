@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import Icon from '../../components/Icon.astro';
 import {
   getAllDomains,
   getDomain,
@@ -349,11 +350,10 @@ const tabs = [
         ) : (
           <div class="exp-grid">
             {experiments.map((e) => (
-              <article class="exp-card">
-                {/* 배지: key_date_type==='started'(미마감) → 진행 중. 종료 실험만 result(win/loss/inconclusive) 표기 */}
+              <article class="exp-card" data-status={e.status}>
                 <div class="exp-card__head">
-                  <span class={`badge ${e.keyDateType === 'started' ? 'badge--accent' : e.result === 'win' ? 'badge--success' : e.result === 'loss' ? 'badge--fail' : ''}`}>
-                    {e.keyDateType === 'started' ? '진행 중' : e.result === 'win' ? 'Win' : e.result === 'loss' ? 'Loss' : 'Inconclusive'}
+                  <span class={`badge ${e.status === 'running' ? 'badge--accent' : e.status === 'win' ? 'badge--success' : e.status === 'loss' ? 'badge--fail' : ''}`}>
+                    {e.status === 'running' ? '진행 중' : e.status === 'win' ? 'Win' : e.status === 'loss' ? 'Loss' : 'Inconclusive'}
                   </span>
                   <h3 class="exp-card__title">{e.label}</h3>
                   {e.keyDate && (
@@ -363,9 +363,17 @@ const tabs = [
                 {e.linkedFrom && <div class="exp-card__linked">🔗 주 작업: {e.linkedFrom}</div>}
                 {e.summary && <p class="exp-card__summary">{e.summary}</p>}
                 {e.resultSummary && (
-                  <div class="exp-card__row"><span class="exp-card__rlabel">결과</span><p>{e.resultSummary}</p></div>
+                  <div class={`exp-card__result exp-card__result--${e.status}`}>
+                    <span class="exp-card__result-label">결과</span>
+                    <p>{e.resultSummary}</p>
+                  </div>
                 )}
-                {e.insight && <div class="exp-card__insight">💡 {e.insight}</div>}
+                {e.insight && (
+                  <div class="exp-card__insight">
+                    <Icon name="insight" size={16} class="exp-card__insight-icon" />
+                    <span>{e.insight}</span>
+                  </div>
+                )}
                 <div class="exp-card__foot">
                   {(e.team || e.owner) && (
                     <span class="exp-card__by">{[e.team, Array.isArray(e.owner) ? e.owner.join(', ') : e.owner].filter(Boolean).join(' · ')}</span>
@@ -379,17 +387,34 @@ const tabs = [
                   </span>
                 </div>
                 {e.bodyHtml && (
-                  <details class="exp-card__more">
-                    <summary>자세히</summary>
-                    {(e.period || e.variants.length > 0 || e.winner) && (
-                      <div class="exp-card__meta">
-                        {e.period && <span>기간: {e.period}</span>}
-                        {e.variants.length > 0 && <span>variants: {e.variants.join(' / ')}</span>}
-                        {e.winner && <span>winner: {e.winner}</span>}
-                      </div>
-                    )}
-                    <div class="prose exp-card__body" set:html={e.bodyHtml} />
-                  </details>
+                  <>
+                    <button type="button" class="exp-card__more-btn" data-exp-modal-open={`expm-${e.slug}`}>자세히 →</button>
+                    <template id={`expm-${e.slug}`}>
+                      <header class="experiment-modal__head">
+                        <div class="experiment-modal__meta">
+                          <span class={`badge ${e.status === 'running' ? 'badge--accent' : e.status === 'win' ? 'badge--success' : e.status === 'loss' ? 'badge--fail' : ''}`}>
+                            {e.status === 'running' ? '진행 중' : e.status === 'win' ? 'Win' : e.status === 'loss' ? 'Loss' : 'Inconclusive'}
+                          </span>
+                          {e.keyDate && <span class="experiment-modal__date">{e.keyDateType === 'launched' ? '런칭' : e.keyDateType === 'started' ? '시작' : e.keyDateType === 'ended' ? '종료' : ''}{e.keyDateType ? ' · ' : ''}{relTime(e.keyDate)}</span>}
+                        </div>
+                        <h2 class="experiment-modal__title">{e.label}</h2>
+                        <div class="experiment-modal__submeta">
+                          {(e.team || e.owner) && <span>{[e.team, Array.isArray(e.owner) ? e.owner.join(', ') : e.owner].filter(Boolean).join(' · ')}</span>}
+                          {e.period && <span>{e.period}</span>}
+                          {e.winner && <span>winner: {e.winner}</span>}
+                          {e.variants.length > 0 && <span>variants: {e.variants.join(' / ')}</span>}
+                        </div>
+                        <div class="experiment-modal__sources">
+                          {e.sources.xpc && <a href={e.sources.xpc} target="_blank" rel="noopener">XPC</a>}
+                          {e.sources.slack && <a href={e.sources.slack} target="_blank" rel="noopener">Slack</a>}
+                          {e.sources.notion && <a href={e.sources.notion} target="_blank" rel="noopener">Notion</a>}
+                          {e.sources.prd && <a href={e.sources.prd} target="_blank" rel="noopener">PRD</a>}
+                          {e.sources.figma && <a href={e.sources.figma} target="_blank" rel="noopener">Figma</a>}
+                        </div>
+                      </header>
+                      <div class="prose experiment-modal__body" set:html={e.bodyHtml} />
+                    </template>
+                  </>
                 )}
               </article>
             ))}
@@ -422,6 +447,16 @@ const tabs = [
         </button>
       </header>
       <div class="policy-modal__content" data-policy-modal-content></div>
+    </article>
+  </div>
+
+  <div id="experiment-modal" class="experiment-modal" role="dialog" aria-modal="true" aria-hidden="true" hidden>
+    <button type="button" class="experiment-modal__backdrop" data-exp-modal-close aria-label="Close experiment detail"></button>
+    <article class="experiment-modal__panel" aria-label="experiment detail">
+      <button type="button" class="experiment-modal__close" data-exp-modal-close aria-label="Close experiment detail">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <div class="experiment-modal__content" data-exp-modal-content></div>
     </article>
   </div>
 </Layout>
@@ -587,6 +622,40 @@ const tabs = [
   }
   initPolicyModal();
   document.addEventListener('astro:page-load', initPolicyModal);
+
+  function initExperimentModal() {
+    const modal = document.getElementById('experiment-modal');
+    if (!modal || (modal as HTMLElement).dataset.bound) return;
+    (modal as HTMLElement).dataset.bound = '1';
+    const content = modal.querySelector<HTMLElement>('[data-exp-modal-content]');
+    function close() {
+      (modal as HTMLElement).hidden = true;
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      if (content) content.innerHTML = '';
+    }
+    document.addEventListener('click', (event) => {
+      const trigger = (event.target as HTMLElement).closest<HTMLElement>('[data-exp-modal-open]');
+      if (trigger) {
+        event.preventDefault();
+        const tpl = document.getElementById(trigger.dataset.expModalOpen || '') as HTMLTemplateElement | null;
+        if (tpl && content) {
+          content.innerHTML = tpl.innerHTML;
+          (modal as HTMLElement).hidden = false;
+          modal.setAttribute('aria-hidden', 'false');
+          document.body.style.overflow = 'hidden';
+          modal.querySelector<HTMLElement>('[data-exp-modal-close]')?.focus();
+        }
+        return;
+      }
+      if ((event.target as HTMLElement).closest('[data-exp-modal-close]')) close();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !(modal as HTMLElement).hidden) close();
+    });
+  }
+  initExperimentModal();
+  document.addEventListener('astro:page-load', initExperimentModal);
 </script>
 
 <style>
@@ -597,17 +666,31 @@ const tabs = [
   .exp-card__date { font-size: 12px; color: var(--c-text-soft); white-space: nowrap; }
   .exp-card__linked { margin-top: 8px; font-size: 12px; color: var(--c-text-muted); }
   .exp-card__summary { margin: 12px 0 0; font-size: 14px; line-height: 1.6; color: var(--c-text-muted); }
-  .exp-card__row { margin-top: 10px; }
-  .exp-card__rlabel { display: inline-block; font-size: 12px; font-weight: 600; color: var(--c-text-soft); margin-bottom: 2px; }
-  .exp-card__row p { margin: 0; font-size: 13px; color: var(--c-text-muted); line-height: 1.6; }
-  .exp-card__insight { margin-top: 12px; padding: 12px; background: var(--c-bg-elev); border-radius: 10px; font-size: 13px; line-height: 1.6; color: var(--c-text); }
+  .exp-card__insight { margin-top: 12px; padding: 12px; background: var(--c-bg-elev); border-radius: 10px; font-size: 13px; font-weight: 500; line-height: 1.6; color: var(--c-text); display: flex; gap: 8px; align-items: flex-start; }
+  .exp-card__insight-icon { flex-shrink: 0; margin-top: 2px; color: var(--c-accent); }
+  .exp-card__result { margin-top: 12px; padding: 10px 12px 10px 14px; border-left: 3px solid var(--c-border); border-radius: 0 8px 8px 0; background: var(--c-bg-soft); }
+  .exp-card__result--win { border-left-color: var(--c-success); background: #e6f7ec; }
+  .exp-card__result--loss { border-left-color: var(--c-fail); background: #fdecec; }
+  .exp-card__result--running { border-left-color: var(--c-accent); background: var(--c-accent-soft); }
+  .exp-card__result-label { display: block; font-size: 11px; font-weight: 700; letter-spacing: .02em; color: var(--c-text-soft); margin-bottom: 3px; }
+  .exp-card__result p { margin: 0; font-size: 13px; color: var(--c-text); line-height: 1.6; }
+  .exp-card__more-btn { margin-top: 14px; background: none; border: 0; padding: 0; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--c-text-muted); }
+  .exp-card__more-btn:hover { color: var(--c-text); }
   .exp-card__foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
   .exp-card__by { font-size: 12px; color: var(--c-text-soft); }
   .exp-card__sources { display: flex; flex-wrap: wrap; gap: 8px; }
   .exp-card__sources a { font-size: 12px; font-weight: 600; color: var(--c-accent); text-decoration: none; padding: 2px 10px; border: 1px solid var(--c-border); border-radius: 999px; }
   .exp-card__sources a:hover { background: var(--c-bg-elev); }
-  .exp-card__more { margin-top: 14px; border-top: 1px solid var(--c-border-soft); padding-top: 10px; }
-  .exp-card__more summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--c-text-muted); }
-  .exp-card__meta { display: flex; flex-wrap: wrap; gap: 12px; margin: 10px 0; font-size: 12px; color: var(--c-text-soft); }
-  .exp-card__body { margin-top: 8px; }
+  .experiment-modal { position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .experiment-modal[hidden] { display: none; }
+  .experiment-modal__backdrop { position: absolute; inset: 0; background: rgba(10,10,10,.5); border: 0; }
+  .experiment-modal__panel { position: relative; z-index: 1; width: min(680px, 100%); max-height: 85vh; overflow-y: auto; background: var(--c-bg); border-radius: 20px; padding: 28px; box-shadow: var(--sh-lg); }
+  .experiment-modal__close { position: absolute; top: 16px; right: 16px; background: none; border: 0; cursor: pointer; color: var(--c-text-muted); }
+  .experiment-modal__meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .experiment-modal__date { font-size: 12px; color: var(--c-text-soft); }
+  .experiment-modal__title { font-size: 20px; font-weight: 800; margin: 10px 0 8px; }
+  .experiment-modal__submeta { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; color: var(--c-text-soft); }
+  .experiment-modal__sources { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .experiment-modal__sources a { font-size: 12px; font-weight: 600; color: var(--c-accent); text-decoration: none; padding: 2px 10px; border: 1px solid var(--c-border); border-radius: 999px; }
+  .experiment-modal__body { margin-top: 16px; }
 </style>
