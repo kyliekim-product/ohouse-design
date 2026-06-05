@@ -767,6 +767,9 @@ function mapExperiment(domainSlug, file, linkedFrom) {
     label: parsed.title || file.replace(/\.md$/, ''),
     summary: parsed.summary || null,
     result: parsed.result || 'inconclusive',
+    status: (parsed.key_date_type === 'started')
+      ? 'running'
+      : (parsed.result === 'win' ? 'win' : parsed.result === 'loss' ? 'loss' : 'inconclusive'),
     resultSummary: parsed.result_summary || null,
     insight: parsed.insight || null,
     period: parsed.period || null,
