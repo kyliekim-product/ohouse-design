@@ -178,13 +178,23 @@ const foundInItems = [
                   {componentUsage.ods.length > 0 ? (
                     <div class="screen-component-list">
                       {componentUsage.ods.map((component) => (
-                        <div class="screen-component-card">
-                          <div class="screen-component-card__head">
-                            <span>{component.label}</span>
-                            <span class="badge badge--accent">ODS</span>
+                        component.href ? (
+                          <a class="screen-component-card screen-component-card--link" href={component.href}>
+                            <div class="screen-component-card__head">
+                              <span>{component.label}</span>
+                              <span class="badge badge--accent">ODS ↗</span>
+                            </div>
+                            <p>Design System 컴포넌트 보기</p>
+                          </a>
+                        ) : (
+                          <div class="screen-component-card">
+                            <div class="screen-component-card__head">
+                              <span>{component.label}</span>
+                              <span class="badge badge--accent">ODS</span>
+                            </div>
+                            <p>linked_yaml_components</p>
                           </div>
-                          <p>linked_yaml_components</p>
-                        </div>
+                        )
                       ))}
                     </div>
                   ) : (
@@ -565,6 +575,8 @@ const foundInItems = [
     display: flex; flex-wrap: wrap; gap: 8px;
     font-size: 11px; color: var(--c-text-soft); font-family: var(--f-mono);
   }
+  a.screen-component-card--link { text-decoration: none; color: inherit; display: block; transition: background .15s, border-color .15s; }
+  a.screen-component-card--link:hover { background: var(--c-bg-elev-2); border-color: var(--c-text); }
   @media (max-width: 720px) {
     .screen-detail {
       height: auto;
