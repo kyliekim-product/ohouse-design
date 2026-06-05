@@ -324,6 +324,7 @@ const foundInItems = [
         btn.addEventListener('click', () => {
           const sep = base.includes('?') ? '&' : '?';
           frame.setAttribute('src', `${base}${sep}stage=${btn.dataset.stageLive}`);
+          document.querySelectorAll('[data-stage-live]').forEach((b) => b.classList.toggle('is-active', b === btn));
           frame.removeAttribute('hidden');
           const thumb = frame.closest('.shead__thumb') as HTMLElement | null;
           if (thumb) thumb.style.position = 'relative';
@@ -637,6 +638,7 @@ const foundInItems = [
     transition: background .15s, color .15s;
   }
   .stage-live-link:hover { background: var(--c-bg-elev-2); color: var(--c-text); }
+  .stage-live-link.is-active { background: var(--c-bg-elev-2); color: var(--c-text); border-color: var(--c-text); }
 </style>
 
 <script>
@@ -655,11 +657,14 @@ const foundInItems = [
         if (thumb) thumb.style.position = 'relative';
         btn.setAttribute('aria-pressed', 'true');
         btn.textContent = '■ 정적 프리뷰로 돌아가기';
+        document.querySelectorAll('[data-stage-live]').forEach((b) => b.classList.remove('is-active'));
       } else {
         frame.setAttribute('hidden', '');
         if (thumb) thumb.style.position = '';
         btn.setAttribute('aria-pressed', 'false');
         btn.textContent = '▶ Live 프리뷰 보기';
+        frame.removeAttribute('src');
+        document.querySelectorAll('[data-stage-live]').forEach((b) => b.classList.remove('is-active'));
       }
     });
   });
