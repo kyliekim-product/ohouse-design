@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, statSync, mkdirSync, copyFileSync } from 'node:fs';
+import { existsSync, readdirSync, statSync, mkdirSync, copyFileSync, rmSync } from 'node:fs';
 import { join, resolve, extname } from 'node:path';
 
 const SITE_ROOT = resolve(import.meta.dirname, '..');
@@ -14,6 +14,8 @@ function listDirs(p) {
 function main() {
   const domainsRoot = join(MCP_ROOT, 'domains');
   if (!existsSync(domainsRoot)) { console.warn('[screen-history] domains 없음 — skip'); return; }
+  // 매 빌드마다 새로 복사 (삭제·이름변경된 이미지가 public 에 stale 로 남지 않도록)
+  rmSync(OUT_ROOT, { recursive: true, force: true });
   let copied = 0;
   for (const domain of listDirs(domainsRoot)) {
     const screensRoot = join(domainsRoot, domain, 'screens');
