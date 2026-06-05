@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "npm run validate:ods-previews && npm run snapshot:prototypes && astro build",
+    "build": "npm run validate:ods-previews && npm run snapshot:prototypes && npm run sync:screen-history && astro build",
+    "sync:screen-history": "node scripts/sync-screen-history.mjs",
     "preview": "astro preview",
     "snapshot:prototypes": "node scripts/snapshot-prototypes.mjs",
     "astro": "astro",
