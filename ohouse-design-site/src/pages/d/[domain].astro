@@ -350,6 +350,7 @@ const tabs = [
           <div class="exp-grid">
             {experiments.map((e) => (
               <article class="exp-card">
+                {/* 배지: key_date_type==='started'(미마감) → 진행 중. 종료 실험만 result(win/loss/inconclusive) 표기 */}
                 <div class="exp-card__head">
                   <span class={`badge ${e.keyDateType === 'started' ? 'badge--accent' : e.result === 'win' ? 'badge--success' : e.result === 'loss' ? 'badge--fail' : ''}`}>
                     {e.keyDateType === 'started' ? '진행 중' : e.result === 'win' ? 'Win' : e.result === 'loss' ? 'Loss' : 'Inconclusive'}
