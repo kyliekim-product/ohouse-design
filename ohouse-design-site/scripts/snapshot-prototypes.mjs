@@ -43,7 +43,9 @@ const TARGETS = [
   {
     app: 'prototypes/contents-feed/index.html',
     out: join(SITE_ROOT, 'public/thumbnails/house-tour/content-tab.webp'),
-    viewport: { width: 390, height: 694, deviceScaleFactor: 2 }, // ≈ 9:16 (thumb 박스와 일치)
+    // 프리뷰 컬럼(.screen-detail__preview = 360px, 9:16 박스)·라이브 iframe 과 동일 뷰포트로 캡처해야
+    // 정적·라이브가 같은 폭으로 렌더된다. (ScreenShell 폰이 min(375px,100vw)라 폭이 다르면 어긋남)
+    viewport: { width: 360, height: 640, deviceScaleFactor: 2 }, // 360×640 = 9:16, 프리뷰 박스와 일치
   },
 ];
 
@@ -155,20 +157,46 @@ async function launchChrome(chromePath) {
   }
 }
 
+// 네트워크 idle 대기: in-flight 요청이 idleMs 동안 0 으로 유지되면 resolve.
+// (고정 sleep 대신 CDN 이미지/폰트/JS 가 실제로 다 받아질 때까지 기다려 빈 카드 방지)
+// timeoutMs 하드캡으로 절대 hang 안 함. 이벤트가 끊겨도(소켓 종료) maxTimer 가 풀어줌.
+function waitForNetworkIdle(ws, sessionId, { idleMs = 600, timeoutMs = 15000 } = {}) {
+  return new Promise((resolve) => {
+    let inflight = 0;
+    let idleTimer = null;
+    const disarm = () => { if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; } };
+    const finish = () => { disarm(); clearTimeout(maxTimer); ws.removeEventListener('message', onMsg); resolve(); };
+    const onMsg = (ev) => {
+      let m; try { m = JSON.parse(ev.data); } catch { return; }
+      if (m.sessionId !== sessionId) return;
+      if (m.method === 'Network.requestWillBeSent') { inflight++; disarm(); }
+      else if (m.method === 'Network.loadingFinished' || m.method === 'Network.loadingFailed') {
+        inflight = Math.max(0, inflight - 1);
+        if (inflight === 0) { disarm(); idleTimer = setTimeout(finish, idleMs); }
+      }
+    };
+    const maxTimer = setTimeout(finish, timeoutMs);
+    ws.addEventListener('message', onMsg);
+  });
+}
+
 async function captureTarget(browserWsUrl, origin, target) {
   const ws = await openWs(browserWsUrl);
   try {
     const { targetId } = await cdpSend(ws, 'Target.createTarget', { url: 'about:blank' });
     const { sessionId } = await cdpSend(ws, 'Target.attachToTarget', { targetId, flatten: true });
     await cdpSend(ws, 'Page.enable', {}, sessionId);
+    await cdpSend(ws, 'Network.enable', {}, sessionId);
     await cdpSend(ws, 'Emulation.setDeviceMetricsOverride', {
       width: target.viewport.width, height: target.viewport.height,
       deviceScaleFactor: target.viewport.deviceScaleFactor, mobile: true,
     }, sessionId);
     const loaded = waitForEvent(ws, 'Page.loadEventFired', sessionId, 30000);
+    const idle = waitForNetworkIdle(ws, sessionId, { idleMs: 600, timeoutMs: 15000 });
     await cdpSend(ws, 'Page.navigate', { url: `${origin}/${target.app}` }, sessionId);
     await loaded;
-    await new Promise((r) => setTimeout(r, 2500)); // settle: react render + fonts + CDN 이미지
+    await idle; // CDN 이미지·폰트·JS 가 다 받아질 때까지 (빈 카드 방지)
+    await new Promise((r) => setTimeout(r, 400)); // 디코드/페인트 settle
     const { data } = await cdpSend(ws, 'Page.captureScreenshot', {
       format: 'webp', quality: 82,
       clip: { x: 0, y: 0, width: target.viewport.width, height: target.viewport.height, scale: target.viewport.deviceScaleFactor },
