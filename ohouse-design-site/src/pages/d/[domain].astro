@@ -359,7 +359,14 @@ const tabs = [
           </div>
           <div class="exp-grid">
             {experiments.map((e) => (
-              <article class="exp-card" data-status={e.status}>
+              <article
+                class={`exp-card${e.bodyHtml ? ' exp-card--clickable' : ''}`}
+                data-status={e.status}
+                data-exp-modal-open={e.bodyHtml ? `expm-${e.slug}` : undefined}
+                role={e.bodyHtml ? 'button' : undefined}
+                tabindex={e.bodyHtml ? '0' : undefined}
+                aria-haspopup={e.bodyHtml ? 'dialog' : undefined}
+              >
                 <div class="exp-card__head">
                   <span class={`badge ${e.status === 'running' ? 'badge--accent' : e.status === 'win' ? 'badge--success' : e.status === 'loss' ? 'badge--fail' : ''}`}>
                     {e.status === 'running' ? '진행 중' : e.status === 'win' ? 'Win' : e.status === 'loss' ? 'Loss' : 'Inconclusive'}
@@ -396,8 +403,6 @@ const tabs = [
                   </span>
                 </div>
                 {e.bodyHtml && (
-                  <>
-                    <button type="button" class="exp-card__more-btn" data-exp-modal-open={`expm-${e.slug}`}>자세히 →</button>
                     <template id={`expm-${e.slug}`}>
                       <header class="experiment-modal__head">
                         <div class="experiment-modal__meta">
@@ -423,7 +428,6 @@ const tabs = [
                       </header>
                       <div class="prose experiment-modal__body" set:html={e.bodyHtml} />
                     </template>
-                  </>
                 )}
               </article>
             ))}
@@ -644,24 +648,28 @@ const tabs = [
       document.body.style.overflow = '';
       if (content) content.innerHTML = '';
     }
+    function openFromTrigger(trigger: HTMLElement) {
+      const tpl = document.getElementById(trigger.dataset.expModalOpen || '') as HTMLTemplateElement | null;
+      if (!tpl || !content) return;
+      content.innerHTML = tpl.innerHTML;
+      (modal as HTMLElement).hidden = false;
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      modal.querySelector<HTMLElement>('[data-exp-modal-close]')?.focus();
+    }
     document.addEventListener('click', (event) => {
+      // 출처 링크(<a> XPC~Figma 등) 클릭은 그대로 이동 — 카드 모달 열지 않음
+      if ((event.target as HTMLElement).closest('a')) return;
       const trigger = (event.target as HTMLElement).closest<HTMLElement>('[data-exp-modal-open]');
-      if (trigger) {
-        event.preventDefault();
-        const tpl = document.getElementById(trigger.dataset.expModalOpen || '') as HTMLTemplateElement | null;
-        if (tpl && content) {
-          content.innerHTML = tpl.innerHTML;
-          (modal as HTMLElement).hidden = false;
-          modal.setAttribute('aria-hidden', 'false');
-          document.body.style.overflow = 'hidden';
-          modal.querySelector<HTMLElement>('[data-exp-modal-close]')?.focus();
-        }
-        return;
-      }
+      if (trigger) { event.preventDefault(); openFromTrigger(trigger); return; }
       if ((event.target as HTMLElement).closest('[data-exp-modal-close]')) close();
     });
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && !(modal as HTMLElement).hidden) close();
+      if (event.key === 'Escape' && !(modal as HTMLElement).hidden) { close(); return; }
+      if ((event.key === 'Enter' || event.key === ' ') && !(event.target as HTMLElement).closest('a')) {
+        const trigger = (event.target as HTMLElement).closest<HTMLElement>('[data-exp-modal-open]');
+        if (trigger) { event.preventDefault(); openFromTrigger(trigger); }
+      }
     });
   }
   initExperimentModal();
@@ -693,6 +701,9 @@ const tabs = [
   .exp-chip__n { font-size: 11px; opacity: .8; }
   .exp-grid { display: grid; gap: 16px; }
   .exp-card { border: 1px solid var(--c-border); border-radius: 16px; padding: 20px; background: var(--c-bg); }
+  .exp-card--clickable { cursor: pointer; transition: box-shadow .15s ease, border-color .15s ease; }
+  .exp-card--clickable:hover { border-color: var(--c-text); box-shadow: var(--sh-lg); }
+  .exp-card--clickable:focus-visible { outline: 2px solid var(--c-text); outline-offset: 2px; }
   .exp-card__head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .exp-card__title { font-size: 16px; font-weight: 700; margin: 0; flex: 1; min-width: 0; }
   .exp-card__date { font-size: 12px; color: var(--c-text-soft); white-space: nowrap; }
@@ -706,8 +717,6 @@ const tabs = [
   .exp-card__result--running { border-left-color: var(--c-accent); background: var(--c-accent-soft); }
   .exp-card__result-label { display: block; font-size: 11px; font-weight: 700; letter-spacing: .02em; color: var(--c-text-soft); margin-bottom: 3px; }
   .exp-card__result p { margin: 0; font-size: 13px; color: var(--c-text); line-height: 1.6; }
-  .exp-card__more-btn { margin-top: 14px; background: none; border: 0; padding: 0; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--c-text-muted); }
-  .exp-card__more-btn:hover { color: var(--c-text); }
   .exp-card__foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
   .exp-card__by { font-size: 12px; color: var(--c-text-soft); }
   .exp-card__sources { display: flex; flex-wrap: wrap; gap: 8px; }
